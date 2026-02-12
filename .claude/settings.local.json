@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.tvmaze.com)",
+      "WebFetch(domain:api.tvmaze.com)",
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(npx vite build:*)",
+      "Bash(timeout 8 npx vite:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 5 npm run dev:*)"
+    ]
+  }
+}
