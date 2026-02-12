@@ -4,7 +4,7 @@ import EpisodeRow from './EpisodeRow';
 import { formatAirDate } from '../../utils/formatters';
 import { useApp } from '../../context/AppContext';
 
-export default function SeasonAccordion({ seasons, episodes, specialEpisodes, showId, onEpisodeSelect }) {
+export default function SeasonAccordion({ seasons, episodes, specialEpisodes, showId, onEpisodeSelect, onPlayEpisode }) {
   const [openSeason, setOpenSeason] = useState(seasons?.[0]?.id);
   const [showSpecials, setShowSpecials] = useState(false);
   const { isEpisodeWatched, markSeasonWatched } = useApp();
@@ -109,7 +109,7 @@ export default function SeasonAccordion({ seasons, episodes, specialEpisodes, sh
                 >
                   <div className="divide-y divide-white/5">
                     {seasonEps.map((ep) => (
-                      <EpisodeRow key={ep.id} episode={ep} showId={showId} onSelect={onEpisodeSelect} />
+                      <EpisodeRow key={ep.id} episode={ep} showId={showId} onSelect={onEpisodeSelect} onPlay={onPlayEpisode} />
                     ))}
                     {seasonEps.length === 0 && <p className="p-4 text-text-secondary text-sm">No episodes available.</p>}
                   </div>

@@ -8,7 +8,11 @@
       "Bash(npx vite build:*)",
       "Bash(timeout 8 npx vite:*)",
       "Bash(npm run build:*)",
-      "Bash(timeout 5 npm run dev:*)"
+      "Bash(timeout 5 npm run dev:*)",
+      "WebFetch(domain:embedmaster.com)",
+      "WebFetch(domain:www.superembed.stream)",
+      "WebFetch(domain:autoembed.co)",
+      "WebFetch(domain:vembed.click)"
     ]
   }
 }

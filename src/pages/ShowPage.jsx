@@ -20,6 +20,7 @@ import EpisodeDrawer from '../components/show/EpisodeDrawer';
 import WhereToWatch from '../components/show/WhereToWatch';
 import MediaSection from '../components/show/MediaSection';
 import Recommendations from '../components/show/Recommendations';
+import StreamPlayer from '../components/ui/StreamPlayer';
 import { useApp } from '../context/AppContext';
 
 const TABS = [
@@ -33,6 +34,7 @@ export default function ShowPage() {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState('episodes');
   const [drawerEpisode, setDrawerEpisode] = useState(null);
+  const [playerEpisode, setPlayerEpisode] = useState(null);
   const [videoTrigger, setVideoTrigger] = useState(0);
   const mediaRef = useRef(null);
   const { addRecentlyViewed, trackGenres } = useApp();
@@ -67,7 +69,16 @@ export default function ShowPage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-      <ShowHero show={show} images={images} onPlayTrailer={handlePlayTrailer} totalEpisodes={episodes?.length || 0} />
+      <ShowHero show={show} images={images} onPlayTrailer={handlePlayTrailer} totalEpisodes={episodes?.length || 0} onWatchNow={() => setPlayerEpisode({ season: 1, episode: 1 })} />
+      <StreamPlayer
+        isOpen={!!playerEpisode}
+        onClose={() => setPlayerEpisode(null)}
+        type="tv"
+        id={show.externals?.imdb}
+        season={playerEpisode?.season}
+        episode={playerEpisode?.episode}
+        title={show.name}
+      />
 
       <div className="relative">
         <Container className="mt-8 space-y-8">
@@ -104,6 +115,7 @@ export default function ShowPage() {
                 specialEpisodes={specialEpisodes}
                 showId={show.id}
                 onEpisodeSelect={setDrawerEpisode}
+                onPlayEpisode={(season, episode) => setPlayerEpisode({ season, episode })}
               />
             )}
             {activeTab === 'cast' && <CastGrid cast={cast} />}

@@ -5,7 +5,7 @@ import { stripHtml } from '../../utils/stripHtml';
 import RatingBadge from '../ui/RatingBadge';
 import { useApp } from '../../context/AppContext';
 
-const EpisodeRow = memo(function EpisodeRow({ episode, showId, onSelect }) {
+const EpisodeRow = memo(function EpisodeRow({ episode, showId, onSelect, onPlay }) {
   const { isEpisodeWatched, markEpisodeWatched, unmarkEpisodeWatched } = useApp();
   const watched = showId ? isEpisodeWatched(showId, episode.id) : false;
   const summary = stripHtml(episode.summary || '');
@@ -46,13 +46,26 @@ const EpisodeRow = memo(function EpisodeRow({ episode, showId, onSelect }) {
 
       <div className="flex-1 min-w-0 flex flex-col sm:flex-row gap-3 sm:gap-4">
         <div className="w-full sm:w-28 md:w-36 flex-shrink-0">
-          <div className="aspect-video rounded-lg overflow-hidden bg-bg-elevated">
+          <div className="aspect-video rounded-lg overflow-hidden bg-bg-elevated relative">
             <img
               src={getMediumImage(episode.image)}
               alt={episode.name}
               loading="lazy"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
+            {onPlay && episode.season != null && episode.number != null && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onPlay(episode.season, episode.number); }}
+                className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/50 transition-colors group/play"
+                aria-label={`Play S${episode.season}E${episode.number}`}
+              >
+                <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover/play:opacity-100 transition-opacity">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-white ml-0.5">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </div>
+              </button>
+            )}
           </div>
         </div>
 

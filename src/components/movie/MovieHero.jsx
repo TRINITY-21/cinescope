@@ -8,7 +8,7 @@ import Button from '../ui/Button';
 import RatingBadge from '../ui/RatingBadge';
 import StarRating from '../ui/StarRating';
 
-export default function MovieHero({ movie, certification, onPlayTrailer }) {
+export default function MovieHero({ movie, certification, onPlayTrailer, onWatchNow }) {
   const { addMovieToWatchlist, removeMovieFromWatchlist, isMovieInWatchlist } = useApp();
   const inWatchlist = isMovieInWatchlist(movie.id);
   const backdropUrl = getTmdbBackdropUrl(movie.backdrop_path);
@@ -82,6 +82,12 @@ export default function MovieHero({ movie, certification, onPlayTrailer }) {
             </div>
 
             <div className="flex flex-wrap gap-2 sm:gap-3 mt-4 sm:mt-6">
+              <Button variant="primary" size="lg" onClick={onWatchNow}>
+                <span className="flex items-center gap-2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                  Watch Now
+                </span>
+              </Button>
               <Button
                 variant="secondary"
                 size="lg"

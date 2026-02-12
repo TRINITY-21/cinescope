@@ -8,7 +8,7 @@ import Button from '../ui/Button';
 import RatingBadge from '../ui/RatingBadge';
 import StarRating from '../ui/StarRating';
 
-export default function ShowHero({ show, images, onPlayTrailer, totalEpisodes = 0 }) {
+export default function ShowHero({ show, images, onPlayTrailer, totalEpisodes = 0, onWatchNow }) {
   const { addToWatchlist, removeFromWatchlist, isInWatchlist, getShowProgress } = useApp();
   const inWatchlist = isInWatchlist(show.id);
   const progress = totalEpisodes > 0 ? getShowProgress(show.id, totalEpisodes) : null;
@@ -126,8 +126,16 @@ export default function ShowHero({ show, images, onPlayTrailer, totalEpisodes = 
             )}
 
             <div className="flex flex-wrap gap-2 sm:gap-3 mt-4 sm:mt-6">
+              {onWatchNow && (
+                <Button variant="primary" onClick={onWatchNow}>
+                  <span className="flex items-center gap-2">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                    Watch Now
+                  </span>
+                </Button>
+              )}
               <Button
-                variant={inWatchlist ? 'secondary' : 'primary'}
+                variant={inWatchlist ? 'secondary' : (onWatchNow ? 'secondary' : 'primary')}
                 onClick={() => inWatchlist ? removeFromWatchlist(show.id) : addToWatchlist(show)}
               >
                 {inWatchlist ? '✓ In Watchlist' : '+ Add to Watchlist'}

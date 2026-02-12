@@ -12,6 +12,7 @@ import MovieRecommendations from '../components/movie/MovieRecommendations';
 import MovieCollection from '../components/movie/MovieCollection';
 import SimilarMovies from '../components/movie/SimilarMovies';
 import MovieReviews from '../components/movie/MovieReviews';
+import StreamPlayer from '../components/ui/StreamPlayer';
 import {
   getMovieDetails,
   getMovieCredits,
@@ -40,6 +41,7 @@ export default function MoviePage() {
   const [certification, setCertification] = useState(null);
   const [loading, setLoading] = useState(true);
   const [videoTrigger, setVideoTrigger] = useState(0);
+  const [playerOpen, setPlayerOpen] = useState(false);
   const mediaRef = useRef(null);
 
   function handlePlayTrailer() {
@@ -105,7 +107,8 @@ export default function MoviePage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-      <MovieHero movie={movie} certification={certification} onPlayTrailer={handlePlayTrailer} />
+      <MovieHero movie={movie} certification={certification} onPlayTrailer={handlePlayTrailer} onWatchNow={() => setPlayerOpen(true)} />
+      <StreamPlayer isOpen={playerOpen} onClose={() => setPlayerOpen(false)} type="movie" id={movie.id} title={movie.title} />
 
       <div className="relative">
         <Container>
