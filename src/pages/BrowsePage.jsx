@@ -47,8 +47,8 @@ export default function BrowsePage() {
   }, [isLoadMoreVisible, hasMore, isLoading, page]);
 
   useEffect(() => {
-    document.title = selectedGenre !== 'All' ? `Browse ${selectedGenre} — CineScope` : 'Browse — CineScope';
-    return () => { document.title = 'CineScope'; };
+    document.title = selectedGenre !== 'All' ? `Browse ${selectedGenre} — Bynge` : 'Browse — Bynge';
+    return () => { document.title = 'Bynge'; };
   }, [selectedGenre]);
 
   function handleGenreChange(genre) {

@@ -177,8 +177,8 @@ export default function TrackingPage() {
   const [confirmClear, setConfirmClear] = useState(null);
 
   useEffect(() => {
-    document.title = 'My Library — CineScope';
-    return () => { document.title = 'CineScope'; };
+    document.title = 'My Library — Bynge';
+    return () => { document.title = 'Bynge'; };
   }, []);
 
   const trackedShowIds = useMemo(() =>

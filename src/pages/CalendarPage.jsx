@@ -63,8 +63,8 @@ export default function CalendarPage() {
   }, [currentMonth, view]);
 
   useEffect(() => {
-    document.title = 'Upcoming Schedule — CineScope';
-    return () => { document.title = 'CineScope'; };
+    document.title = 'Upcoming Schedule — Bynge';
+    return () => { document.title = 'Bynge'; };
   }, []);
 
   const selectedDayEpisodes = selectedDay

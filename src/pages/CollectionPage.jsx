@@ -29,8 +29,8 @@ export default function CollectionPage() {
   }, [id]);
 
   useEffect(() => {
-    if (collection) document.title = `${collection.name} — CineScope`;
-    return () => { document.title = 'CineScope'; };
+    if (collection) document.title = `${collection.name} — Bynge`;
+    return () => { document.title = 'Bynge'; };
   }, [collection]);
 
   useEffect(() => { window.scrollTo(0, 0); }, [id]);

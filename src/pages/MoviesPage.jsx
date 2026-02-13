@@ -56,8 +56,8 @@ export default function MoviesPage() {
 
   useEffect(() => {
     const genreName = genres.find((g) => g.id === selectedGenre)?.name;
-    document.title = genreName ? `${genreName} Movies — CineScope` : 'Movies — CineScope';
-    return () => { document.title = 'CineScope'; };
+    document.title = genreName ? `${genreName} Movies — Bynge` : 'Movies — Bynge';
+    return () => { document.title = 'Bynge'; };
   }, [selectedGenre, genres]);
 
   function handleLoadMore() {

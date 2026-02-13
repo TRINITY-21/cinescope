@@ -97,8 +97,8 @@ export default function MoviePage() {
   }, [id]);
 
   useEffect(() => {
-    if (movie) document.title = `${movie.title} — CineScope`;
-    return () => { document.title = 'CineScope'; };
+    if (movie) document.title = `${movie.title} — Bynge`;
+    return () => { document.title = 'Bynge'; };
   }, [movie]);
 
   useEffect(() => { window.scrollTo(0, 0); }, [id]);

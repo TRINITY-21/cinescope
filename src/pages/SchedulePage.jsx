@@ -17,8 +17,8 @@ export default function SchedulePage() {
   );
 
   useEffect(() => {
-    document.title = 'Schedule — CineScope';
-    return () => { document.title = 'CineScope'; };
+    document.title = 'Schedule — Bynge';
+    return () => { document.title = 'Bynge'; };
   }, []);
 
   const filteredEpisodes = episodes?.filter((ep) => ep.show?.image) || [];

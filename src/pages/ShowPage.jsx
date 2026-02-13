@@ -56,9 +56,9 @@ export default function ShowPage() {
     if (show) {
       addRecentlyViewed(show);
       trackGenres(show.genres);
-      document.title = `${show.name} — CineScope`;
+      document.title = `${show.name} — Bynge`;
     }
-    return () => { document.title = 'CineScope'; };
+    return () => { document.title = 'Bynge'; };
   }, [show]);
 
   useEffect(() => {

@@ -31,7 +31,15 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <h3 className="text-xl font-extrabold text-gradient mb-3">CineScope</h3>
+            <div className="flex items-center gap-2 mb-3">
+              <svg width="28" height="28" viewBox="0 0 100 100" className="flex-shrink-0">
+                <defs><linearGradient id="ft-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#c4835b"/><stop offset="100%" stopColor="#c4553a"/></linearGradient></defs>
+                <rect x="5" y="5" width="90" height="90" rx="22" fill="url(#ft-g)"/>
+                <circle cx="50" cy="50" r="30" fill="none" stroke="white" strokeWidth="3" strokeDasharray="141 47" strokeLinecap="round" transform="rotate(-90 50 50)" opacity="0.25"/>
+                <path d="M41 31c-2-1.2-4.5.3-4.5 2.6v32.8c0 2.3 2.5 3.8 4.5 2.6l27-16.4c2-1.2 2-4 0-5.2L41 31z" fill="white"/>
+              </svg>
+              <h3 className="text-xl font-extrabold text-gradient">Bynge</h3>
+            </div>
             <p className="text-sm text-text-secondary leading-relaxed max-w-xs">
               Your cinematic companion for discovering TV shows and movies, tracking progress, and exploring the world of entertainment.
             </p>
@@ -121,7 +129,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-text-muted">
-            &copy; {new Date().getFullYear()} CineScope. All rights reserved.
+            &copy; {new Date().getFullYear()} Bynge. All rights reserved.
           </p>
           <p className="text-xs text-text-muted">
             Crafted with passion for cinema lovers

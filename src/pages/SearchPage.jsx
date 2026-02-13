@@ -56,8 +56,8 @@ export default function SearchPage() {
   }, [debouncedQuery]);
 
   useEffect(() => {
-    document.title = query ? `Search: ${query} — CineScope` : 'Search — CineScope';
-    return () => { document.title = 'CineScope'; };
+    document.title = query ? `Search: ${query} — Bynge` : 'Search — Bynge';
+    return () => { document.title = 'Bynge'; };
   }, [query]);
 
   const shows = results?.map((r) => r.show) || [];

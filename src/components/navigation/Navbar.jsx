@@ -66,8 +66,14 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" className="text-xl font-extrabold text-gradient tracking-tight">
-              CineScope
+            <Link to="/" className="flex items-center gap-2">
+              <svg width="28" height="28" viewBox="0 0 100 100" className="flex-shrink-0">
+                <defs><linearGradient id="nav-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#c4835b"/><stop offset="100%" stopColor="#c4553a"/></linearGradient></defs>
+                <rect x="5" y="5" width="90" height="90" rx="22" fill="url(#nav-g)"/>
+                <circle cx="50" cy="50" r="30" fill="none" stroke="white" strokeWidth="3" strokeDasharray="141 47" strokeLinecap="round" transform="rotate(-90 50 50)" opacity="0.25"/>
+                <path d="M41 31c-2-1.2-4.5.3-4.5 2.6v32.8c0 2.3 2.5 3.8 4.5 2.6l27-16.4c2-1.2 2-4 0-5.2L41 31z" fill="white"/>
+              </svg>
+              <span className="text-xl font-extrabold text-gradient tracking-tight">Bynge</span>
             </Link>
 
             <div className="hidden md:flex items-center gap-6">

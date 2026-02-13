@@ -66,8 +66,8 @@ export default function PeoplePage() {
   }, [debouncedQuery]);
 
   useEffect(() => {
-    document.title = 'Browse People — CineScope';
-    return () => { document.title = 'CineScope'; };
+    document.title = 'Browse People — Bynge';
+    return () => { document.title = 'Bynge'; };
   }, []);
 
   const displayPeople = searchResults

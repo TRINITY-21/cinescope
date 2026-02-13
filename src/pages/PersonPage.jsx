@@ -24,9 +24,9 @@ export default function PersonPage() {
 
   useEffect(() => {
     if (person) {
-      document.title = `${person.name} — CineScope`;
+      document.title = `${person.name} — Bynge`;
     }
-    return () => { document.title = 'CineScope'; };
+    return () => { document.title = 'Bynge'; };
   }, [person]);
 
   useEffect(() => {
