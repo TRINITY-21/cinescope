@@ -14,6 +14,7 @@ export function AppProvider({ children }) {
     { id: 'plan-to-watch', name: 'Plan to Watch', icon: '📋', shows: [] },
   ]);
   const [movieWatchlist, setMovieWatchlist] = useLocalStorage('cinescope-movie-watchlist', []);
+  const [watchHistory, setWatchHistory] = useLocalStorage('cinescope-watch-history', []);
   const [stats, setStats] = useLocalStorage('cinescope-stats', {
     totalEpisodesWatched: 0,
     totalMinutesWatched: 0,
@@ -74,7 +75,9 @@ export function AppProvider({ children }) {
       totalMinutesWatched: (prev.totalMinutesWatched || 0) + (runtime || 0),
       firstTracked: prev.firstTracked || new Date().toISOString(),
     }));
-  }, [setWatchedEpisodes, setStats]);
+    const today = new Date().toISOString().slice(0, 10);
+    setWatchHistory((prev) => [...prev, { date: today, showId, episodeId }]);
+  }, [setWatchedEpisodes, setStats, setWatchHistory]);
 
   const unmarkEpisodeWatched = useCallback((showId, episodeId, runtime = 0) => {
     setWatchedEpisodes((prev) => {
@@ -87,7 +90,12 @@ export function AppProvider({ children }) {
       totalEpisodesWatched: Math.max(0, (prev.totalEpisodesWatched || 0) - 1),
       totalMinutesWatched: Math.max(0, (prev.totalMinutesWatched || 0) - (runtime || 0)),
     }));
-  }, [setWatchedEpisodes, setStats]);
+    setWatchHistory((prev) => {
+      const idx = prev.findLastIndex((e) => e.showId === showId && e.episodeId === episodeId);
+      if (idx === -1) return prev;
+      return [...prev.slice(0, idx), ...prev.slice(idx + 1)];
+    });
+  }, [setWatchedEpisodes, setStats, setWatchHistory]);
 
   const isEpisodeWatched = useCallback((showId, episodeId) => {
     return (watchedEpisodes[showId] || []).includes(episodeId);
@@ -103,26 +111,28 @@ export function AppProvider({ children }) {
   }, [watchedEpisodes]);
 
   const markSeasonWatched = useCallback((showId, episodeIds, runtime = 0) => {
+    const today = new Date().toISOString().slice(0, 10);
     setWatchedEpisodes((prev) => {
       const showEps = new Set(prev[showId] || []);
-      let newCount = 0;
+      const newIds = [];
       episodeIds.forEach((id) => {
         if (!showEps.has(id)) {
           showEps.add(id);
-          newCount++;
+          newIds.push(id);
         }
       });
-      if (newCount > 0) {
+      if (newIds.length > 0) {
         setStats((p) => ({
           ...p,
-          totalEpisodesWatched: (p.totalEpisodesWatched || 0) + newCount,
-          totalMinutesWatched: (p.totalMinutesWatched || 0) + (runtime * newCount),
+          totalEpisodesWatched: (p.totalEpisodesWatched || 0) + newIds.length,
+          totalMinutesWatched: (p.totalMinutesWatched || 0) + (runtime * newIds.length),
           firstTracked: p.firstTracked || new Date().toISOString(),
         }));
+        setWatchHistory((h) => [...h, ...newIds.map((id) => ({ date: today, showId, episodeId: id }))]);
       }
       return { ...prev, [showId]: [...showEps] };
     });
-  }, [setWatchedEpisodes, setStats]);
+  }, [setWatchedEpisodes, setStats, setWatchHistory]);
 
   // Collections
   const addToCollection = useCallback((collectionId, item) => {
@@ -182,18 +192,68 @@ export function AppProvider({ children }) {
     });
   }, [setWatchedEpisodes, setStats]);
 
+  // Watch streak helpers
+  const getWatchStreak = useCallback(() => {
+    if (watchHistory.length === 0) return { current: 0, best: 0 };
+    const days = new Set(watchHistory.map((e) => e.date));
+    const sortedDays = [...days].sort().reverse();
+    const today = new Date().toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+
+    // Current streak — must include today or yesterday
+    let current = 0;
+    if (days.has(today) || days.has(yesterday)) {
+      let checkDate = new Date(days.has(today) ? today : yesterday);
+      while (days.has(checkDate.toISOString().slice(0, 10))) {
+        current++;
+        checkDate = new Date(checkDate.getTime() - 86400000);
+      }
+    }
+
+    // Best streak
+    let best = 0;
+    let run = 1;
+    for (let i = 1; i < sortedDays.length; i++) {
+      const prev = new Date(sortedDays[i - 1]);
+      const curr = new Date(sortedDays[i]);
+      const diff = (prev - curr) / 86400000;
+      if (diff === 1) { run++; } else { best = Math.max(best, run); run = 1; }
+    }
+    best = Math.max(best, run, current);
+
+    return { current, best };
+  }, [watchHistory]);
+
+  const getTodayEpisodeCount = useCallback(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    return watchHistory.filter((e) => e.date === today).length;
+  }, [watchHistory]);
+
+  const getWeekActivity = useCallback(() => {
+    const result = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000);
+      const dateStr = d.toISOString().slice(0, 10);
+      const count = watchHistory.filter((e) => e.date === dateStr).length;
+      result.push({ date: dateStr, day: d.toLocaleDateString('en', { weekday: 'short' }), count });
+    }
+    return result;
+  }, [watchHistory]);
+
   const value = useMemo(() => ({
     watchlist, addToWatchlist, removeFromWatchlist, isInWatchlist,
     movieWatchlist, addMovieToWatchlist, removeMovieFromWatchlist, isMovieInWatchlist,
     recentlyViewed, addRecentlyViewed,
     watchedEpisodes, markEpisodeWatched, unmarkEpisodeWatched, isEpisodeWatched, getShowProgress, markSeasonWatched, clearShowProgress,
+    watchHistory, getWatchStreak, getTodayEpisodeCount, getWeekActivity,
     collections, addToCollection, removeFromCollection, isInCollection, createCollection, deleteCollection,
     stats, trackGenres,
-  }), [watchlist, movieWatchlist, recentlyViewed, watchedEpisodes, collections, stats,
+  }), [watchlist, movieWatchlist, recentlyViewed, watchedEpisodes, watchHistory, collections, stats,
     addToWatchlist, removeFromWatchlist, isInWatchlist,
     addMovieToWatchlist, removeMovieFromWatchlist, isMovieInWatchlist,
     addRecentlyViewed,
     markEpisodeWatched, unmarkEpisodeWatched, isEpisodeWatched, getShowProgress, markSeasonWatched, clearShowProgress,
+    getWatchStreak, getTodayEpisodeCount, getWeekActivity,
     addToCollection, removeFromCollection, isInCollection, createCollection, deleteCollection, trackGenres]);
 
   return (

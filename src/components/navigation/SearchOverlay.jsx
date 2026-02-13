@@ -107,7 +107,7 @@ export default function SearchOverlay({ isOpen, onClose }) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search shows, series, movies..."
-                  className="w-full bg-transparent border-none outline-none text-base sm:text-2xl md:text-4xl font-light text-white placeholder-text-muted pl-8 sm:pl-12 pb-3 sm:pb-4 border-b-2 border-white/10 focus:border-accent-violet focus:shadow-glow-violet transition-all"
+                  className="w-full bg-transparent border-0 border-b border-white/10 outline-none text-base sm:text-2xl md:text-4xl font-light text-white placeholder-text-muted pl-8 sm:pl-12 pb-3 sm:pb-4 focus:border-accent-violet/50 transition-colors"
                 />
               </div>
             </form>

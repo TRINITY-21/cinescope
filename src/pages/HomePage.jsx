@@ -10,6 +10,7 @@ import AiringTodayStrip from '../components/home/AiringTodayStrip';
 import ContinueWatching from '../components/home/ContinueWatching';
 import GenreRow from '../components/home/GenreRow';
 import TopRatedSection from '../components/home/TopRatedSection';
+import TonightsPlan from '../components/home/TonightsPlan';
 import WhatsNew from '../components/home/WhatsNew';
 import OnThisDay from '../components/home/OnThisDay';
 import TrendingMoviesRow from '../components/home/TrendingMoviesRow';
@@ -54,6 +55,8 @@ export default function HomePage() {
           </div>
 
           <ContinueWatching />
+
+          <TonightsPlan />
 
           <TrendingMoviesRow />
 

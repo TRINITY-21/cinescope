@@ -172,6 +172,7 @@ export default function TrackingPage() {
     watchedEpisodes, stats, clearShowProgress,
     watchlist, movieWatchlist, removeMovieFromWatchlist,
     recentlyViewed, collections,
+    getWatchStreak, getTodayEpisodeCount, getWeekActivity,
   } = useApp();
   const [confirmClear, setConfirmClear] = useState(null);
 
@@ -258,6 +259,56 @@ export default function TrackingPage() {
               </p>
             </div>
           </div>
+
+          {/* ═══════════ WATCH STREAK ═══════════ */}
+          {totalEpisodes > 0 && (() => {
+            const streak = getWatchStreak();
+            const todayCount = getTodayEpisodeCount();
+            const week = getWeekActivity();
+            const maxWeekCount = Math.max(1, ...week.map((d) => d.count));
+
+            return (
+              <motion.div variants={fadeUp} className="mb-8">
+                <div className="rounded-2xl bg-bg-elevated/50 border border-white/[0.05] p-5 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+                    {/* Streak + today stats */}
+                    <div className="flex items-center gap-6 sm:gap-8">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center">
+                          <span className="text-xl">{streak.current > 0 ? '\uD83D\uDD25' : '\u2744\uFE0F'}</span>
+                        </div>
+                        <div>
+                          <p className="text-2xl font-extrabold text-white leading-none">{streak.current}</p>
+                          <p className="text-[11px] text-text-muted mt-0.5">day streak</p>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-extrabold text-white leading-none">{todayCount}</p>
+                        <p className="text-[11px] text-text-muted mt-0.5">today</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-extrabold text-accent-gold leading-none">{streak.best}</p>
+                        <p className="text-[11px] text-text-muted mt-0.5">best streak</p>
+                      </div>
+                    </div>
+
+                    {/* Weekly activity */}
+                    <div className="flex-1 flex items-end gap-1.5 sm:gap-2 h-10 sm:justify-end">
+                      {week.map((d) => (
+                        <div key={d.date} className="flex flex-col items-center gap-1 flex-1 sm:flex-none sm:w-8">
+                          <div className="w-full sm:w-6 rounded-sm transition-all duration-500" style={{
+                            height: d.count > 0 ? `${Math.max(6, (d.count / maxWeekCount) * 32)}px` : '3px',
+                            backgroundColor: d.count > 0 ? `rgba(249, 115, 22, ${0.3 + (d.count / maxWeekCount) * 0.7})` : 'rgba(255,255,255,0.05)',
+                          }} />
+                          <span className="text-[9px] text-text-muted">{d.day}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })()}
 
           {/* ═══════════ STATS + GENRE DNA + COLLECTIONS (single row) ═══════════ */}
           {(totalEpisodes > 0 || genreEntries.length > 0 || collectionsTotal > 0) && (
