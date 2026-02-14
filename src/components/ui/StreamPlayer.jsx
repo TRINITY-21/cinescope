@@ -27,42 +27,24 @@ export default function StreamPlayer({ isOpen, onClose, type, id, season, episod
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[60] flex flex-col bg-black"
+          className="fixed inset-0 z-[60] bg-black"
         >
-          {/* Top bar */}
-          <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 bg-black/80 backdrop-blur-sm flex-shrink-0">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="text-accent-violet">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-              </div>
-              <span className="text-xs sm:text-sm text-white font-medium truncate">{title}</span>
-              {type === 'tv' && season && episode && (
-                <span className="text-[11px] sm:text-xs text-text-muted flex-shrink-0">S{String(season).padStart(2, '0')}E{String(episode).padStart(2, '0')}</span>
-              )}
-            </div>
-            <button
-              onClick={onClose}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors flex-shrink-0"
-              aria-label="Close player"
-            >
-              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M18 6L6 18M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-
-          {/* Player */}
-          <div className="flex-1 relative">
-            <iframe
-              src={src}
-              title={title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-              allowFullScreen
-              className="absolute inset-0 w-full h-full border-0"
-            />
-          </div>
+          <iframe
+            src={src}
+            title={title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full border-0"
+          />
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/50 hover:bg-black/80 flex items-center justify-center transition-colors"
+            aria-label="Close player"
+          >
+            <svg width="14" height="14" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
         </motion.div>
       )}
     </AnimatePresence>,
