@@ -8,7 +8,7 @@ import { getMediumImage, getPersonImage } from '../../utils/imageUrl';
 import { Link } from 'react-router-dom';
 import RatingBadge from '../ui/RatingBadge';
 
-export default function EpisodeDrawer({ episode, isOpen, onClose }) {
+export default function EpisodeDrawer({ episode, isOpen, onClose, onPlay }) {
   const [guestCast, setGuestCast] = useState([]);
   const [guestCrew, setGuestCrew] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -83,6 +83,15 @@ export default function EpisodeDrawer({ episode, isOpen, onClose }) {
                 <svg width="18" height="18" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
 
+              {onPlay && (
+                <button
+                  onClick={() => onPlay(episode.season, episode.number)}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-accent-violet/90 backdrop-blur-sm hover:bg-accent-violet hover:scale-110 flex items-center justify-center transition-all shadow-lg shadow-accent-violet/30"
+                >
+                  <svg width="22" height="22" fill="white" viewBox="0 0 24 24"><path d="M8 5.14v14.72a1 1 0 001.5.86l11.14-7.36a1 1 0 000-1.72L9.5 4.28A1 1 0 008 5.14z"/></svg>
+                </button>
+              )}
+
               <div className="absolute bottom-4 left-5 right-5">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-mono px-2 py-0.5 rounded bg-accent-gold/20 text-accent-gold">
@@ -107,7 +116,12 @@ export default function EpisodeDrawer({ episode, isOpen, onClose }) {
                     )}
                   </div>
                 </div>
-                {episode.rating?.average && <RatingBadge rating={episode.rating.average} size="md" />}
+                {episode.rating?.average && (
+                  <>
+                    <span className="sm:hidden"><RatingBadge rating={episode.rating.average} size="sm" /></span>
+                    <span className="hidden sm:inline-flex"><RatingBadge rating={episode.rating.average} size="md" /></span>
+                  </>
+                )}
               </div>
 
               {/* Summary */}

@@ -111,7 +111,10 @@ export default function HeroSpotlight() {
                 className="flex flex-wrap items-center gap-3 mt-4"
               >
                 {show.rating?.average && (
-                  <RatingBadge rating={show.rating.average} size="md" />
+                  <>
+                    <span className="sm:hidden"><RatingBadge rating={show.rating.average} size="sm" /></span>
+                    <span className="hidden sm:inline-flex"><RatingBadge rating={show.rating.average} size="md" /></span>
+                  </>
                 )}
                 <span className="text-text-secondary text-sm">
                   {formatYear(show.premiered)}
@@ -124,7 +127,7 @@ export default function HeroSpotlight() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="text-base md:text-lg text-text-secondary mt-4 line-clamp-3 leading-relaxed"
+                className="text-sm sm:text-base md:text-lg text-text-secondary mt-3 sm:mt-4 line-clamp-2 sm:line-clamp-3 leading-relaxed"
               >
                 {summary}
               </motion.p>

@@ -37,11 +37,24 @@ export default function ShowPage() {
   const [playerEpisode, setPlayerEpisode] = useState(null);
   const [videoTrigger, setVideoTrigger] = useState(0);
   const mediaRef = useRef(null);
-  const { addRecentlyViewed, trackGenres } = useApp();
+  const { addRecentlyViewed, trackGenres, addToWatchlist, markEpisodeWatched, isEpisodeWatched } = useApp();
 
   function handlePlayTrailer() {
     setVideoTrigger((v) => v + 1);
     mediaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function handlePlayEpisode(season, episodeNumber) {
+    // Auto-track: add show to library
+    if (show) addToWatchlist(show);
+    // Mark the episode as watched
+    if (episodes) {
+      const ep = episodes.find((e) => e.season === season && e.number === episodeNumber);
+      if (ep && !isEpisodeWatched(show.id, ep.id)) {
+        markEpisodeWatched(show.id, ep.id, ep.runtime || 0);
+      }
+    }
+    setPlayerEpisode({ season, episode: episodeNumber });
   }
 
   const { data: show, isLoading: showLoading } = useApiQuery(endpoints.show(id));
@@ -69,7 +82,7 @@ export default function ShowPage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-      <ShowHero show={show} images={images} onPlayTrailer={handlePlayTrailer} totalEpisodes={episodes?.length || 0} onWatchNow={() => setPlayerEpisode({ season: 1, episode: 1 })} />
+      <ShowHero show={show} images={images} onPlayTrailer={handlePlayTrailer} totalEpisodes={episodes?.length || 0} onWatchNow={() => handlePlayEpisode(1, 1)} />
       <StreamPlayer
         isOpen={!!playerEpisode}
         onClose={() => setPlayerEpisode(null)}
@@ -115,7 +128,7 @@ export default function ShowPage() {
                 specialEpisodes={specialEpisodes}
                 showId={show.id}
                 onEpisodeSelect={setDrawerEpisode}
-                onPlayEpisode={(season, episode) => setPlayerEpisode({ season, episode })}
+                onPlayEpisode={handlePlayEpisode}
               />
             )}
             {activeTab === 'cast' && <CastGrid cast={cast} />}
@@ -134,6 +147,10 @@ export default function ShowPage() {
         episode={drawerEpisode}
         isOpen={!!drawerEpisode}
         onClose={() => setDrawerEpisode(null)}
+        onPlay={(season, episodeNumber) => {
+          setDrawerEpisode(null);
+          handlePlayEpisode(season, episodeNumber);
+        }}
       />
     </motion.div>
   );

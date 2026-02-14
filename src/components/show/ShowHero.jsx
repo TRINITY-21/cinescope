@@ -84,9 +84,10 @@ export default function ShowHero({ show, images, onPlayTrailer, totalEpisodes = 
 
             <div className="flex flex-wrap items-center gap-3 mt-4">
               {show.rating?.average && (
-                <div className="flex items-center gap-3">
-                  <RatingBadge rating={show.rating.average} size="lg" />
-                  <StarRating rating={show.rating.average} />
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <span className="sm:hidden"><RatingBadge rating={show.rating.average} size="sm" /></span>
+                  <span className="hidden sm:inline-flex"><RatingBadge rating={show.rating.average} size="lg" /></span>
+                  <span className="hidden sm:inline-flex"><StarRating rating={show.rating.average} /></span>
                 </div>
               )}
               {show.status && (
