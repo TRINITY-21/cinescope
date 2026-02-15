@@ -19,6 +19,83 @@ function makeId(prefix) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
+// Downscale a screen capture stream to target resolution via canvas
+function createScaledStream(originalStream, maxWidth = 1280, maxHeight = 720, fps = 24) {
+  const videoTrack = originalStream.getVideoTracks()[0];
+  if (!videoTrack) return originalStream;
+
+  const settings = videoTrack.getSettings();
+  const srcW = settings.width || 1920;
+  const srcH = settings.height || 1080;
+
+  // Skip if already small enough
+  if (srcW <= maxWidth && srcH <= maxHeight) return originalStream;
+
+  const scale = Math.min(maxWidth / srcW, maxHeight / srcH);
+  const outW = Math.round(srcW * scale);
+  const outH = Math.round(srcH * scale);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = outW;
+  canvas.height = outH;
+  const ctx = canvas.getContext('2d');
+
+  const video = document.createElement('video');
+  video.srcObject = new MediaStream([videoTrack]);
+  video.muted = true;
+  video.play();
+
+  let animId;
+  function draw() {
+    if (videoTrack.readyState === 'ended') { cancelAnimationFrame(animId); return; }
+    ctx.drawImage(video, 0, 0, outW, outH);
+    animId = requestAnimationFrame(draw);
+  }
+  draw();
+
+  const scaledStream = canvas.captureStream(fps);
+
+  // Carry over audio from original
+  for (const audioTrack of originalStream.getAudioTracks()) {
+    scaledStream.addTrack(audioTrack);
+  }
+
+  // When original video track stops, stop the canvas loop
+  videoTrack.addEventListener('ended', () => {
+    cancelAnimationFrame(animId);
+    scaledStream.getTracks().forEach((t) => t.stop());
+  });
+
+  // Keep reference so we can stop the original track on cleanup
+  scaledStream._originalVideoTrack = videoTrack;
+  scaledStream._animId = animId;
+
+  return scaledStream;
+}
+
+// Apply bitrate cap with retry (SDP negotiation may not be done on first try)
+function capBitrate(mediaCall, bitrate = 1_200_000, maxRetries = 3) {
+  let attempt = 0;
+  function tryApply() {
+    try {
+      const pc = mediaCall.peerConnection;
+      if (!pc) return;
+      const sender = pc.getSenders().find((s) => s.track?.kind === 'video');
+      if (!sender) { retry(); return; }
+      const params = sender.getParameters();
+      if (!params.encodings || params.encodings.length === 0) { retry(); return; }
+      params.encodings[0].maxBitrate = bitrate;
+      params.encodings[0].maxFramerate = 24;
+      sender.setParameters(params);
+    } catch { retry(); }
+  }
+  function retry() {
+    attempt++;
+    if (attempt < maxRetries) setTimeout(tryApply, 1500);
+  }
+  tryApply();
+}
+
 export function useWatchParty() {
   const [status, setStatus] = useState('idle');
   const [role, setRole] = useState(null);
@@ -148,23 +225,8 @@ export function useWatchParty() {
         const mediaCall = peerRef.current.call(dataConn.peer, localStreamRef.current);
         if (mediaCall) {
           mediaConnectionsRef.current.push(mediaCall);
-
-          // Cap bitrate to prevent mobile lag
-          try {
-            const pc = mediaCall.peerConnection;
-            if (pc) {
-              const sender = pc.getSenders().find((s) => s.track?.kind === 'video');
-              if (sender) {
-                const params = sender.getParameters();
-                if (!params.encodings || params.encodings.length === 0) {
-                  params.encodings = [{}];
-                }
-                params.encodings[0].maxBitrate = 1_500_000; // 1.5 Mbps
-                params.encodings[0].maxFramerate = 30;
-                sender.setParameters(params);
-              }
-            }
-          } catch { /* browser may not support this */ }
+          // Cap bitrate with retry (waits for SDP negotiation to complete)
+          capBitrate(mediaCall, 1_200_000);
         }
       }
     });
@@ -189,6 +251,13 @@ export function useWatchParty() {
     cleanedUpRef.current = true;
 
     if (localStreamRef.current) {
+      // Stop the scaled stream's original video track if it exists
+      if (localStreamRef.current._originalVideoTrack) {
+        try { localStreamRef.current._originalVideoTrack.stop(); } catch { /* ignore */ }
+      }
+      if (localStreamRef.current._animId) {
+        cancelAnimationFrame(localStreamRef.current._animId);
+      }
       localStreamRef.current.getTracks().forEach((t) => t.stop());
       localStreamRef.current = null;
     }
@@ -248,23 +317,12 @@ export function useWatchParty() {
 
       setRoomCode(code);
 
-      let stream;
+      let rawStream;
       try {
-        stream = await navigator.mediaDevices.getDisplayMedia({
-          video: {
-            cursor: 'always',
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            frameRate: { ideal: 30, max: 30 },
-          },
+        rawStream = await navigator.mediaDevices.getDisplayMedia({
+          video: { cursor: 'always' },
           audio: true,
         });
-
-        // Optimize encoding for video content (motion over sharpness)
-        const videoTrack = stream.getVideoTracks()[0];
-        if (videoTrack) {
-          videoTrack.contentHint = 'motion';
-        }
       } catch {
         peer.destroy();
         peerRef.current = null;
@@ -274,12 +332,25 @@ export function useWatchParty() {
         return;
       }
 
+      // Downscale to 720p via canvas (browsers ignore getDisplayMedia resolution hints)
+      const stream = createScaledStream(rawStream, 1280, 720, 24);
+
+      // Set content hint for video encoding optimization
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.contentHint = 'motion';
+      }
+
       localStreamRef.current = stream;
       setLocalStream(stream);
 
-      stream.getVideoTracks()[0]?.addEventListener('ended', () => {
-        leaveParty();
-      });
+      // Stop when the original capture ends (user clicks browser's "stop sharing")
+      const originalTrack = rawStream.getVideoTracks()[0];
+      if (originalTrack) {
+        originalTrack.addEventListener('ended', () => {
+          leaveParty();
+        });
+      }
 
       peer.on('connection', (dataConn) => {
         setupHostConnectionHandler(dataConn);
