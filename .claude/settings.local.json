@@ -12,7 +12,9 @@
       "WebFetch(domain:embedmaster.com)",
       "WebFetch(domain:www.superembed.stream)",
       "WebFetch(domain:autoembed.co)",
-      "WebFetch(domain:vembed.click)"
+      "WebFetch(domain:vembed.click)",
+      "Bash(ls:*)",
+      "Bash(xargs:*)"
     ]
   }
 }

@@ -14,6 +14,7 @@ const navLinks = [
   { to: '/discover', label: 'Discover' },
   { to: '/schedule', label: 'Schedule' },
   { to: '/people', label: 'People' },
+  { to: '/party', label: 'Party' },
   { to: '/tracking', label: 'My Library' },
 ];
 

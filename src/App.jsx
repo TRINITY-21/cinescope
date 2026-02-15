@@ -20,6 +20,7 @@ const PeoplePage = lazy(() => import('./pages/PeoplePage'));
 const CalendarPage = lazy(() => import('./pages/CalendarPage'));
 const TrackingPage = lazy(() => import('./pages/TrackingPage'));
 const CollectionPage = lazy(() => import('./pages/CollectionPage'));
+const WatchPartyPage = lazy(() => import('./pages/WatchPartyPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 export default function App() {
@@ -48,6 +49,7 @@ export default function App() {
               <Route path="/people" element={<PeoplePage />} />
               <Route path="/schedule" element={<CalendarPage />} />
               <Route path="/tracking" element={<TrackingPage />} />
+              <Route path="/party" element={<WatchPartyPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
