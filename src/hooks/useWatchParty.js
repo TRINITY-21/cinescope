@@ -148,6 +148,23 @@ export function useWatchParty() {
         const mediaCall = peerRef.current.call(dataConn.peer, localStreamRef.current);
         if (mediaCall) {
           mediaConnectionsRef.current.push(mediaCall);
+
+          // Cap bitrate to prevent mobile lag
+          try {
+            const pc = mediaCall.peerConnection;
+            if (pc) {
+              const sender = pc.getSenders().find((s) => s.track?.kind === 'video');
+              if (sender) {
+                const params = sender.getParameters();
+                if (!params.encodings || params.encodings.length === 0) {
+                  params.encodings = [{}];
+                }
+                params.encodings[0].maxBitrate = 1_500_000; // 1.5 Mbps
+                params.encodings[0].maxFramerate = 30;
+                sender.setParameters(params);
+              }
+            }
+          } catch { /* browser may not support this */ }
         }
       }
     });
@@ -234,9 +251,20 @@ export function useWatchParty() {
       let stream;
       try {
         stream = await navigator.mediaDevices.getDisplayMedia({
-          video: { cursor: 'always' },
+          video: {
+            cursor: 'always',
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            frameRate: { ideal: 30, max: 30 },
+          },
           audio: true,
         });
+
+        // Optimize encoding for video content (motion over sharpness)
+        const videoTrack = stream.getVideoTracks()[0];
+        if (videoTrack) {
+          videoTrack.contentHint = 'motion';
+        }
       } catch {
         peer.destroy();
         peerRef.current = null;
