@@ -288,6 +288,24 @@ export default function TmdbPersonPage() {
           jsonLd: [
             {
               '@context': 'https://schema.org',
+              '@type': 'Person',
+              name: person.name,
+              url: `${SITE_ORIGIN}/tmdb-person/${id}`,
+              image: person.profile_path ? `https://image.tmdb.org/t/p/h632${person.profile_path}` : undefined,
+              birthDate: person.birthday || undefined,
+              deathDate: person.deathday || undefined,
+              birthPlace: person.place_of_birth || undefined,
+              description: person.biography?.slice(0, 500) || undefined,
+              jobTitle: person.known_for_department || undefined,
+              sameAs: [
+                externalIds?.imdb_id ? `https://www.imdb.com/name/${externalIds.imdb_id}` : null,
+                externalIds?.instagram_id ? `https://instagram.com/${externalIds.instagram_id}` : null,
+                externalIds?.twitter_id ? `https://twitter.com/${externalIds.twitter_id}` : null,
+                externalIds?.facebook_id ? `https://facebook.com/${externalIds.facebook_id}` : null,
+              ].filter(Boolean),
+            },
+            {
+              '@context': 'https://schema.org',
               '@type': 'BreadcrumbList',
               itemListElement: [
                 { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_ORIGIN },

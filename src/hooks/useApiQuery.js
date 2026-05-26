@@ -1,53 +1,55 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchApi } from '../api/tvmaze';
 
+/**
+ * Fetch JSON with safe cancellation on URL change / unmount.
+ * Uses a cancelled flag (not abort-before-fetch) so rate-limiter waits don't strand isLoading.
+ */
 export function useApiQuery(url, options = {}) {
   const { enabled = true, initialData = null } = options;
   const [data, setData] = useState(initialData);
-  const [isLoading, setIsLoading] = useState(!!url && enabled);
+  const [isLoading, setIsLoading] = useState(Boolean(url && enabled));
   const [error, setError] = useState(null);
-  const abortRef = useRef(null);
+  const [refetchCount, setRefetchCount] = useState(0);
+  const requestIdRef = useRef(0);
 
-  const fetchData = useCallback(async () => {
-    if (!url || !enabled) return;
-
-    if (abortRef.current) {
-      abortRef.current.abort();
+  useEffect(() => {
+    if (!url || !enabled) {
+      setData(initialData);
+      setIsLoading(false);
+      setError(null);
+      return undefined;
     }
-    const controller = new AbortController();
-    abortRef.current = controller;
+
+    const requestId = ++requestIdRef.current;
+    let cancelled = false;
 
     setIsLoading(true);
     setError(null);
+    setData(initialData);
 
-    try {
-      const result = await fetchApi(url, { signal: controller.signal });
-      if (!controller.signal.aborted) {
+    (async () => {
+      try {
+        const result = await fetchApi(url);
+        if (cancelled || requestId !== requestIdRef.current) return;
         setData(result);
+        setError(null);
+        setIsLoading(false);
+      } catch (err) {
+        if (cancelled || requestId !== requestIdRef.current) return;
+        setError(err);
         setIsLoading(false);
       }
-    } catch (err) {
-      if (!controller.signal.aborted) {
-        if (err.name !== 'AbortError') {
-          setError(err);
-          setIsLoading(false);
-        }
-      }
-    }
-  }, [url, enabled]);
+    })();
 
-  useEffect(() => {
-    fetchData();
     return () => {
-      if (abortRef.current) {
-        abortRef.current.abort();
-      }
+      cancelled = true;
     };
-  }, [fetchData]);
+  }, [url, enabled, refetchCount]);
 
   const refetch = useCallback(() => {
-    fetchData();
-  }, [fetchData]);
+    setRefetchCount((n) => n + 1);
+  }, []);
 
   return { data, isLoading, error, refetch };
 }

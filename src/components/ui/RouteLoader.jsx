@@ -1,21 +1,26 @@
+import ByngeSpinner from './ByngeSpinner';
+
 /**
- * Suspense fallback used while a lazy route chunk loads.
- *
- * Renders an animated top-loading bar (YouTube/GitHub-style) instead of
- * blanking the page. The navbar stays visible because this lives inside
- * MainLayout, so the perceived load is just "page is changing" not
- * "site is broken".
+ * Suspense fallback while a lazy route chunk loads.
+ * Top progress bar + subtle centered mark (navbar stays visible).
  */
 export default function RouteLoader() {
   return (
-    <div className="min-h-[60vh]">
-      <div
-        className="fixed top-0 left-0 right-0 z-50 h-0.5 overflow-hidden pointer-events-none"
-        aria-hidden="true"
-      >
-        <div className="route-loader-bar h-full bg-gradient-to-r from-accent-peach via-accent-gold to-accent-peach" />
+    <div className="relative min-h-[50vh] flex items-center justify-center">
+      <div className="route-loader-track" aria-hidden="true">
+        <div className="route-loader-bar" />
       </div>
-      <span className="sr-only" role="status" aria-live="polite">Loading page</span>
+
+      <div className="flex flex-col items-center gap-3 opacity-90">
+        <ByngeSpinner size="md" />
+        <p className="text-[11px] font-medium text-text-muted tracking-[0.14em] uppercase">
+          Loading
+        </p>
+      </div>
+
+      <span className="sr-only" role="status" aria-live="polite">
+        Loading page
+      </span>
     </div>
   );
 }

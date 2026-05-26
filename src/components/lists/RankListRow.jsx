@@ -49,7 +49,7 @@ export default function RankListRow({
           {poster ? (
             <img
               src={poster}
-              alt=""
+              alt={title ? `${title} poster` : ''}
               loading="lazy"
               className="w-16 h-24 sm:w-20 sm:h-28 rounded-lg object-cover border border-white/[0.06] shadow-elevation-2 hover:scale-[1.03] transition-transform"
             />

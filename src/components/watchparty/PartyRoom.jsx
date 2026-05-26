@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
+import { overlayFade, slideFromBottom } from '../../utils/motion';
 import ChatSidebar from './ChatSidebar';
 import FloatingReactions from './FloatingReactions';
 import QueuePanel from './QueuePanel';
@@ -232,10 +233,7 @@ export default function PartyRoom({ party }) {
       {/* Mobile queue overlay */}
       {isMobile && mobilePanel === 'queue' && (
         <motion.div
-          initial={{ y: '100%' }}
-          animate={{ y: 0 }}
-          exit={{ y: '100%' }}
-          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          {...slideFromBottom}
           className="fixed inset-x-0 bottom-0 z-50 h-[65vh] bg-bg-secondary/95 backdrop-blur-2xl border-t border-white/10 rounded-t-2xl"
         >
           <div className="flex justify-center pt-2 pb-1">
@@ -264,9 +262,7 @@ export default function PartyRoom({ party }) {
       {/* Mobile queue backdrop */}
       {isMobile && mobilePanel === 'queue' && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          {...overlayFade}
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
           onClick={() => setMobilePanel(null)}
         />

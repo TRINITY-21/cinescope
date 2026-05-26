@@ -22,7 +22,7 @@ const ShowCard = memo(function ShowCard({ show, className = '' }) {
         <div className="aspect-[2/3] relative">
           <img
             src={getMediumImage(show.image)}
-            alt={show.name}
+            alt={`${show.name} poster`}
             loading="lazy"
             className="w-full h-full object-cover"
           />

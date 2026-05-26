@@ -1,6 +1,7 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { modalPanel, overlayFade } from '../../utils/motion';
 
 export default function Modal({ isOpen, onClose, children, size = 'lg' }) {
   useEffect(() => {
@@ -26,17 +27,19 @@ export default function Modal({ isOpen, onClose, children, size = 'lg' }) {
     <AnimatePresence>
       {isOpen && (
         <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            {...overlayFade}
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={onClose}
+            aria-hidden
+          />
+          <motion.div
+            {...modalPanel}
             className={`relative z-10 w-full ${sizeClasses[size]} glass-heavy rounded-2xl gradient-border overflow-hidden noise-overlay`}
           >
             <button

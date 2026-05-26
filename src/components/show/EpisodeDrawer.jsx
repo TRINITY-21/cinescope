@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { fetchApi } from '../../api/tvmaze';
-import { endpoints } from '../../api/endpoints';
-import { sanitizeHtml } from '../../utils/stripHtml';
-import { formatEpisodeCode, formatAirDate, formatRuntime } from '../../utils/formatters';
-import { getMediumImage, getPersonImage } from '../../utils/imageUrl';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { endpoints } from '../../api/endpoints';
+import { fetchApi } from '../../api/tvmaze';
+import { formatAirDate, formatEpisodeCode, formatRuntime } from '../../utils/formatters';
+import { getMediumImage, getPersonImage } from '../../utils/imageUrl';
+import { overlayFade, slideFromRight } from '../../utils/motion';
+import { sanitizeHtml } from '../../utils/stripHtml';
+import ByngeSpinner from '../ui/ByngeSpinner';
 import RatingBadge from '../ui/RatingBadge';
 
-export default function EpisodeDrawer({ episode, isOpen, onClose, onPlay }) {
+export default function EpisodeDrawer({ episode, showId, isOpen, onClose, onPlay }) {
   const [guestCast, setGuestCast] = useState([]);
   const [guestCrew, setGuestCrew] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -52,17 +54,12 @@ export default function EpisodeDrawer({ episode, isOpen, onClose, onPlay }) {
       {isOpen && (
         <>
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            {...overlayFade}
             className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            {...slideFromRight}
             className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-lg bg-bg-secondary border-l border-white/10 overflow-y-auto"
           >
             {/* Episode image header */}
@@ -124,6 +121,20 @@ export default function EpisodeDrawer({ episode, isOpen, onClose, onPlay }) {
                 )}
               </div>
 
+              {/* Episode page link — surfaces the full /show/:id/season/:s/episode/:e route */}
+              {showId && episode.season != null && episode.number != null && (
+                <Link
+                  to={`/show/${showId}/season/${episode.season}/episode/${episode.number}`}
+                  onClick={onClose}
+                  className="inline-flex items-center gap-1.5 text-body-sm font-semibold text-accent-peach hover:text-accent-gold transition-colors"
+                >
+                  Open full episode page
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              )}
+
               {/* Summary */}
               {episode.summary && (
                 <div>
@@ -174,7 +185,7 @@ export default function EpisodeDrawer({ episode, isOpen, onClose, onPlay }) {
               {/* Guest Cast */}
               {loading ? (
                 <div className="flex items-center gap-2 text-text-secondary text-sm">
-                  <div className="w-4 h-4 border-2 border-accent-peach/30 border-t-accent-peach rounded-full animate-spin" />
+                  <ByngeSpinner size="xs" />
                   Loading guest details...
                 </div>
               ) : guestCast.length > 0 ? (

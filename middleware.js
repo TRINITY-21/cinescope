@@ -415,26 +415,29 @@ export default async function middleware(request) {
 
   const { pathname } = new URL(request.url);
 
+  // For entity routes, the handler returns null when the upstream API can't
+  // resolve the id (deleted/unknown). Convert that null → a real 404 status
+  // so Google doesn't index dead URLs and serve them as soft-404s.
   let m;
   if ((m = pathname.match(/^\/movie\/(\d+)/))) {
     const id = m[1];
-    return (await handleMovie(id, `${SITE_URL}/movie/${id}`)) || undefined;
+    return (await handleMovie(id, `${SITE_URL}/movie/${id}`)) || notFoundResponse();
   }
   if ((m = pathname.match(/^\/show\/(\d+)/))) {
     const id = m[1];
-    return (await handleShow(id, `${SITE_URL}/show/${id}`)) || undefined;
+    return (await handleShow(id, `${SITE_URL}/show/${id}`)) || notFoundResponse();
   }
   if ((m = pathname.match(/^\/person\/(\d+)/))) {
     const id = m[1];
-    return (await handleTvmazePerson(id, `${SITE_URL}/person/${id}`)) || undefined;
+    return (await handleTvmazePerson(id, `${SITE_URL}/person/${id}`)) || notFoundResponse();
   }
   if ((m = pathname.match(/^\/tmdb-person\/(\d+)/))) {
     const id = m[1];
-    return (await handleTmdbPerson(id, `${SITE_URL}/tmdb-person/${id}`)) || undefined;
+    return (await handleTmdbPerson(id, `${SITE_URL}/tmdb-person/${id}`)) || notFoundResponse();
   }
   if ((m = pathname.match(/^\/collection\/(\d+)/))) {
     const id = m[1];
-    return (await handleCollection(id, `${SITE_URL}/collection/${id}`)) || undefined;
+    return (await handleCollection(id, `${SITE_URL}/collection/${id}`)) || notFoundResponse();
   }
 
   if (pathname === '/like') {
@@ -485,6 +488,57 @@ export default async function middleware(request) {
   if ((m = pathname.match(/^\/trending\/(today|week|month|year)$/))) {
     return (await seoHandlers.handleTrending(m[1])) || undefined;
   }
+
+  /* ─── Directors ─── */
+  if (pathname === '/director') {
+    return (await seoHandlers.handleDirectorIndex()) || undefined;
+  }
+  if ((m = pathname.match(/^\/director\/([^/]+)$/))) {
+    return (await seoHandlers.handleDirectorSlug(m[1])) || undefined;
+  }
+
+  /* ─── Where to watch ─── */
+  if ((m = pathname.match(/^\/where-to-watch\/([^/]+)$/))) {
+    return (await seoHandlers.handleWhereToWatch(m[1])) || undefined;
+  }
+
+  /* ─── Should I Watch ─── */
+  if ((m = pathname.match(/^\/should-i-watch\/([^/]+)$/))) {
+    return (await seoHandlers.handleShouldIWatch(m[1])) || undefined;
+  }
+
+  /* ─── Movie compare ─── */
+  if ((m = pathname.match(/^\/compare\/movies\/([^/]+)$/))) {
+    return (await seoHandlers.handleMovieCompareSlug(m[1])) || undefined;
+  }
+
+  /* ─── Coming Soon ─── */
+  if (pathname === '/coming-soon') {
+    return (await seoHandlers.handleComingSoon()) || undefined;
+  }
+  if ((m = pathname.match(/^\/coming-soon\/(movies|tv)$/))) {
+    return (await seoHandlers.handleComingSoon(m[1])) || undefined;
+  }
+
+  /* ─── Marketing / trust / legal ─── */
+  if (pathname === '/about') {
+    return (await seoHandlers.handleAbout()) || undefined;
+  }
+  if (pathname === '/contact') {
+    return (await seoHandlers.handleContact()) || undefined;
+  }
+  if (pathname === '/newsletter') {
+    return (await seoHandlers.handleNewsletter()) || undefined;
+  }
+  if (pathname === '/how-we-rank') {
+    return (await seoHandlers.handleHowWeRank()) || undefined;
+  }
+  if (pathname === '/terms') {
+    return (await seoHandlers.handleTerms()) || undefined;
+  }
+  if (pathname === '/privacy') {
+    return (await seoHandlers.handlePrivacy()) || undefined;
+  }
 }
 
 export const config = {
@@ -510,5 +564,18 @@ export const config = {
     '/watch-order/:slug*',
     '/streaming',
     '/streaming/:provider*',
+    '/director',
+    '/director/:slug*',
+    '/where-to-watch/:slug*',
+    '/should-i-watch/:slug*',
+    '/compare/movies/:slug*',
+    '/coming-soon',
+    '/coming-soon/:kind*',
+    '/about',
+    '/contact',
+    '/newsletter',
+    '/how-we-rank',
+    '/terms',
+    '/privacy',
   ],
 };

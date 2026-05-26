@@ -5,6 +5,7 @@
  */
 
 import { BEST_LISTS } from '../src/data/bestLists.js';
+import { DIRECTORS } from '../src/data/directors.js';
 import { LIKE_SEEDS } from '../src/data/likeSeeds.js';
 import { MOODS } from '../src/data/moods.js';
 import { STREAMING_PROVIDERS } from '../src/data/streamingProviders.js';
@@ -45,7 +46,16 @@ const STATIC_ROUTES = [
   // "Best of" SEO surfaces — highest-volume long-tail entry points
   { path: '/best', priority: '0.9', changefreq: 'weekly' },
   { path: '/like', priority: '0.9', changefreq: 'weekly' },
+  { path: '/should-i-watch', priority: '0.85', changefreq: 'weekly' },
+  { path: '/director', priority: '0.85', changefreq: 'weekly' },
   { path: '/how-we-rank', priority: '0.5', changefreq: 'monthly' },
+  { path: '/about', priority: '0.5', changefreq: 'monthly' },
+  { path: '/contact', priority: '0.4', changefreq: 'monthly' },
+  { path: '/newsletter', priority: '0.6', changefreq: 'monthly' },
+  { path: '/terms', priority: '0.3', changefreq: 'yearly' },
+  { path: '/privacy', priority: '0.3', changefreq: 'yearly' },
+  // New SEO surfaces
+  { path: '/compare/movies', priority: '0.6', changefreq: 'monthly' },
 ];
 
 // Slugs pulled directly from the data files so adding a provider/mood/franchise
@@ -54,6 +64,7 @@ const STREAMING_PROVIDER_SLUGS = STREAMING_PROVIDERS.map((p) => p.slug);
 const MOOD_SLUGS = MOODS.map((m) => m.slug);
 const WATCH_ORDER_SLUGS = WATCH_ORDERS.map((w) => w.slug);
 const BEST_LIST_SLUGS = BEST_LISTS.map((l) => l.slug);
+const DIRECTOR_SLUGS = DIRECTORS.map((d) => d.slug);
 
 function escapeXml(s) {
   return String(s)
@@ -161,7 +172,30 @@ async function fetchManyPeople() {
 
 export default async function handler(req, res) {
   try {
-    const lastmod = new Date().toISOString().slice(0, 10);
+    // Real per-route lastmod. Daily-refreshed surfaces use today; curated /
+    // editorial / legal pages use the date their underlying data was last
+    // touched. Google trusts accurate lastmod and re-crawls accordingly;
+    // always-today triggers crawl-budget penalties on stable pages.
+    const today = new Date().toISOString().slice(0, 10);
+    // Legal pages — single source of truth (kept aligned with src/pages/legal/legalCopy.js)
+    const LEGAL_LASTMOD = '2026-05-26';
+    // Hand-curated content — bump when watchOrders.js / moods.js / bestLists.js / directors.js change
+    const CURATED_LASTMOD = '2026-05-26';
+
+    // Per-route freshness map. Anything not listed defaults to `today`.
+    const ROUTE_LASTMOD = {
+      '/terms': LEGAL_LASTMOD,
+      '/privacy': LEGAL_LASTMOD,
+      '/about': LEGAL_LASTMOD,
+      '/contact': LEGAL_LASTMOD,
+      '/how-we-rank': LEGAL_LASTMOD,
+      '/newsletter': LEGAL_LASTMOD,
+      '/watch-order': CURATED_LASTMOD,
+      '/director': CURATED_LASTMOD,
+    };
+    const resolveLastmod = (path, fallback) => ROUTE_LASTMOD[path] || fallback || today;
+    // Back-compat alias for the auto-refreshed dynamic sections below.
+    const lastmod = today;
 
     const [movies, tvTmdb, tvMaze, people] = await Promise.all([
       fetchManyMovies(),
@@ -175,25 +209,37 @@ export default async function handler(req, res) {
     // Static routes
     for (const r of STATIC_ROUTES) {
       urls.push(urlEntry(`${SITE_URL}${r.path}`, {
-        lastmod,
+        lastmod: resolveLastmod(r.path, today),
         changefreq: r.changefreq,
         priority: r.priority,
       }));
     }
 
     // "Best of" list pages — long-tail SEO ("best netflix movies", "best christmas movies", etc.)
-    for (const slug of BEST_LIST_SLUGS) {
-      urls.push(urlEntry(`${SITE_URL}/best/${slug}`, {
-        lastmod,
-        changefreq: 'daily',
+    // Auto lists refresh daily; curated/seasonal use the curated lastmod.
+    for (const list of BEST_LISTS) {
+      const isCurated = list.source?.type === 'curated';
+      urls.push(urlEntry(`${SITE_URL}/best/${list.slug}`, {
+        lastmod: isCurated ? CURATED_LASTMOD : today,
+        changefreq: isCurated ? 'monthly' : 'daily',
         priority: '0.85',
       }));
     }
 
-    // Watch-order franchise pages — high-leverage SEO targets
+    // Director filmography pages — list contents auto-refresh, but the
+    // editorial copy + roster is hand-curated, so use the curated lastmod.
+    for (const slug of DIRECTOR_SLUGS) {
+      urls.push(urlEntry(`${SITE_URL}/director/${slug}`, {
+        lastmod: CURATED_LASTMOD,
+        changefreq: 'monthly',
+        priority: '0.8',
+      }));
+    }
+
+    // Watch-order franchise pages — hand-curated lists.
     for (const slug of WATCH_ORDER_SLUGS) {
       urls.push(urlEntry(`${SITE_URL}/watch-order/${slug}`, {
-        lastmod,
+        lastmod: CURATED_LASTMOD,
         changefreq: 'monthly',
         priority: '0.8',
       }));
@@ -208,10 +254,10 @@ export default async function handler(req, res) {
       }));
     }
 
-    // Mood pages
+    // Mood pages — hand-curated tmdbId arrays.
     for (const slug of MOOD_SLUGS) {
       urls.push(urlEntry(`${SITE_URL}/discover/mood/${slug}`, {
-        lastmod,
+        lastmod: CURATED_LASTMOD,
         changefreq: 'monthly',
         priority: '0.7',
       }));
@@ -255,6 +301,24 @@ export default async function handler(req, res) {
     for (const m of movies.slice(0, 80)) addLike(m.title);
     for (const s of tvTmdb.slice(0, 80)) addLike(s.name);
 
+    // /should-i-watch/<slug> decision pages — different intent than /like/.
+    // Same seed pool keeps the sitemap aligned.
+    const siwSeen = new Set();
+    const addSiw = (name) => {
+      const s = seedSlug(name);
+      if (!s || siwSeen.has(s)) return;
+      siwSeen.add(s);
+      urls.push(urlEntry(`${SITE_URL}/should-i-watch/${s}`, {
+        lastmod,
+        changefreq: 'weekly',
+        priority: '0.7',
+      }));
+    };
+    for (const seed of LIKE_SEEDS) addSiw(seed.label);
+    for (const m of movies.slice(0, 40)) addSiw(m.title);
+    for (const s of tvTmdb.slice(0, 40)) addSiw(s.name);
+
+
     // /compare/<a>-vs-<b> permalink pages — debate-bait SEO. Pair adjacent
     // trending shows (no all-pairs combinatorial blow-up). 40 pairs is enough
     // to seed Google's discovery; users build the rest by clicking around.
@@ -277,6 +341,26 @@ export default async function handler(req, res) {
       }));
     }
 
+    // Movie-vs-movie compare permalinks — same pair-adjacent strategy
+    const popularMovies = movies.slice(0, 80);
+    const seenMovieCompares = new Set();
+    for (let i = 0; i + 1 < popularMovies.length; i += 2) {
+      const a = popularMovies[i];
+      const b = popularMovies[i + 1];
+      if (!a?.title || !b?.title) continue;
+      const sa = seedSlug(a.title);
+      const sb = seedSlug(b.title);
+      if (!sa || !sb || sa === sb) continue;
+      const key = `${sa}-vs-${sb}`;
+      if (seenMovieCompares.has(key)) continue;
+      seenMovieCompares.add(key);
+      urls.push(urlEntry(`${SITE_URL}/compare/movies/${key}`, {
+        lastmod,
+        changefreq: 'monthly',
+        priority: '0.6',
+      }));
+    }
+
     // TV pages — TVMaze ids back /show/:id, so prefer TVMaze top shows
     const seenShowIds = new Set();
     for (const s of tvMaze) {
@@ -288,6 +372,47 @@ export default async function handler(req, res) {
         priority: '0.8',
       }));
     }
+
+    // Episode pages — long-tail SEO ("breaking bad s05e14 recap" etc).
+    // Top 20 shows × ~50 eps avg = ~1000 entries. Sequential fetch would blow
+    // the 10s edge timeout, so cap and parallelize.
+    const topShowsForEpisodes = tvMaze.slice(0, 20);
+    const episodeLists = await Promise.all(
+      topShowsForEpisodes.map((show) =>
+        fetchJson(`https://api.tvmaze.com/shows/${show.id}/episodes`).catch(() => []),
+      ),
+    );
+    for (let i = 0; i < topShowsForEpisodes.length; i++) {
+      const show = topShowsForEpisodes[i];
+      const eps = Array.isArray(episodeLists[i]) ? episodeLists[i] : [];
+      // Skip specials; cap each show at 100 episodes to keep sitemap responsive.
+      const indexable = eps
+        .filter((e) => e.season > 0 && e.number != null && e.airdate && new Date(e.airdate) < new Date())
+        .slice(0, 100);
+      for (const ep of indexable) {
+        urls.push(urlEntry(`${SITE_URL}/show/${show.id}/season/${ep.season}/episode/${ep.number}`, {
+          lastmod,
+          changefreq: 'monthly',
+          priority: '0.5',
+        }));
+      }
+    }
+
+    // /where-to-watch/<slug> — programmatic SEO for "where to watch X" queries.
+    // Highest-intent commercial-style searches. Seed with trending movies + shows.
+    const wtwSeen = new Set();
+    const addWhereToWatch = (name) => {
+      const s = seedSlug(name);
+      if (!s || wtwSeen.has(s)) return;
+      wtwSeen.add(s);
+      urls.push(urlEntry(`${SITE_URL}/where-to-watch/${s}`, {
+        lastmod,
+        changefreq: 'weekly',
+        priority: '0.7',
+      }));
+    };
+    for (const m of movies.slice(0, 80)) addWhereToWatch(m.title);
+    for (const s of tvTmdb.slice(0, 80)) addWhereToWatch(s.name);
 
     // People pages (TMDB ids)
     for (const p of people) {

@@ -1,15 +1,14 @@
-import { Link } from 'react-router-dom';
 import { usePageHead } from '../../hooks/usePageHead';
 import PageLayout from '../../layouts/PageLayout';
 import Container from '../ui/Container';
-import EmptyState from '../ui/EmptyState';
+import NotFoundScene from '../ui/NotFoundScene';
 
 /**
  * Lightweight 404 for invalid SEO slugs (no auto-redirect, noindex).
  */
 export default function SeoNotFound({
   title = 'Page not found',
-  description = 'This page does not exist or may have moved.',
+  description,
   backTo = '/',
   backLabel = 'Back to home',
   secondaryTo,
@@ -22,22 +21,17 @@ export default function SeoNotFound({
 
   return (
     <PageLayout>
-      <Container className="pt-8">
-        <EmptyState
+      <Container>
+        <NotFoundScene
+          code="404"
           title={title}
           description={description}
-          action={{ label: backLabel, to: backTo }}
-          secondaryAction={
-            secondaryTo && secondaryLabel
-              ? { label: secondaryLabel, to: secondaryTo }
-              : undefined
-          }
+          compact
+          primaryTo={backTo}
+          primaryLabel={backLabel}
+          secondaryTo={secondaryTo}
+          secondaryLabel={secondaryLabel}
         />
-        <p className="mt-8 text-center text-caption text-text-muted">
-          <Link to="/" className="text-accent-peach hover:text-accent-gold transition-colors">
-            Go to Bynge home
-          </Link>
-        </p>
       </Container>
     </PageLayout>
   );

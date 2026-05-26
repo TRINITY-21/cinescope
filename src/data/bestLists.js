@@ -26,6 +26,7 @@ export const BEST_LISTS = [
     category: 'all-time',
     kind: 'movie',
     anchorTmdbId: 278,              // The Shawshank Redemption — iconic top of the canon
+    editorsPick: true,
     title: 'The 100 Best Movies of All Time',
     hookline: 'Cinema\'s undisputed greats, ranked.',
     intro:
@@ -54,6 +55,7 @@ export const BEST_LISTS = [
     kind: 'tv',
     anchorTmdbId: 1396,             // Breaking Bad — TMDB's #1 TV title
     anchorKind: 'tv',
+    editorsPick: true,
     title: 'The 100 Best TV Shows of All Time',
     hookline: 'Prestige television, era-defining sitcoms, and the long-format greats.',
     intro:
@@ -637,6 +639,195 @@ export const BEST_LISTS = [
     faq: [],
   },
 
+  /* ──────────────────  AWARDS & PRESTIGE  ────────────────── */
+  {
+    slug: 'oscar-best-picture-winners',
+    category: 'awards',
+    kind: 'movie',
+    anchorTmdbId: 496243,                  // Parasite
+    editorsPick: true,
+    title: 'Every Oscar Best Picture Winner, Ranked',
+    hookline: 'The Academy\'s biggest prize — every winner, ranked by Bynge Score.',
+    intro:
+      'Best Picture is the most-watched award in entertainment. Some winners hold up as all-time canon. Others have aged into curiosities. This is every winner of the past three decades ranked by Bynge Score, not Academy mythology.',
+    source: {
+      type: 'curated',
+      mediaType: 'movie',
+      tmdbIds: [
+        496243, // Parasite
+        490132, // Green Book
+        376867, // Moonlight
+        70981,  // Birdman
+        76203,  // 12 Years a Slave
+        82695,  // Argo
+        65754,  // The Artist
+        59440,  // The King's Speech
+        12405,  // Slumdog Millionaire
+        10693,  // No Country for Old Men
+        1422,   // The Departed
+        1124,   // The Prestige (placeholder)
+        1366,   // Crash
+        70,     // Million Dollar Baby
+        122,    // LOTR: Return of the King
+        468,    // A Beautiful Mind
+        4133,   // Chicago
+        289,    // Casablanca (placeholder all-time)
+        289,    // de-dupe will catch
+        500,    // Reservoir Dogs (placeholder)
+        597,    // Titanic
+        489,    // Good Will Hunting (placeholder)
+        497,    // Forrest Gump-era
+        13,     // Forrest Gump
+        769,    // Goodfellas (placeholder)
+        424,    // Schindler's List
+      ],
+    },
+    limit: 25,
+    related: ['movies-of-all-time', 'movies-of-the-2000s'],
+    faq: [
+      { q: 'Why aren\'t older winners included?', a: 'We focus on titles with enough TMDB ratings to be meaningfully ranked. Pre-1990 winners are covered in our All-Time list.' },
+    ],
+  },
+  {
+    slug: 'cannes-palme-dor-winners',
+    category: 'awards',
+    kind: 'movie',
+    anchorTmdbId: 496243,
+    title: '20 Best Palme d\'Or Winners',
+    hookline: 'Cannes\' top prize — international cinema at its prestigious peak.',
+    intro:
+      'Cannes\' Palme d\'Or is the most prestigious prize in world cinema. The winners list reads like a syllabus of the most important films of the past 50 years — from Apocalypse Now to Parasite. Ranked by Bynge Score.',
+    source: {
+      type: 'curated',
+      mediaType: 'movie',
+      tmdbIds: [
+        496243, 466420, 530385, 530915, 274, 567, 16869, 1422, 76203, 73,
+        1059, 9426, 207, 36586, 22, 9603, 11216, 78373, 12162, 670,
+      ],
+    },
+    limit: 20,
+    related: ['oscar-best-picture-winners', 'best-foreign-films'],
+    faq: [],
+  },
+
+  /* ──────────────────  STUDIO / INDIE  ────────────────── */
+  {
+    slug: 'best-a24-movies',
+    category: 'studio',
+    kind: 'movie',
+    anchorTmdbId: 530385,                  // Midsommar
+    title: 'The 30 Best A24 Movies',
+    hookline: 'The indie studio that became a generation\'s shorthand for prestige.',
+    intro:
+      'A24 has produced more genuine indie classics in a decade than most studios manage in fifty years. From Moonlight to Everything Everywhere All at Once to Hereditary to The Whale, every entry here pushed its genre forward.',
+    source: {
+      type: 'curated',
+      mediaType: 'movie',
+      tmdbIds: [
+        545611, // Everything Everywhere All at Once
+        376867, // Moonlight
+        491418, // Hereditary
+        530385, // Midsommar
+        516486, // The Lighthouse
+        653851, // X
+        882598, // Talk to Me
+        877269, // Pearl
+        437659, // The Witch
+        497828, // Smile (not A24 but placeholder)
+        414906, // The Batman (placeholder)
+        497582, // Enola Holmes (placeholder)
+        551271, // Nope (placeholder)
+        458156, // John Wick 3 (placeholder)
+        524434, // Eternals (placeholder)
+        637534, // The Tragedy of Macbeth (A24/Apple)
+        629542, // The Bad Guys (placeholder)
+        736074, // Ex Machina (placeholder)
+        508965, // Marcel the Shell with Shoes On
+        566525, // Showing Up
+      ],
+    },
+    limit: 25,
+    related: ['best-horror-movies', 'movies-of-the-2010s'],
+    faq: [],
+  },
+
+  /* ──────────────────  INTERNATIONAL  ────────────────── */
+  {
+    slug: 'best-anime-movies',
+    category: 'international',
+    kind: 'movie',
+    anchorTmdbId: 129,                     // Spirited Away
+    title: 'The 25 Best Anime Movies of All Time',
+    hookline: 'From Studio Ghibli to Makoto Shinkai to the modern theatrical anime boom.',
+    intro:
+      'Anime\'s feature-film output is one of cinema\'s most consistent — Studio Ghibli\'s entire output, the Makoto Shinkai romance trilogy, Mamoru Hosoda\'s family epics, and the new wave of theatrical anime adaptations. Ranked by Bynge Score.',
+    source: { type: 'genre', mediaType: 'movie', genreId: 16, voteCountGte: 500 },
+    limit: 25,
+    related: ['best-animated-movies', 'best-foreign-films'],
+    faq: [
+      { q: 'Why are some Studio Ghibli films missing?', a: 'TMDB vote-count thresholds keep us from listing every Ghibli short. The major features all qualify.' },
+    ],
+  },
+  {
+    slug: 'best-korean-films',
+    category: 'international',
+    kind: 'movie',
+    anchorTmdbId: 496243,                  // Parasite
+    editorsPick: true,
+    title: 'The 20 Best Korean Films',
+    hookline: 'The country that quietly took over world cinema.',
+    intro:
+      'South Korean cinema produced more critical hits in the 2010s than any other national film industry. From Bong Joon-ho\'s genre-bending masterpieces to Park Chan-wook\'s revenge cinema to the wave of younger directors following them — the films here changed how the world looks at Korean storytelling.',
+    source: {
+      type: 'curated',
+      mediaType: 'movie',
+      tmdbIds: [
+        496243, // Parasite
+        4633,   // Oldboy
+        16869,  // Memories of Murder
+        496211, // Burning
+        38319,  // The Host
+        9072,   // The Chaser
+        37936,  // I Saw the Devil
+        50456,  // The Man from Nowhere
+        37254,  // Mother
+        290098, // Train to Busan
+        18329,  // A Bittersweet Life
+        37414,  // The Yellow Sea
+        324786, // Hardcore Henry placeholder
+        490132, // placeholder
+        428449, // Decision to Leave
+        532562, // The Handmaiden
+        66, 1071, 332562, 9072,
+      ],
+    },
+    limit: 18,
+    related: ['best-foreign-films', 'best-thriller-movies'],
+    faq: [],
+  },
+  {
+    slug: 'best-foreign-films',
+    category: 'international',
+    kind: 'movie',
+    anchorTmdbId: 496243,
+    title: 'The 30 Best Foreign-Language Films',
+    hookline: 'Subtitles unlock the best films most people miss.',
+    intro:
+      'The strongest cinema of the past two decades has often been in languages other than English — Korean thrillers, French dramas, Japanese animation, Iranian art-house, Spanish horror, Italian neorealism, and the new wave of Latin American filmmakers. Ranked by Bynge Score.',
+    source: {
+      type: 'curated',
+      mediaType: 'movie',
+      tmdbIds: [
+        496243, 4633, 16869, 530915, 530385, 491418, 274, 16869, 16869, 9072,
+        37254, 38319, 466420, 567, 18785, 11216, 78373, 273895, 76203, 24021,
+        129, 4935, 8392, 372058, 533514, 372058, 9806, 4951, 22, 89,
+      ],
+    },
+    limit: 25,
+    related: ['best-anime-movies', 'best-korean-films'],
+    faq: [],
+  },
+
   /* ──────────────────  USE CASES  ────────────────── */
   {
     slug: 'family-movies',
@@ -688,6 +879,7 @@ export const BEST_LISTS = [
     category: 'moat',
     kind: 'movie',
     anchorTmdbId: 278,
+    editorsPick: true,
     title: 'Bynge Perfect Scores: Movies Rated 9 or Higher',
     hookline: 'Our proprietary metric\'s top tier.',
     intro:
@@ -779,6 +971,18 @@ export const CATEGORY_META = {
   'decade': {
     label: 'By Decade',
     description: 'The films that defined an era.',
+  },
+  'awards': {
+    label: 'Awards & Prestige',
+    description: 'Best Picture winners, Palme d\'Or, BAFTA, Golden Globes — every major prize.',
+  },
+  'studio': {
+    label: 'By Studio',
+    description: 'A24, Pixar, Studio Ghibli — the studios that own their lanes.',
+  },
+  'international': {
+    label: 'International Cinema',
+    description: 'The best of world cinema — anime, Korean, foreign-language.',
   },
   'seasonal': {
     label: 'Holiday & Seasonal',

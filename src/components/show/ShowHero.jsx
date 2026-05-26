@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { useShowFanart } from '../../hooks/useFanart';
@@ -7,6 +8,7 @@ import { computeByngeScore } from '../../utils/byngeScore';
 import { blurred, responsive } from '../../utils/imageOptimize';
 import { getBackdropImage, getOriginalImage } from '../../utils/imageUrl';
 import { shareContent } from '../../utils/share';
+import { slugify } from '../../utils/slug';
 import DetailHeroActions from '../detail/DetailHeroActions';
 import Badge from '../ui/Badge';
 import ByngeScoreBadge from '../ui/ByngeScoreBadge';
@@ -128,8 +130,45 @@ export default function ShowHero({ show, images, onPlayTrailer, totalEpisodes = 
               </div>
             </div>
 
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-caption">
+              <Link
+                to={`/should-i-watch/${slugify(show.name)}`}
+                className="inline-flex items-center gap-1 text-text-secondary hover:text-accent-peach transition-colors"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                Should I watch this?
+              </Link>
+              <Link
+                to={`/where-to-watch/${slugify(show.name)}`}
+                className="inline-flex items-center gap-1 text-text-secondary hover:text-accent-peach transition-colors"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <line x1="8" y1="21" x2="16" y2="21" />
+                </svg>
+                Where to watch
+              </Link>
+              <Link
+                to={`/like/${slugify(show.name)}`}
+                className="inline-flex items-center gap-1 text-text-secondary hover:text-accent-peach transition-colors"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                </svg>
+                Similar picks
+              </Link>
+            </div>
+
             <div className="flex flex-wrap gap-2 mt-4">
-              {show.genres?.map((g) => <Badge key={g}>{g}</Badge>)}
+              {show.genres?.map((g) => (
+                <Link key={g} to={`/browse/${encodeURIComponent(g)}`} className="no-underline">
+                  <Badge>{g}</Badge>
+                </Link>
+              ))}
             </div>
 
             {progress && progress.watched > 0 && (

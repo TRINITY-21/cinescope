@@ -1,12 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useDebounce } from '../../hooks/useDebounce';
-import { useApiQuery } from '../../hooks/useApiQuery';
 import { endpoints } from '../../api/endpoints';
-import { searchTmdbMovies, hasTmdbKey } from '../../api/tmdb';
-import { getMediumImage, getTmdbPosterUrl } from '../../utils/imageUrl';
+import { hasTmdbKey, searchTmdbMovies } from '../../api/tmdb';
+import { useApiQuery } from '../../hooks/useApiQuery';
+import { useDebounce } from '../../hooks/useDebounce';
 import { formatYear } from '../../utils/formatters';
+import { getMediumImage, getTmdbPosterUrl } from '../../utils/imageUrl';
+import { overlayFade, searchPanel } from '../../utils/motion';
 import RatingBadge from '../ui/RatingBadge';
 
 export default function SearchOverlay({ isOpen, onClose }) {
@@ -80,13 +81,18 @@ export default function SearchOverlay({ isOpen, onClose }) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 bg-bg-primary/95 backdrop-blur-2xl noise-overlay"
-        >
+        <>
+          <motion.div
+            {...overlayFade}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            onClick={onClose}
+            aria-hidden
+          />
+          <motion.div
+            {...searchPanel}
+            className="fixed inset-0 z-50 bg-bg-primary/95 backdrop-blur-2xl noise-overlay pointer-events-none"
+          >
+          <div className="pointer-events-auto h-full">
           <button
             onClick={onClose}
             className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-accent-red/20 flex items-center justify-center transition-colors"
@@ -122,12 +128,10 @@ export default function SearchOverlay({ isOpen, onClose }) {
                         TV Shows
                       </p>
                     )}
-                    {showSuggestions.map(({ show }, i) => (
-                      <motion.button
+                    {showSuggestions.map(({ show }) => (
+                      <button
                         key={`show-${show.id}`}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.03 * i, duration: 0.25 }}
+                        type="button"
                         onClick={() => goToShow(show.id)}
                         className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors text-left group"
                       >
@@ -149,7 +153,7 @@ export default function SearchOverlay({ isOpen, onClose }) {
                         {show.rating?.average && (
                           <RatingBadge rating={show.rating.average} size="sm" />
                         )}
-                      </motion.button>
+                      </button>
                     ))}
                   </>
                 )}
@@ -162,12 +166,10 @@ export default function SearchOverlay({ isOpen, onClose }) {
                         Movies
                       </p>
                     )}
-                    {movieSuggestions.map((movie, i) => (
-                      <motion.button
+                    {movieSuggestions.map((movie) => (
+                      <button
                         key={`movie-${movie.id}`}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.03 * (showSuggestions.length + i), duration: 0.25 }}
+                        type="button"
                         onClick={() => goToMovie(movie.id)}
                         className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors text-left group"
                       >
@@ -188,21 +190,19 @@ export default function SearchOverlay({ isOpen, onClose }) {
                         {movie.vote_average > 0 && (
                           <RatingBadge rating={movie.vote_average} size="sm" />
                         )}
-                      </motion.button>
+                      </button>
                     ))}
                   </>
                 )}
 
                 {query.trim() && (
-                  <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.03 * (showSuggestions.length + movieSuggestions.length) }}
+                  <button
+                    type="button"
                     onClick={handleSubmit}
                     className="w-full text-center py-3 text-accent-peach hover:text-white transition-all text-sm font-medium btn-glow-violet rounded-lg"
                   >
                     View all results for "{query}" &rarr;
-                  </motion.button>
+                  </button>
                 )}
               </div>
             )}
@@ -211,7 +211,9 @@ export default function SearchOverlay({ isOpen, onClose }) {
               <p className="mt-12 text-center text-text-secondary">No results found for "{debouncedQuery}"</p>
             )}
           </div>
-        </motion.div>
+          </div>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );

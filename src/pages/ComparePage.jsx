@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { endpoints } from '../api/endpoints';
 import { findShowByImdb, getShowVideos, pickBestTrailer } from '../api/tmdb';
 import { fetchApi } from '../api/tvmaze';
@@ -408,8 +408,32 @@ export default function ComparePage() {
           name: title,
           url,
           about: [
-            { '@type': 'TVSeries', name: detailsA.name, datePublished: detailsA.premiered || undefined },
-            { '@type': 'TVSeries', name: detailsB.name, datePublished: detailsB.premiered || undefined },
+            {
+              '@type': 'TVSeries',
+              name: detailsA.name,
+              datePublished: detailsA.premiered || undefined,
+              genre: detailsA.genres || undefined,
+              aggregateRating: detailsA.rating?.average ? {
+                '@type': 'AggregateRating',
+                ratingValue: detailsA.rating.average.toFixed(1),
+                ratingCount: detailsA.weight || 1,
+                bestRating: '10',
+                worstRating: '0',
+              } : undefined,
+            },
+            {
+              '@type': 'TVSeries',
+              name: detailsB.name,
+              datePublished: detailsB.premiered || undefined,
+              genre: detailsB.genres || undefined,
+              aggregateRating: detailsB.rating?.average ? {
+                '@type': 'AggregateRating',
+                ratingValue: detailsB.rating.average.toFixed(1),
+                ratingCount: detailsB.weight || 1,
+                bestRating: '10',
+                worstRating: '0',
+              } : undefined,
+            },
           ],
         },
       ],
@@ -468,6 +492,14 @@ export default function ComparePage() {
               ? 'The receipts: ratings, runtime, network, episode counts, and more — winner of each row marked. Hit play to compare trailers without leaving the page.'
               : 'Search for any two TV shows and Bynge will line them up row by row. Watch both trailers side by side.'}
           </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link
+              to="/compare/movies"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/[0.04] border border-white/[0.06] text-caption font-semibold text-text-secondary hover:bg-white/[0.08] hover:text-white transition-colors"
+            >
+              Compare movies instead →
+            </Link>
+          </div>
         </header>
 
         {/* Search row */}

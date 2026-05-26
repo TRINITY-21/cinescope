@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { toastItem } from '../utils/motion';
 
 /**
  * Minimal toast system. Use via the `useToast()` hook:
@@ -137,10 +138,7 @@ function ToastViewport({ toasts, onDismiss }) {
           <motion.div
             key={t.id}
             layout
-            initial={{ opacity: 0, y: 16, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.96, transition: { duration: 0.15 } }}
-            transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+            {...toastItem}
             className={`
               pointer-events-auto
               w-full sm:w-auto sm:min-w-[280px] sm:max-w-md

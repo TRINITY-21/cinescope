@@ -285,6 +285,20 @@ export default function BestPage() {
           {list.intro}
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3 text-caption text-text-muted">
+          {list.editorsPick && (
+            <>
+              <span
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent-gold/15 border border-accent-gold/30 text-accent-gold text-[10px] font-bold uppercase tracking-widest"
+                title="Hand-reviewed by Bynge editors"
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 .587l3.668 7.568L24 9.423l-6 5.847L19.336 24 12 19.897 4.664 24 6 15.27 0 9.423l8.332-1.268z" />
+                </svg>
+                Editor\'s Pick
+              </span>
+              <span aria-hidden>·</span>
+            </>
+          )}
           <span className="inline-flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-accent-peach" />
             Ranked by Bynge Score
@@ -342,6 +356,19 @@ export default function BestPage() {
                 Full methodology →
               </Link>
             </p>
+
+            <div className="mt-5 pt-4 border-t border-white/[0.05] flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-text-muted">
+              <span className="font-semibold uppercase tracking-widest text-[10px]">Sources</span>
+              <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">TMDB</a>
+              <span aria-hidden>·</span>
+              <a href="https://www.imdb.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">IMDb</a>
+              <span aria-hidden>·</span>
+              <a href="https://www.rottentomatoes.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Rotten Tomatoes</a>
+              <span aria-hidden>·</span>
+              <a href="https://www.metacritic.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Metacritic</a>
+              <span aria-hidden>·</span>
+              <a href="https://fanart.tv" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">fanart.tv</a>
+            </div>
             {rows[0] && (
               <p className="mt-3 text-body-sm text-text-secondary">
                 Finished #{1}{' '}

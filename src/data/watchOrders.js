@@ -118,6 +118,20 @@ export const WATCH_ORDERS = [
       { type: 'movie', tmdbId: 122917, title: 'The Hobbit: The Battle of the Five Armies', year: 2014, release: 6, chrono: 3 },
     ],
     related: ['harry-potter', 'star-wars'],
+    faq: [
+      {
+        q: 'Should I watch Lord of the Rings or The Hobbit first?',
+        a: 'Watch Lord of the Rings first. It came out first, it\'s the stronger trilogy, and starting with The Hobbit\'s broader tone before LOTR\'s gravitas blunts the emotional payoff.',
+      },
+      {
+        q: 'Extended editions or theatrical cuts?',
+        a: 'Extended editions for LOTR — they add character beats critical to Aragorn\'s and Faramir\'s arcs. For The Hobbit, theatrical is fine; the extended cuts add filler more than substance.',
+      },
+      {
+        q: 'How long is a full Middle-earth marathon?',
+        a: 'Theatrical: ~19 hours total. Extended editions of LOTR alone: ~12 hours. All six extended cuts: ~22 hours. Plan for at least two long evenings.',
+      },
+    ],
   },
   {
     slug: 'harry-potter',
@@ -139,6 +153,20 @@ export const WATCH_ORDERS = [
       { type: 'movie', tmdbId: 338953, title: 'The Secrets of Dumbledore', year: 2022, release: 11, chrono: 3 },
     ],
     related: ['lord-of-the-rings', 'narnia'],
+    faq: [
+      {
+        q: 'Do I need to watch Fantastic Beasts to understand Harry Potter?',
+        a: 'No. The original eight films are self-contained. Fantastic Beasts is a prequel spinoff — interesting if you love the world, skippable if you just want the Harry storyline.',
+      },
+      {
+        q: 'What\'s the total runtime?',
+        a: 'The eight Harry Potter films together run about 19 hours and 40 minutes. Adding the three Fantastic Beasts adds another seven hours.',
+      },
+      {
+        q: 'Are the Cursed Child and the upcoming TV series in this watch order?',
+        a: 'No — Cursed Child is a stage play (no canonical film yet) and the HBO series is an upcoming reboot, not part of this continuity.',
+      },
+    ],
   },
   {
     slug: 'fast-and-furious',
@@ -160,6 +188,20 @@ export const WATCH_ORDERS = [
       { type: 'movie', tmdbId: 385687, title: 'Fast X', year: 2023, release: 11, chrono: 11 },
     ],
     related: ['mission-impossible', 'john-wick'],
+    faq: [
+      {
+        q: 'Why is Tokyo Drift not third chronologically?',
+        a: 'Tokyo Drift was released third (2006) but is set after Fast 6 in the timeline — it\'s when Han dies, which Fast 6 then sets up. Watching it chronologically keeps Han\'s arc coherent.',
+      },
+      {
+        q: 'Is Hobbs & Shaw canon?',
+        a: 'It\'s a spinoff in the same universe but not strictly required for the main saga. Slot it between Fate of the Furious and F9 if you want full coverage.',
+      },
+      {
+        q: 'Can I skip the early ones?',
+        a: 'Fast Five (the fifth film) is widely considered where the franchise found its identity. Most fans recommend starting from Fast Five if you want pure spectacle, or from #1 if you care about the family arc.',
+      },
+    ],
   },
   {
     slug: 'mission-impossible',
@@ -177,6 +219,16 @@ export const WATCH_ORDERS = [
       { type: 'movie', tmdbId: 575264, title: 'Dead Reckoning Part One', year: 2023, release: 7 },
     ],
     related: ['james-bond', 'john-wick'],
+    faq: [
+      {
+        q: 'Do I need to watch the earlier Mission Impossible films to follow the new ones?',
+        a: 'Each film is mostly standalone, but Fallout (#6) and Dead Reckoning pay off relationships and callbacks built across the entire franchise. Starting at #4 (Ghost Protocol) is a popular shortcut.',
+      },
+      {
+        q: 'Which Mission Impossible movie is the best?',
+        a: 'Fallout (#6) is the critical consensus pick, with a 97% Rotten Tomatoes score. Fans split on Ghost Protocol vs Rogue Nation for second place.',
+      },
+    ],
   },
   {
     slug: 'john-wick',
@@ -191,6 +243,16 @@ export const WATCH_ORDERS = [
       { type: 'movie', tmdbId: 603692, title: 'Chapter 4', year: 2023, release: 4 },
     ],
     related: ['mission-impossible', 'fast-and-furious'],
+    faq: [
+      {
+        q: 'Should I watch John Wick in order?',
+        a: 'Yes — release order is the only way. Each film picks up where the previous left off, and the lore (the High Table, the Continental, the rules) builds film by film.',
+      },
+      {
+        q: 'Where does Ballerina fit in?',
+        a: 'Ballerina (2025) is set between Chapter 3 and Chapter 4. Watch it after Chapter 3 if you want full chronological continuity, or save for after Chapter 4 as a postscript.',
+      },
+    ],
   },
   {
     slug: 'james-bond-craig',
@@ -206,6 +268,16 @@ export const WATCH_ORDERS = [
       { type: 'movie', tmdbId: 370172, title: 'No Time to Die', year: 2021, release: 5 },
     ],
     related: ['mission-impossible'],
+    faq: [
+      {
+        q: 'Why only the Daniel Craig films?',
+        a: 'Craig\'s five films are unique in the Bond canon — they form one continuous story with character development across all five. Earlier Bond eras (Connery, Moore, Brosnan) are mostly standalone and don\'t require sequential viewing.',
+      },
+      {
+        q: 'Do I need to watch the older Bond films first?',
+        a: 'No. The Craig era reboots the timeline; Casino Royale (2006) is Bond\'s first mission.',
+      },
+    ],
   },
   {
     slug: 'planet-of-the-apes',
@@ -220,6 +292,16 @@ export const WATCH_ORDERS = [
       { type: 'movie', tmdbId: 653346, title: 'Kingdom of the Planet of the Apes', year: 2024, release: 4 },
     ],
     related: ['dune', 'star-wars'],
+    faq: [
+      {
+        q: 'Do I need to watch the original 1968 Planet of the Apes?',
+        a: 'No. The modern Caesar trilogy and Kingdom are a separate continuity that doesn\'t connect to the 1968 original or its sequels.',
+      },
+      {
+        q: 'Should I watch the 2001 Tim Burton remake?',
+        a: 'Skip it. Burton\'s film is its own thing and isn\'t connected to the Caesar continuity. Most fans consider it a standalone misfire.',
+      },
+    ],
   },
   {
     slug: 'shrek',
@@ -236,6 +318,16 @@ export const WATCH_ORDERS = [
       { type: 'movie', tmdbId: 315162, title: 'Puss in Boots: The Last Wish', year: 2022, release: 6 },
     ],
     related: ['toy-story'],
+    faq: [
+      {
+        q: 'Where do the Puss in Boots films fit in the Shrek timeline?',
+        a: 'Puss in Boots (2011) is a prequel set before Puss meets Shrek. The Last Wish (2022) is set after the Shrek saga. Watch them at the end if you want chronological order, or pause after Shrek 2 to slot in the prequel.',
+      },
+      {
+        q: 'Are the Shrek shorts canon?',
+        a: 'The TV specials (Shrek the Halls, Scared Shrekless, Thriller Night) are light canon — sweet but skippable.',
+      },
+    ],
   },
   {
     slug: 'toy-story',
@@ -250,6 +342,16 @@ export const WATCH_ORDERS = [
       { type: 'movie', tmdbId: 301528, title: 'Toy Story 4', year: 2019, release: 4 },
     ],
     related: ['shrek'],
+    faq: [
+      {
+        q: 'Is Toy Story 4 necessary after Toy Story 3?',
+        a: 'Toy Story 3 was the definitive ending for Woody and the gang. Toy Story 4 works as a beautiful epilogue but is the most-skipped of the four. Watch if you want closure on Woody\'s arc; skip if you want to stop on the perfect ending.',
+      },
+      {
+        q: 'What\'s the runtime for the whole Toy Story series?',
+        a: 'About 6 hours and 30 minutes for all four films — a comfortable single-day marathon.',
+      },
+    ],
   },
   {
     slug: 'dune',
@@ -262,6 +364,20 @@ export const WATCH_ORDERS = [
       { type: 'movie', tmdbId: 693134, title: 'Dune: Part Two', year: 2024, release: 2 },
     ],
     related: ['lord-of-the-rings', 'planet-of-the-apes'],
+    faq: [
+      {
+        q: 'Do I need to watch the 1984 Dune?',
+        a: 'No. David Lynch\'s 1984 adaptation is a separate (and famously divisive) version. Villeneuve\'s two-parter is its own complete telling of Frank Herbert\'s first novel.',
+      },
+      {
+        q: 'Should I read the book first?',
+        a: 'Not required. Villeneuve\'s films are exceptionally faithful to the source material and explain themselves clearly. Reading after often enhances the experience more than reading before.',
+      },
+      {
+        q: 'Is there a third Dune movie?',
+        a: 'Dune: Messiah (Part Three) is confirmed for 2026, adapting the second Herbert novel.',
+      },
+    ],
   },
 ];
 

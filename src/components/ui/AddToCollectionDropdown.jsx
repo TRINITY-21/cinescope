@@ -7,7 +7,13 @@ import IconButton from './IconButton';
 /**
  * item: { id, name, image, genres } — for shows use show; for movies normalize to this shape
  */
-export default function AddToCollectionDropdown({ item, buttonVariant = 'ghost', buttonClassName = '', iconOnly = false }) {
+export default function AddToCollectionDropdown({
+  item,
+  buttonVariant = 'ghost',
+  buttonClassName = '',
+  iconOnly = false,
+  label = 'Add to collection',
+}) {
   const { collections, addToCollection, removeFromCollection, isInCollection } = useApp();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -42,7 +48,7 @@ export default function AddToCollectionDropdown({ item, buttonVariant = 'ghost',
         >
           <span className="flex items-center gap-2">
             {collectionIcon}
-            Add to collection
+            {label}
           </span>
         </Button>
       )}

@@ -24,6 +24,8 @@ const ROUTES = [
   '/streaming',
   '/discover/mood/cozy',
   '/watch-order',
+  '/should-i-watch',
+  '/should-i-watch/inception',
   '/settings',
   '/some/totally/invalid/path',  // should hit NotFoundPage cleanly
 ];
@@ -43,7 +45,7 @@ test.describe('Route smoke', () => {
       expect(response.status()).toBeLessThan(500);
 
       // Navbar should be visible on every route (it's outside Suspense).
-      await expect(page.getByRole('link', { name: /^Bynge$/ })).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByRole('link', { name: /^Bynge(\s+home)?$/ })).toBeVisible({ timeout: 10_000 });
 
       // Error boundary recovery UI should NOT be visible.
       await expect(page.getByText(/Something broke/i)).not.toBeVisible();

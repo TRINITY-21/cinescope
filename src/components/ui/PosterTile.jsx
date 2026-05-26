@@ -34,7 +34,7 @@ const PosterTile = memo(function PosterTile({
         {posterUrl ? (
           <img
             src={posterUrl}
-            alt={title}
+            alt={title ? `${title} poster` : ''}
             loading="lazy"
             className="w-full h-full object-cover"
           />

@@ -9,9 +9,11 @@ import { FEATURED_SHOW_IDS } from '../../utils/constants';
 import { formatYear } from '../../utils/formatters';
 import { blurred, responsive } from '../../utils/imageOptimize';
 import { getBackdropImage, getMediumImage, getOriginalImage } from '../../utils/imageUrl';
+import { heroCrossfade } from '../../utils/motion';
 import { stripHtml } from '../../utils/stripHtml';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
+import ByngeSpinner from '../ui/ByngeSpinner';
 import RatingBadge from '../ui/RatingBadge';
 import RatingsStrip from '../ui/RatingsStrip';
 import StatusPicker from '../ui/StatusPicker';
@@ -64,7 +66,7 @@ export default function HeroSpotlight() {
   if (!show) {
     return (
       <div className="h-screen bg-bg-primary flex items-center justify-center">
-        <div className="w-3 h-3 rounded-full bg-accent-peach animate-bounce" />
+        <ByngeSpinner size="xl" />
       </div>
     );
   }
@@ -81,13 +83,10 @@ export default function HeroSpotlight() {
 
   return (
     <div id="hero-spotlight" className="relative h-[75vh] sm:h-[85vh] md:h-screen overflow-hidden">
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="sync">
         <motion.div
           key={show.id}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1 }}
+          {...heroCrossfade}
           className="absolute inset-0"
         >
           {backdropSrc && (

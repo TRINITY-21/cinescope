@@ -1,0 +1,127 @@
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import Container from '../components/ui/Container';
+import PageHero from '../components/ui/PageHero';
+import { LIKE_SEEDS } from '../data/likeSeeds';
+import { useLikeSeedBackdrops } from '../hooks/useLikeSeedBackdrops';
+import { SITE_ORIGIN, usePageHead } from '../hooks/usePageHead';
+import { getTmdbBackdropUrl } from '../utils/imageUrl';
+import { breadcrumbJsonLd } from '../utils/seoSchema';
+
+export default function ShouldIWatchIndexPage() {
+  const backdrops = useLikeSeedBackdrops();
+
+  usePageHead({
+    title: 'Should I Watch? — Decision Guides for Movies & TV — Bynge',
+    description:
+      'Straight answers for "should I watch X tonight?" — Bynge Score verdicts, critic signals, content notes, and links to where to stream.',
+    canonical: `${SITE_ORIGIN}/should-i-watch`,
+    ogImage: `${SITE_ORIGIN}/api/og?type=default`,
+    jsonLd: [
+      breadcrumbJsonLd(
+        [
+          { name: 'Home', url: `${SITE_ORIGIN}/` },
+          { name: 'Should I Watch', url: `${SITE_ORIGIN}/should-i-watch` },
+        ],
+        `${SITE_ORIGIN}/should-i-watch`,
+      ),
+    ],
+  });
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="pb-section-lg"
+    >
+      <PageHero
+        compact
+        eyebrow="Should I Watch"
+        title="Worth your evening?"
+        tagline="We answer the question directly."
+        description="Every guide is a clear verdict — yes, maybe, or skip — backed by rating signals and honest content notes. Pick a title below or open any movie or show page and tap “Should I watch this?”"
+      />
+
+      <Container className="mt-8 sm:mt-10 pb-section-lg">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <h2 className="text-h3 font-semibold text-white scroll-mt-24 leading-snug">Popular titles</h2>
+          <Link
+            to="/how-we-rank"
+            className="text-caption text-accent-peach hover:text-accent-gold font-semibold transition-colors"
+          >
+            How we score →
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          {LIKE_SEEDS.map((seed, i) => {
+            const backdrop = backdrops[seed.slug];
+            return (
+              <motion.div
+                key={seed.slug}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(i * 0.03, 0.35) }}
+              >
+                <Link
+                  to={`/should-i-watch/${seed.slug}`}
+                  className="group relative block rounded-2xl overflow-hidden border border-white/[0.06] hover:border-white/[0.16] transition-colors h-40 sm:h-44"
+                >
+                  {backdrop ? (
+                    <img
+                      src={getTmdbBackdropUrl(backdrop, 'w780')}
+                      alt=""
+                      loading="lazy"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-bg-elevated animate-pulse" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-bg-primary/95 via-bg-primary/85 to-bg-primary/35" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+
+                  <div className="relative h-full flex flex-col justify-between p-5">
+                    <span className="text-meta uppercase font-semibold tracking-widest text-accent-peach">
+                      Should I watch
+                    </span>
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-extrabold text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+                        {seed.label}
+                      </h3>
+                      <p className="mt-2 text-caption text-accent-peach group-hover:text-accent-gold transition-colors inline-flex items-center gap-1 font-semibold">
+                        See the verdict
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        <section className="mt-section-lg max-w-3xl">
+          <h2 className="text-h3 font-semibold text-white scroll-mt-24 leading-snug">Explore differently</h2>
+          <p className="mt-2 text-body-sm text-text-secondary leading-relaxed">
+            Want alternatives instead of a verdict? Browse{' '}
+            <Link to="/like" className="text-accent-peach hover:text-accent-gold transition-colors">
+              similar picks
+            </Link>
+            , editorial{' '}
+            <Link to="/best" className="text-accent-peach hover:text-accent-gold transition-colors">
+              Best Of lists
+            </Link>
+            , or{' '}
+            <Link to="/where-to-watch/inception" className="text-accent-peach hover:text-accent-gold transition-colors">
+              where to watch
+            </Link>{' '}
+            guides.
+          </p>
+        </section>
+      </Container>
+    </motion.div>
+  );
+}

@@ -35,7 +35,7 @@ export default function MobileMenu({ isOpen, onClose, links }) {
                   <circle cx="50" cy="50" r="30" fill="none" stroke="white" strokeWidth="3" strokeDasharray="141 47" strokeLinecap="round" transform="rotate(-90 50 50)" opacity="0.25" />
                   <path d="M41 31c-2-1.2-4.5.3-4.5 2.6v32.8c0 2.3 2.5 3.8 4.5 2.6l27-16.4c2-1.2 2-4 0-5.2L41 31z" fill="white" />
                 </svg>
-                <span className="text-h3 text-gradient">Bynge</span>
+                <span className="brand-wordmark">Bynge</span>
               </div>
               <button
                 onClick={onClose}

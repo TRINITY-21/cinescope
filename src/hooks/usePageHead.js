@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 /**
  * Centralizes per-page document.title / meta description / canonical / OG tags.
@@ -53,20 +53,6 @@ export function usePageHead({ title, description, canonical, ogImage, ogType, js
       setMeta('robots', robots);
     }
   }, [title, description, canonical, ogImage, ogType, robots]);
-
-  // Reset scroll when the canonical URL changes — solves the "click /trending/today,
-  // scroll down, click /trending/year, still scrolled" bug across all landing pages
-  // that swap content under a :slug/:window/:provider/:mood param. Skips the first
-  // mount so detail pages that handle their own scroll behavior aren't disturbed.
-  const firstRun = useRef(true);
-  useEffect(() => {
-    if (!canonical) return;
-    if (firstRun.current) {
-      firstRun.current = false;
-      return;
-    }
-    window.scrollTo({ top: 0, behavior: 'auto' });
-  }, [canonical]);
 
   // JSON-LD: append <script> elements tagged with a sentinel so we can clean
   // them up on unmount without disturbing other scripts.

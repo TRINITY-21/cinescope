@@ -18,7 +18,7 @@ const MovieCard = memo(function MovieCard({ movie, className = '' }) {
         className="relative rounded-xl overflow-hidden bg-bg-elevated group cursor-pointer border border-white/[0.04] hover:border-white/[0.08] shadow-elevation-2 hover:shadow-elevation-3"
       >
         <div className="aspect-[2/3] relative">
-          <img src={posterUrl} alt={movie.title} loading="lazy" className="w-full h-full object-cover" />
+          <img src={posterUrl} alt={`${movie.title} poster`} loading="lazy" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
           <div className="absolute inset-0 bg-accent-peach/0 group-hover:bg-accent-peach/10 transition-colors duration-300" />
 

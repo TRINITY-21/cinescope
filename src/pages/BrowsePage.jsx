@@ -7,10 +7,12 @@ import ShowCard from '../components/show/ShowCard';
 import Container from '../components/ui/Container';
 import EmptyState from '../components/ui/EmptyState';
 import HorizontalScroll from '../components/ui/HorizontalScroll';
+import StaggerItem from '../components/ui/StaggerItem';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 import { SITE_ORIGIN, usePageHead } from '../hooks/usePageHead';
 import PageLayout from '../layouts/PageLayout';
 import { GENRES, GENRE_COLORS } from '../utils/constants';
+import { useStaggerOnce } from '../utils/motion';
 
 const SORTS = [
   { id: 'name', label: 'A–Z' },
@@ -111,12 +113,10 @@ export default function BrowsePage() {
 
   const activeGenreColor = selectedGenre !== 'All' ? GENRE_COLORS[selectedGenre] : null;
   const filtersActive = sortBy !== 'name' || statusFilter !== 'all' || minRating > 0;
+  const stagger = useStaggerOnce(!isLoading && filtered.length > 0);
 
   return (
-    <PageLayout as={motion.div} initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}>
+    <PageLayout>
       <Container>
         {/* Editorial header */}
         <header className="mb-section">
@@ -177,7 +177,11 @@ export default function BrowsePage() {
           />
         ) : (
           <div className="card-grid">
-            {filtered.map((show) => <ShowCard key={show.id} show={show} />)}
+            {filtered.map((show, i) => (
+              <StaggerItem key={show.id} index={i} enabled={stagger}>
+                <ShowCard show={show} />
+              </StaggerItem>
+            ))}
             {isLoading && Array.from({ length: 12 }).map((_, i) => (
               <div key={`skel-${i}`} className="aspect-[2/3] rounded-xl bg-white/[0.04] animate-shimmer bg-gradient-to-r from-white/[0.04] via-white/[0.08] to-white/[0.04] bg-[length:200%_100%]" />
             ))}

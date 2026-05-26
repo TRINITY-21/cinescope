@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 
-# Pages with no indexable value or user-specific state
+# Personal / non-indexable state
 Disallow: /admin/
 Disallow: /search
 Disallow: /tracking
@@ -9,7 +9,17 @@ Disallow: /settings
 Disallow: /party
 Disallow: /watch
 Disallow: /*/watch
-Disallow: /api/
+
+# Block the proxy + write endpoints — leave the OG card endpoint readable
+# so Twitter/Slack/Facebook can still fetch share previews.
+Disallow: /api/proxy
+Disallow: /api/subscribe
+Disallow: /api/admin-auth
+Allow: /api/og
+Allow: /api/rss.xml
+Allow: /api/score
+Allow: /api/sitemap.xml
+Allow: /sitemap.xml
 
 # Allow image / asset crawling
 Allow: /favicon.svg

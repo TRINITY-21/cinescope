@@ -150,6 +150,11 @@ export async function getMovieDetails(movieId) {
   return await tmdbFetch(`/movie/${movieId}`);
 }
 
+export async function getTvDetails(tvId) {
+  if (!tvId) return null;
+  return await tmdbFetch(`/tv/${tvId}`);
+}
+
 export async function getMovieCredits(movieId) {
   if (!movieId) return null;
   return await tmdbFetch(`/movie/${movieId}/credits`);

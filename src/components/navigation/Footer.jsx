@@ -11,6 +11,8 @@ const navigateLinks = [
 const discoverLinks = [
   { to: '/like', label: 'Similar Picks' },
   { to: '/best', label: 'Best Of (Lists)' },
+  { to: '/should-i-watch', label: 'Should I Watch?' },
+  { to: '/director', label: 'Directors' },
   { to: '/trending/week', label: 'Trending' },
   { to: '/hidden-gems', label: 'Hidden Gems' },
   { to: '/people', label: 'People' },
@@ -20,7 +22,11 @@ const discoverLinks = [
   { to: '/calendar', label: 'Airing Calendar' },
   { to: '/trailers', label: 'Trailers' },
   { to: '/compare', label: 'Compare Shows' },
+  { to: '/compare/movies', label: 'Compare Movies' },
+  { to: '/about', label: 'About Bynge' },
   { to: '/how-we-rank', label: 'How We Rank' },
+  { to: '/newsletter', label: 'Newsletter' },
+  { to: '/contact', label: 'Contact' },
 ];
 
 const featureLinks = [
@@ -50,7 +56,7 @@ export default function Footer() {
                 <circle cx="50" cy="50" r="30" fill="none" stroke="white" strokeWidth="3" strokeDasharray="141 47" strokeLinecap="round" transform="rotate(-90 50 50)" opacity="0.25"/>
                 <path d="M41 31c-2-1.2-4.5.3-4.5 2.6v32.8c0 2.3 2.5 3.8 4.5 2.6l27-16.4c2-1.2 2-4 0-5.2L41 31z" fill="white"/>
               </svg>
-              <h3 className="text-xl font-extrabold text-gradient">Bynge</h3>
+              <span className="brand-wordmark text-lg">Bynge</span>
             </div>
             <p className="text-sm text-text-secondary leading-relaxed max-w-xs">
               Your cinematic companion for discovering TV shows and movies, tracking progress, and exploring entertainment.
@@ -115,13 +121,17 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="mt-10 pt-6 border-t border-white/5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-text-muted">
             &copy; {new Date().getFullYear()} Bynge. All rights reserved.
           </p>
-          <p className="text-xs text-text-muted">
-            Crafted with passion for cinema lovers
-          </p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
+            <Link to="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <span aria-hidden>·</span>
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <span aria-hidden>·</span>
+            <Link to="/contact" className="hover:text-white transition-colors">Contact</Link>
+          </div>
         </div>
       </div>
     </footer>

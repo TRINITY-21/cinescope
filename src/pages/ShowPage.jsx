@@ -192,6 +192,7 @@ export default function ShowPage() {
 
       <EpisodeDrawer
         episode={drawerEpisode}
+        showId={show.id}
         isOpen={!!drawerEpisode}
         onClose={() => setDrawerEpisode(null)}
         onPlay={(season, episodeNumber) => {

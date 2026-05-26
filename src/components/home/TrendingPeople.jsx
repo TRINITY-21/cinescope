@@ -1,10 +1,11 @@
-import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TMDB_IMAGE_BASE, getTrendingPeople, hasTmdbKey } from '../../api/tmdb';
+import { useStaggerOnce } from '../../utils/motion';
 import Carousel from '../ui/Carousel';
+import StaggerItem from '../ui/StaggerItem';
 
-function PersonCard({ person, index }) {
+function PersonCard({ person, index, stagger }) {
   const photo = person.profile_path
     ? `${TMDB_IMAGE_BASE}/w185${person.profile_path}`
     : null;
@@ -13,11 +14,7 @@ function PersonCard({ person, index }) {
 
   return (
     <Link to={`/tmdb-person/${person.id}`} className="flex-shrink-0 snap-start w-32 sm:w-36 group">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: Math.min(index * 0.05, 0.3) }}
-      >
+      <StaggerItem index={index} enabled={stagger}>
         <div className="relative aspect-[3/4] rounded-xl overflow-hidden ring-1 ring-white/[0.06] group-hover:ring-accent-peach/40 transition-all shadow-elevation-1">
           {photo ? (
             <img src={photo} alt={person.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -45,7 +42,7 @@ function PersonCard({ person, index }) {
             )}
           </div>
         </div>
-      </motion.div>
+      </StaggerItem>
     </Link>
   );
 }
@@ -72,6 +69,8 @@ export default function TrendingPeople() {
     return () => { cancelled = true; };
   }, []);
 
+  const stagger = useStaggerOnce(!isLoading && people.length > 0);
+
   if (!isLoading && people.length === 0) return null;
 
   return (
@@ -81,7 +80,7 @@ export default function TrendingPeople() {
             <PersonSkeleton key={i} className="w-32 sm:w-36" />
           ))
         : people.map((person, i) => (
-            <PersonCard key={person.id} person={person} index={i} />
+            <PersonCard key={person.id} person={person} index={i} stagger={stagger} />
           ))
       }
     </Carousel>

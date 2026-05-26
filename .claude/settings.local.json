@@ -15,6 +15,10 @@
       "WebFetch(domain:vembed.click)",
       "Bash(ls:*)",
       "Bash(xargs:*)"
+    ],
+    "additionalDirectories": [
+      "/tmp",
+      "/private/tmp"
     ]
   }
 }

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { endpoints } from '../api/endpoints';
 import { fetchApi } from '../api/tvmaze';
 import AiringTodayStrip from '../components/home/AiringTodayStrip';
@@ -11,6 +11,7 @@ import TonightsPlan from '../components/home/TonightsPlan';
 import TopRatedSection from '../components/home/TopRatedSection';
 import TrendingMoviesRow from '../components/home/TrendingMoviesRow';
 import TrendingPeople from '../components/home/TrendingPeople';
+import NewsletterSignupCard from '../components/marketing/NewsletterSignupCard';
 import Container from '../components/ui/Container';
 import RollDiceButton from '../components/ui/RollDiceButton';
 import SurpriseMePicker from '../components/ui/SurpriseMePicker';
@@ -19,17 +20,51 @@ import { SITE_ORIGIN, usePageHead } from '../hooks/usePageHead';
 const HOME_GENRES = ['Drama', 'Comedy', 'Science-Fiction'];
 
 export default function HomePage() {
+  const [shows, setShows] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [randomPickerOpen, setRandomPickerOpen] = useState(false);
+
+  // Top-rated rail mirrors TopRatedSection's ranking. Surfacing it as JSON-LD
+  // lets Google index the homepage's "Top 10 Rated" as a discoverable list.
+  const topRatedJsonLd = useMemo(() => {
+    if (!shows || shows.length === 0) return null;
+    const top10 = shows
+      .filter((s) => s.rating?.average && s.image)
+      .sort((a, b) => b.rating.average - a.rating.average)
+      .slice(0, 10);
+    if (top10.length === 0) return null;
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: 'Top 10 Rated TV Shows on Bynge',
+      url: `${SITE_ORIGIN}/#top-rated`,
+      numberOfItems: top10.length,
+      itemListElement: top10.map((s, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `${SITE_ORIGIN}/show/${s.id}`,
+        item: {
+          '@type': 'TVSeries',
+          name: s.name,
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: s.rating.average.toFixed(1),
+            bestRating: '10',
+            worstRating: '0',
+          },
+        },
+      })),
+    };
+  }, [shows]);
+
   usePageHead({
     title: 'Bynge — Discover, track and binge movies & TV shows',
     description:
       'Discover what to watch tonight. Track every episode, explore ranked Best Of lists, similar picks, hidden gems, and never miss what\'s coming next.',
     canonical: `${SITE_ORIGIN}/`,
     ogImage: `${SITE_ORIGIN}/api/og?type=default`,
+    jsonLd: topRatedJsonLd ? [topRatedJsonLd] : undefined,
   });
-
-  const [shows, setShows] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [randomPickerOpen, setRandomPickerOpen] = useState(false);
 
   useEffect(() => {
     async function loadShows() {
@@ -85,6 +120,8 @@ export default function HomePage() {
           </div>
 
           <TopRatedSection shows={shows} />
+
+          <NewsletterSignupCard source="home" />
 
         </Container>
       </div>

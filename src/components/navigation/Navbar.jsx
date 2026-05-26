@@ -130,6 +130,17 @@ const exploreLinks = [
     ),
   },
   {
+    to: '/director',
+    label: 'Directors',
+    desc: 'Filmographies ranked — Nolan, Tarantino, more',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="6" width="14" height="12" rx="2" />
+        <path d="M22 8l-6 4 6 4V8z" />
+      </svg>
+    ),
+  },
+  {
     to: '/watch-order',
     label: 'Watch Order Guides',
     desc: 'MCU, Star Wars, LOTR, and more',
@@ -203,6 +214,19 @@ const exploreLinks = [
         <path d="M8 21H3v-5" />
         <path d="M21 3l-7 7" />
         <path d="M3 21l7-7" />
+      </svg>
+    ),
+  },
+  {
+    to: '/compare/movies',
+    label: 'Compare Movies',
+    desc: 'Movie A vs movie B — ratings, runtime, scores',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="2.18" />
+        <line x1="7" y1="2" x2="7" y2="22" />
+        <line x1="17" y1="2" x2="17" y2="22" />
+        <line x1="2" y1="12" x2="22" y2="12" />
       </svg>
     ),
   },
@@ -345,12 +369,11 @@ export default function Navbar() {
             ? 'bg-bg-primary/85 backdrop-blur-xl border-b border-white/[0.06]'
             : 'bg-gradient-to-b from-black/85 via-black/55 to-transparent backdrop-blur-[2px]'
         }`}
-        style={{ textShadow: scrolled ? 'none' : '0 1px 4px rgba(0,0,0,0.85)' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16 gap-6">
             {/* Logo — clicking goes home */}
-            <Link to="/" className="flex items-center gap-1.5 flex-shrink-0">
+            <Link to="/" className="brand-link flex items-center gap-2 flex-shrink-0" aria-label="Bynge home">
               <svg width={28} height={28} viewBox="0 0 100 100" className="flex-shrink-0">
                 <defs>
                   <linearGradient id="nav-g" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -362,7 +385,7 @@ export default function Navbar() {
                 <circle cx="50" cy="50" r="30" fill="none" stroke="white" strokeWidth="3" strokeDasharray="141 47" strokeLinecap="round" transform="rotate(-90 50 50)" opacity="0.25" />
                 <path d="M41 31c-2-1.2-4.5.3-4.5 2.6v32.8c0 2.3 2.5 3.8 4.5 2.6l27-16.4c2-1.2 2-4 0-5.2L41 31z" fill="white" />
               </svg>
-              <span className="font-extrabold text-gradient tracking-tight text-xl">Bynge</span>
+              <span className="brand-wordmark">Bynge</span>
             </Link>
 
             {/* Primary nav (desktop only) */}
