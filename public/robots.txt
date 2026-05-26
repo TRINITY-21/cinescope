@@ -26,4 +26,4 @@ Allow: /favicon.svg
 Allow: /og-default.png
 Allow: /manifest.webmanifest
 
-Sitemap: https://bynge.app/sitemap.xml
+Sitemap: https://cinescope-nine-pink.vercel.app/sitemap.xml
