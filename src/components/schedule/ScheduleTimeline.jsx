@@ -29,7 +29,7 @@ export default function ScheduleTimeline({ episodes }) {
       {sortedTimes.map((time) => (
         <div key={time}>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-2 h-2 rounded-full bg-accent-violet" />
+            <div className="w-2 h-2 rounded-full bg-accent-peach" />
             <h3 className="text-lg font-semibold text-white">{time}</h3>
             <div className="flex-1 h-px bg-white/5" />
             <span className="text-xs text-text-muted">{grouped[time].length} shows</span>

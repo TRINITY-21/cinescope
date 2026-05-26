@@ -32,7 +32,7 @@ export default function FilmographyList({ credits, type = 'cast' }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h4 className="font-semibold text-white group-hover:text-accent-violet transition-colors truncate">
+                    <h4 className="font-semibold text-white group-hover:text-accent-peach transition-colors break-words min-w-0">
                       {show.name}
                     </h4>
                     <p className="text-sm text-text-secondary mt-0.5">

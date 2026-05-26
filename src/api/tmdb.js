@@ -1,23 +1,18 @@
-const TMDB_BASE = 'https://api.themoviedb.org/3';
-const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || '';
-
+// All TMDB traffic is proxied through /api/proxy so the API key stays server-side.
 const tmdbCache = new Map();
 
 async function tmdbFetch(path) {
-  if (!TMDB_API_KEY) return null;
-
-  const url = `${TMDB_BASE}${path}${path.includes('?') ? '&' : '?'}api_key=${TMDB_API_KEY}`;
-
-  if (tmdbCache.has(url)) {
-    const cached = tmdbCache.get(url);
+  const cacheKey = path;
+  if (tmdbCache.has(cacheKey)) {
+    const cached = tmdbCache.get(cacheKey);
     if (Date.now() - cached.time < 10 * 60 * 1000) return cached.data;
   }
 
   try {
-    const res = await fetch(url);
+    const res = await fetch(`/api/proxy?service=tmdb&path=${encodeURIComponent(path)}`);
     if (!res.ok) return null;
     const data = await res.json();
-    tmdbCache.set(url, { data, time: Date.now() });
+    tmdbCache.set(cacheKey, { data, time: Date.now() });
     return data;
   } catch {
     return null;
@@ -29,6 +24,12 @@ export async function findShowByImdb(imdbId) {
   if (!imdbId) return null;
   const data = await tmdbFetch(`/find/${imdbId}?external_source=imdb_id`);
   return data?.tv_results?.[0] || null;
+}
+
+/** IMDB / TVDB ids for a TMDB TV series — used to link into TVMaze-backed /show routes. */
+export async function getTvExternalIds(tmdbTvId) {
+  if (!tmdbTvId) return null;
+  return await tmdbFetch(`/tv/${tmdbTvId}/external_ids`);
 }
 
 // Search TMDB by show name as fallback
@@ -154,6 +155,11 @@ export async function getMovieCredits(movieId) {
   return await tmdbFetch(`/movie/${movieId}/credits`);
 }
 
+export async function getShowCredits(tmdbId) {
+  if (!tmdbId) return null;
+  return await tmdbFetch(`/tv/${tmdbId}/credits`);
+}
+
 export async function getMovieVideos(movieId) {
   if (!movieId) return [];
   const data = await tmdbFetch(`/movie/${movieId}/videos`);
@@ -169,6 +175,62 @@ export async function getMovieImages(movieId) {
     posters: (data.posters || []).sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0)),
     logos: data.logos || [],
   };
+}
+
+/** Pick best logo: English first, then highest-rated. */
+function bestLogoFromTmdb(logos) {
+  if (!Array.isArray(logos) || !logos.length) return null;
+  const sorted = [...logos].sort((a, b) => {
+    const aEn = (a.iso_639_1 || '').toLowerCase() === 'en' ? 1 : 0;
+    const bEn = (b.iso_639_1 || '').toLowerCase() === 'en' ? 1 : 0;
+    if (aEn !== bEn) return bEn - aEn;
+    return (b.vote_average || 0) - (a.vote_average || 0);
+  });
+  return sorted[0]?.file_path
+    ? `${TMDB_IMAGE_BASE}/original${sorted[0].file_path}`
+    : null;
+}
+
+/** TMDB-hosted movie logo (transparent PNG). Used as fallback when fanart.tv has none. */
+export async function getMovieLogoTmdb(movieId) {
+  if (!movieId) return null;
+  const data = await tmdbFetch(`/movie/${movieId}/images?include_image_language=en,null`);
+  return bestLogoFromTmdb(data?.logos);
+}
+
+/** TMDB-hosted TV show logo (transparent PNG). */
+export async function getShowLogoTmdb(tmdbId) {
+  if (!tmdbId) return null;
+  const data = await tmdbFetch(`/tv/${tmdbId}/images?include_image_language=en,null`);
+  return bestLogoFromTmdb(data?.logos);
+}
+
+/** Pick best backdrop: prefer textless (no language), then highest-rated. */
+function bestBackdropFromTmdb(backdrops) {
+  if (!Array.isArray(backdrops) || !backdrops.length) return null;
+  const sorted = [...backdrops].sort((a, b) => {
+    const aTextless = !a.iso_639_1 ? 1 : 0;
+    const bTextless = !b.iso_639_1 ? 1 : 0;
+    if (aTextless !== bTextless) return bTextless - aTextless;
+    return (b.vote_average || 0) - (a.vote_average || 0);
+  });
+  return sorted[0]?.file_path
+    ? `${TMDB_IMAGE_BASE}/original${sorted[0].file_path}`
+    : null;
+}
+
+/** TMDB-hosted movie backdrop (HD). Used as fallback when fanart.tv has none. */
+export async function getMovieBackdropTmdb(movieId) {
+  if (!movieId) return null;
+  const data = await tmdbFetch(`/movie/${movieId}/images?include_image_language=en,null`);
+  return bestBackdropFromTmdb(data?.backdrops);
+}
+
+/** TMDB-hosted TV show backdrop (HD). */
+export async function getShowBackdropTmdb(tmdbId) {
+  if (!tmdbId) return null;
+  const data = await tmdbFetch(`/tv/${tmdbId}/images?include_image_language=en,null`);
+  return bestBackdropFromTmdb(data?.backdrops);
 }
 
 export async function getMovieWatchProviders(movieId, country = 'US') {
@@ -220,8 +282,27 @@ export async function getTrendingPeople() {
 
 // ─── Movie list endpoints ───
 
-export async function getTrendingMovies() {
-  const data = await tmdbFetch('/trending/movie/week');
+export async function getTrendingMovies(window = 'week') {
+  const data = await tmdbFetch(`/trending/movie/${window}`);
+  return data?.results || [];
+}
+
+export async function getTrendingAll(window = 'week') {
+  const data = await tmdbFetch(`/trending/all/${window}`);
+  return data?.results || [];
+}
+
+export async function getTrendingTv(window = 'week') {
+  const data = await tmdbFetch(`/trending/tv/${window}`);
+  return data?.results || [];
+}
+
+/** Last-N-days "trending" via discover sort_by=popularity.desc. */
+export async function getPopularSinceDate(date, mediaType = 'movie') {
+  const param = mediaType === 'tv' ? 'first_air_date.gte' : 'primary_release_date.gte';
+  const data = await tmdbFetch(
+    `/discover/${mediaType}?sort_by=popularity.desc&${param}=${date}&vote_count.gte=20`,
+  );
   return data?.results || [];
 }
 
@@ -235,8 +316,30 @@ export async function getUpcomingMovies() {
   return data?.results || [];
 }
 
-export async function getTopRatedMovies() {
-  const data = await tmdbFetch('/movie/top_rated');
+export async function getTopRatedMovies(page = 1) {
+  const data = await tmdbFetch(`/movie/top_rated?page=${page}`);
+  return data?.results || [];
+}
+
+export async function getPopularMovies(page = 1) {
+  const data = await tmdbFetch(`/movie/popular?page=${page}`);
+  return data?.results || [];
+}
+
+export async function getTopRatedShows(page = 1) {
+  const data = await tmdbFetch(`/tv/top_rated?page=${page}`);
+  return data?.results || [];
+}
+
+export async function getPopularShows(page = 1) {
+  const data = await tmdbFetch(`/tv/popular?page=${page}`);
+  return data?.results || [];
+}
+
+export async function discoverByProvider(providerId, mediaType = 'movie', page = 1, region = 'US') {
+  const data = await tmdbFetch(
+    `/discover/${mediaType}?with_watch_providers=${providerId}&watch_region=${region}&sort_by=popularity.desc&page=${page}`,
+  );
   return data?.results || [];
 }
 
@@ -258,6 +361,8 @@ export async function getTmdbMovieGenres() {
 
 export const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
 
+// Kept for backwards compatibility — the proxy handles missing-key cases server-side
+// and TMDB calls now degrade gracefully (returning null) when the server has no key.
 export function hasTmdbKey() {
-  return !!TMDB_API_KEY;
+  return true;
 }

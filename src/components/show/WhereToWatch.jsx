@@ -48,12 +48,12 @@ function ProviderPill({ provider, showName, justWatchLink, type }) {
           className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-contain"
         />
         <div className="min-w-0">
-          <p className="text-xs sm:text-sm font-medium text-white truncate group-hover:text-accent-violet transition-colors">
+          <p className="text-xs sm:text-sm font-medium text-white break-words min-w-0 group-hover:text-accent-peach transition-colors">
             {provider.provider_name}
           </p>
           <p className="text-[10px] sm:text-[11px] text-text-muted capitalize">{type}</p>
         </div>
-        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-text-muted group-hover:text-accent-violet transition-colors ml-auto flex-shrink-0">
+        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-text-muted group-hover:text-accent-peach transition-colors ml-auto flex-shrink-0">
           <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
         </svg>
       </motion.div>
@@ -135,7 +135,7 @@ export default function WhereToWatch({ showName, showYear, imdbId }) {
     >
       <div className="flex items-center justify-between mb-3 sm:mb-5">
         <div className="flex items-center gap-2 sm:gap-3">
-          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-violet flex-shrink-0">
+          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-peach flex-shrink-0">
             <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
             <line x1="8" y1="21" x2="16" y2="21" />
             <line x1="12" y1="17" x2="12" y2="21" />
@@ -193,7 +193,7 @@ export default function WhereToWatch({ showName, showYear, imdbId }) {
       {rent.length > 0 && (
         <div className="mb-3 sm:mb-5">
           <p className="text-xs text-text-muted uppercase tracking-wider mb-2 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-accent-violet" />
+            <span className="w-2 h-2 rounded-full bg-accent-peach" />
             Rent
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">

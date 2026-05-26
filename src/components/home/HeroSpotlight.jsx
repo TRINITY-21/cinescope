@@ -1,26 +1,30 @@
-import { useState, useEffect, useCallback } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useApiQuery } from '../../hooks/useApiQuery';
 import { endpoints } from '../../api/endpoints';
-import { getOriginalImage, getMediumImage } from '../../utils/imageUrl';
+import { useApiQuery } from '../../hooks/useApiQuery';
+import { useShowFanart } from '../../hooks/useFanart';
+import { useOmdb } from '../../hooks/useOmdb';
+import { FEATURED_SHOW_IDS } from '../../utils/constants';
 import { formatYear } from '../../utils/formatters';
+import { blurred, responsive } from '../../utils/imageOptimize';
+import { getBackdropImage, getMediumImage, getOriginalImage } from '../../utils/imageUrl';
 import { stripHtml } from '../../utils/stripHtml';
 import Badge from '../ui/Badge';
-import RatingBadge from '../ui/RatingBadge';
 import Button from '../ui/Button';
-import { FEATURED_SHOW_IDS } from '../../utils/constants';
-import { useApp } from '../../context/AppContext';
+import RatingBadge from '../ui/RatingBadge';
+import RatingsStrip from '../ui/RatingsStrip';
+import StatusPicker from '../ui/StatusPicker';
 
 export default function HeroSpotlight() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [shows, setShows] = useState([]);
+  const [showScrollHint, setShowScrollHint] = useState(true);
 
   const showId = FEATURED_SHOW_IDS[currentIndex % FEATURED_SHOW_IDS.length];
 
   const { data: show } = useApiQuery(endpoints.show(showId, ['cast']));
   const { data: images } = useApiQuery(endpoints.showImages(showId));
-  const { addToWatchlist, isInWatchlist } = useApp();
 
   useEffect(() => {
     if (show && !shows.find((s) => s.id === show.id)) {
@@ -35,14 +39,32 @@ export default function HeroSpotlight() {
     return () => clearInterval(timer);
   }, []);
 
-  const backdrop = images?.find((img) => img.type === 'background');
-  const backdropUrl = backdrop?.resolutions?.original?.url || getOriginalImage(show?.image);
-  const inWatchlist = show ? isInWatchlist(show.id) : false;
+  useEffect(() => {
+    const onScroll = () => {
+      setShowScrollHint(window.scrollY <= 24);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
+  // All hooks must be called unconditionally, before any early return.
+  const { ratings: omdbRatings } = useOmdb(show?.externals?.imdb);
+  const { logo: fanartLogo, background: fanartBackdrop } = useShowFanart(
+    show?.externals?.thetvdb,
+    show?.externals?.imdb,
+  );
+
+  const hdBackdrop = fanartBackdrop || getBackdropImage(images);
+  const backdropSrc = hdBackdrop
+    ? responsive(hdBackdrop, { w: 1920 })
+    : show?.image
+      ? blurred(getOriginalImage(show.image), { w: 1920, blur: 60 })
+      : null;
   if (!show) {
     return (
       <div className="h-screen bg-bg-primary flex items-center justify-center">
-        <div className="w-3 h-3 rounded-full bg-accent-violet animate-bounce" />
+        <div className="w-3 h-3 rounded-full bg-accent-peach animate-bounce" />
       </div>
     );
   }
@@ -50,8 +72,15 @@ export default function HeroSpotlight() {
   const summary = stripHtml(show.summary || '');
   const cast = show._embedded?.cast?.slice(0, 4) || [];
 
+  function scrollBelowHero() {
+    setShowScrollHint(false);
+    const hero = document.getElementById('hero-spotlight');
+    const top = hero ? hero.offsetHeight : window.innerHeight;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }
+
   return (
-    <div className="relative h-[75vh] sm:h-[85vh] md:h-screen overflow-hidden">
+    <div id="hero-spotlight" className="relative h-[75vh] sm:h-[85vh] md:h-screen overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={show.id}
@@ -61,11 +90,14 @@ export default function HeroSpotlight() {
           transition={{ duration: 1 }}
           className="absolute inset-0"
         >
-          <img
-            src={backdropUrl}
-            alt={show.name}
-            className="w-full h-full object-cover"
-          />
+          {backdropSrc && (
+            <img
+              src={backdropSrc}
+              alt=""
+              className="w-full h-full object-cover"
+              style={{ opacity: hdBackdrop ? 1 : 0.85 }}
+            />
+          )}
         </motion.div>
       </AnimatePresence>
 
@@ -95,14 +127,27 @@ export default function HeroSpotlight() {
                 </motion.div>
               )}
 
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight text-shadow-hero"
-              >
-                {show.name}
-              </motion.h1>
+              {fanartLogo ? (
+                <motion.img
+                  key={fanartLogo}
+                  src={fanartLogo}
+                  alt={show.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="h-16 sm:h-20 md:h-28 lg:h-36 w-auto max-w-full object-contain object-left"
+                  style={{ filter: 'drop-shadow(0 6px 24px rgba(0,0,0,0.7))' }}
+                />
+              ) : (
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight text-shadow-hero"
+                >
+                  {show.name}
+                </motion.h1>
+              )}
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -123,11 +168,20 @@ export default function HeroSpotlight() {
                 {show.genres?.map((g) => <Badge key={g}>{g}</Badge>)}
               </motion.div>
 
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                className="mt-3"
+              >
+                <RatingsStrip ratings={omdbRatings} />
+              </motion.div>
+
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="text-sm sm:text-base md:text-lg text-text-secondary mt-3 sm:mt-4 line-clamp-2 sm:line-clamp-3 leading-relaxed"
+                className="text-sm sm:text-base md:text-lg text-text-secondary mt-3 sm:mt-4 leading-relaxed max-w-2xl line-clamp-4"
               >
                 {summary}
               </motion.p>
@@ -141,16 +195,7 @@ export default function HeroSpotlight() {
                 <Link to={`/show/${show.id}`}>
                   <Button variant="primary" size="lg">View Details</Button>
                 </Link>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (!inWatchlist) addToWatchlist(show);
-                  }}
-                >
-                  {inWatchlist ? '✓ In Watchlist' : '+ Watchlist'}
-                </Button>
+                <StatusPicker kind="show" id={show.id} item={show} />
               </motion.div>
 
               {cast.length > 0 && (
@@ -158,10 +203,10 @@ export default function HeroSpotlight() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
-                  className="flex items-center gap-2 mt-6"
+                  className="hidden lg:flex items-center gap-2 mt-5 max-w-xl"
                 >
-                  <div className="flex -space-x-2">
-                    {cast.map(({ person }) => (
+                  <div className="flex -space-x-2 shrink-0">
+                    {cast.slice(0, 3).map(({ person }) => (
                       <img
                         key={person.id}
                         src={getMediumImage(person.image)}
@@ -170,21 +215,22 @@ export default function HeroSpotlight() {
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-text-secondary ml-1">
-                    {cast.map(({ person }) => person.name).join(', ')}
+                  <span className="text-xs text-text-secondary line-clamp-4">
+                    {cast.slice(0, 3).map(({ person }) => person.name).join(', ')}
+                    {cast.length > 3 ? ` +${cast.length - 3} more` : ''}
                   </span>
                 </motion.div>
               )}
             </motion.div>
           </AnimatePresence>
 
-          <div className="absolute bottom-6 right-6 md:right-12 flex gap-2">
+          <div className="absolute bottom-14 right-6 md:right-12 hidden sm:flex gap-2">
             {FEATURED_SHOW_IDS.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrentIndex(i)}
                 className={`w-2 h-2 rounded-full transition-all ${
-                  i === currentIndex % FEATURED_SHOW_IDS.length ? 'bg-accent-violet w-6' : 'bg-white/30 hover:bg-white/50'
+                  i === currentIndex % FEATURED_SHOW_IDS.length ? 'bg-accent-peach w-6' : 'bg-white/30 hover:bg-white/50'
                 }`}
                 aria-label={`Go to slide ${i + 1}`}
               />
@@ -192,6 +238,40 @@ export default function HeroSpotlight() {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showScrollHint && (
+          <motion.button
+            type="button"
+            onClick={scrollBelowHero}
+            aria-label="Scroll down"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: [0, 10, 0] }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{
+              opacity: { delay: 0.8, duration: 0.4 },
+              y: { repeat: Infinity, duration: 1.6, ease: 'easeInOut' },
+              exit: { duration: 0.25 },
+            }}
+            className="
+              absolute bottom-6 left-1/2 -translate-x-1/2 z-20
+              flex flex-col items-center gap-1
+              text-white/70 hover:text-white
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-peach focus-visible:ring-offset-2 focus-visible:ring-offset-transparent
+              transition-colors
+            "
+          >
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/50">
+              Scroll
+            </span>
+            <span className="flex h-10 w-10 items-center justify-center border border-white/25 bg-black/40 backdrop-blur-sm">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M12 5v14M5 12l7 7 7-7" />
+              </svg>
+            </span>
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

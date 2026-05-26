@@ -28,7 +28,7 @@ export function getTmdbPosterUrl(posterPath, size = 'w342') {
   return `${TMDB_IMG}/${size}${posterPath}`;
 }
 
-export function getTmdbBackdropUrl(backdropPath, size = 'w1280') {
+export function getTmdbBackdropUrl(backdropPath, size = 'original') {
   if (!backdropPath) return null;
   return `${TMDB_IMG}/${size}${backdropPath}`;
 }

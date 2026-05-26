@@ -20,7 +20,7 @@ export default function UpcomingMovies() {
   if (!isLoading && movies.length === 0) return null;
 
   return (
-    <Carousel title="Coming Soon" subtitle="Upcoming releases" viewAllLink="/movies">
+    <Carousel eyebrow="Coming up" title="On the horizon" viewAllLink="/coming-soon">
       {isLoading
         ? Array.from({ length: 8 }, (_, i) => (
             <ShowCardSkeleton key={i} className="w-36 sm:w-40 md:w-44" />

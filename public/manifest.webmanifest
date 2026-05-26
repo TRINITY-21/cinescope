@@ -1,0 +1,25 @@
+{
+  "name": "Bynge",
+  "short_name": "Bynge",
+  "description": "Discover, track and binge movies & TV shows",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d0b08",
+  "theme_color": "#0d0b08",
+  "categories": ["entertainment", "lifestyle"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Browse Shows", "url": "/browse", "description": "Explore TV shows" },
+    { "name": "Browse Movies", "url": "/movies", "description": "Explore movies" },
+    { "name": "My Library", "url": "/tracking", "description": "Your watchlist and progress" }
+  ]
+}

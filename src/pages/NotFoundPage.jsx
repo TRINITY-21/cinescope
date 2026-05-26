@@ -1,7 +1,8 @@
-import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import Button from '../components/ui/Button';
+import { usePageHead } from '../hooks/usePageHead';
 
 /* ── animated film-strip numbers ── */
 function GlitchNumber({ children, delay = 0 }) {
@@ -52,6 +53,11 @@ const QUICK_LINKS = [
 export default function NotFoundPage() {
   const location = useLocation();
   const [countdown, setCountdown] = useState(15);
+
+  usePageHead({
+    title: 'Page not found — Bynge',
+    robots: 'noindex, nofollow',
+  });
 
   /* auto-redirect countdown */
   useEffect(() => {
@@ -135,7 +141,7 @@ export default function NotFoundPage() {
           Looks like this scene was left on the cutting room floor.
           <br className="hidden sm:block" />
           <span className="text-text-muted"> The page at </span>
-          <code className="text-accent-violet text-xs px-1.5 py-0.5 rounded bg-white/5 border border-white/5">
+          <code className="text-accent-peach text-xs px-1.5 py-0.5 rounded bg-white/5 border border-white/5">
             {location.pathname}
           </code>
           <span className="text-text-muted"> doesn't exist.</span>

@@ -86,7 +86,7 @@ export default function EpisodeDrawer({ episode, isOpen, onClose, onPlay }) {
               {onPlay && (
                 <button
                   onClick={() => onPlay(episode.season, episode.number)}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-accent-violet/90 backdrop-blur-sm hover:bg-accent-violet hover:scale-110 flex items-center justify-center transition-all shadow-lg shadow-accent-violet/30"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-accent-peach/90 backdrop-blur-sm hover:bg-accent-peach hover:scale-110 flex items-center justify-center transition-all shadow-lg shadow-accent-peach/30"
                 >
                   <svg width="22" height="22" fill="white" viewBox="0 0 24 24"><path d="M8 5.14v14.72a1 1 0 001.5.86l11.14-7.36a1 1 0 000-1.72L9.5 4.28A1 1 0 008 5.14z"/></svg>
                 </button>
@@ -112,7 +112,7 @@ export default function EpisodeDrawer({ episode, isOpen, onClose, onPlay }) {
                   <div className="flex items-center gap-3 mt-1 text-sm text-text-secondary">
                     {episode.runtime && <span>{formatRuntime(episode.runtime)}</span>}
                     {episode.type && episode.type !== 'regular' && (
-                      <span className="px-2 py-0.5 rounded bg-accent-violet/15 text-accent-violet text-xs">{episode.type}</span>
+                      <span className="px-2 py-0.5 rounded bg-accent-peach/15 text-accent-peach text-xs">{episode.type}</span>
                     )}
                   </div>
                 </div>
@@ -147,7 +147,7 @@ export default function EpisodeDrawer({ episode, isOpen, onClose, onPlay }) {
                         {directors.map((c, i) => (
                           <Link key={i} to={`/person/${c.person.id}`} className="flex items-center gap-2 group" onClick={onClose}>
                             <img src={getPersonImage(c.person.image)} alt={c.person.name} className="w-8 h-8 rounded-full object-cover" />
-                            <span className="text-sm text-white group-hover:text-accent-violet transition-colors">{c.person.name}</span>
+                            <span className="text-sm text-white group-hover:text-accent-peach transition-colors">{c.person.name}</span>
                           </Link>
                         ))}
                       </div>
@@ -162,7 +162,7 @@ export default function EpisodeDrawer({ episode, isOpen, onClose, onPlay }) {
                         {writers.map((c, i) => (
                           <Link key={i} to={`/person/${c.person.id}`} className="flex items-center gap-2 group" onClick={onClose}>
                             <img src={getPersonImage(c.person.image)} alt={c.person.name} className="w-8 h-8 rounded-full object-cover" />
-                            <span className="text-sm text-white group-hover:text-accent-violet transition-colors">{c.person.name}</span>
+                            <span className="text-sm text-white group-hover:text-accent-peach transition-colors">{c.person.name}</span>
                           </Link>
                         ))}
                       </div>
@@ -174,7 +174,7 @@ export default function EpisodeDrawer({ episode, isOpen, onClose, onPlay }) {
               {/* Guest Cast */}
               {loading ? (
                 <div className="flex items-center gap-2 text-text-secondary text-sm">
-                  <div className="w-4 h-4 border-2 border-accent-violet/30 border-t-accent-violet rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-accent-peach/30 border-t-accent-peach rounded-full animate-spin" />
                   Loading guest details...
                 </div>
               ) : guestCast.length > 0 ? (
@@ -196,11 +196,11 @@ export default function EpisodeDrawer({ episode, isOpen, onClose, onPlay }) {
                           className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-white/10"
                         />
                         <div className="min-w-0">
-                          <p className="text-sm text-white truncate group-hover:text-accent-violet transition-colors">
+                          <p className="text-sm text-white break-words min-w-0 group-hover:text-accent-peach transition-colors">
                             {entry.person.name}
                           </p>
                           {entry.character?.name && (
-                            <p className="text-xs text-text-secondary truncate">as {entry.character.name}</p>
+                            <p className="text-xs text-text-secondary break-words min-w-0">as {entry.character.name}</p>
                           )}
                         </div>
                       </Link>
@@ -216,7 +216,7 @@ export default function EpisodeDrawer({ episode, isOpen, onClose, onPlay }) {
                   <div className="space-y-1">
                     {otherCrew.map((c, i) => (
                       <Link key={i} to={`/person/${c.person.id}`} onClick={onClose} className="flex items-center justify-between py-1 group">
-                        <span className="text-sm text-white group-hover:text-accent-violet transition-colors">{c.person.name}</span>
+                        <span className="text-sm text-white group-hover:text-accent-peach transition-colors">{c.person.name}</span>
                         <span className="text-xs text-text-muted">{c.type}</span>
                       </Link>
                     ))}

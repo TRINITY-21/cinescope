@@ -15,3 +15,14 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </React.StrictMode>
 );
+
+// Register the service worker for PWA + offline shell. Only in production —
+// during dev Vite already serves freshly compiled assets and the SW would
+// just cause stale-cache headaches.
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Silent fail — PWA install just isn't available this session.
+    });
+  });
+}

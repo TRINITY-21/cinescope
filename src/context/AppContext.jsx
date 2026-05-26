@@ -1,6 +1,93 @@
 import { createContext, useCallback, useContext, useMemo } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
+/**
+ * @typedef {'show' | 'movie'} Kind
+ *
+ * @typedef {'watching' | 'watched' | 'watchlist' | 'paused' | 'dropped'} ItemStatus
+ *
+ * @typedef {Object} Show
+ *   Subset of the TVMaze show payload we persist locally. Only the fields
+ *   the UI needs to render cards/lists are stored — never the full episode list.
+ * @property {number} id
+ * @property {string} name
+ * @property {{ medium?: string, original?: string }} [image]
+ * @property {string[]} [genres]
+ * @property {{ average?: number }} [rating]
+ *
+ * @typedef {Object} Movie
+ *   Subset of the TMDB movie payload we persist locally.
+ * @property {number} id
+ * @property {string} title
+ * @property {string} [poster_path]
+ * @property {number} [vote_average]
+ * @property {string} [release_date]
+ *
+ * @typedef {Object} Collection
+ * @property {string} id
+ *   Built-in ids are static slugs (`favorites`, `watching`, …). User-created
+ *   ids use the `custom-${timestamp}` prefix so we can tell them apart in
+ *   `deleteCollection`.
+ * @property {string} name
+ * @property {string} icon
+ * @property {Array<Show & { type?: Kind }>} shows
+ *
+ * @typedef {Object} WatchHistoryEntry
+ * @property {string} date     ISO date (YYYY-MM-DD)
+ * @property {number} showId
+ * @property {number} episodeId
+ *
+ * @typedef {Object} Stats
+ * @property {number} totalEpisodesWatched
+ * @property {number} totalMinutesWatched
+ * @property {Record<string, number>} genresWatched
+ * @property {string|null} firstTracked
+ *
+ * @typedef {Object} ShowProgress
+ * @property {number} watched
+ * @property {number} total
+ * @property {number} percentage   0-100
+ *
+ * @typedef {Object} AppContextValue
+ * @property {Show[]} watchlist
+ * @property {(show: Show) => void} addToWatchlist
+ * @property {(showId: number) => void} removeFromWatchlist
+ * @property {(showId: number) => boolean} isInWatchlist
+ * @property {Movie[]} movieWatchlist
+ * @property {(movie: Movie) => void} addMovieToWatchlist
+ * @property {(movieId: number) => void} removeMovieFromWatchlist
+ * @property {(movieId: number) => boolean} isMovieInWatchlist
+ * @property {Show[]} recentlyViewed
+ * @property {(show: Show) => void} addRecentlyViewed
+ * @property {Record<number, number[]>} watchedEpisodes
+ * @property {(showId: number, episodeId: number, runtime?: number) => void} markEpisodeWatched
+ * @property {(showId: number, episodeId: number, runtime?: number) => void} unmarkEpisodeWatched
+ * @property {(showId: number, episodeId: number) => boolean} isEpisodeWatched
+ * @property {(showId: number, totalEpisodes: number) => ShowProgress} getShowProgress
+ * @property {(showId: number, episodeIds: number[], runtime?: number) => void} markSeasonWatched
+ * @property {(showId: number) => void} clearShowProgress
+ * @property {WatchHistoryEntry[]} watchHistory
+ * @property {() => { current: number, best: number }} getWatchStreak
+ * @property {() => number} getTodayEpisodeCount
+ * @property {() => Array<{ date: string, day: string, count: number }>} getWeekActivity
+ * @property {Collection[]} collections
+ * @property {(collectionId: string, item: Show | Movie) => void} addToCollection
+ * @property {(collectionId: string, showId: number) => void} removeFromCollection
+ * @property {(collectionId: string, showId: number) => boolean} isInCollection
+ * @property {(name: string, icon?: string) => string} createCollection
+ * @property {(collectionId: string) => void} deleteCollection
+ * @property {Stats} stats
+ * @property {(genres: string[]) => void} trackGenres
+ * @property {Record<string, ItemStatus>} itemStatus
+ * @property {(kind: Kind, id: number) => ItemStatus | null} getItemStatus
+ * @property {(kind: Kind, id: number, status: ItemStatus | null) => void} updateItemStatus
+ * @property {(status: ItemStatus) => { shows: Show[], movies: Movie[] }} itemsByStatus
+ * @property {Record<string, number>} userRatings
+ * @property {(kind: Kind, id: number) => number | null} getUserRating
+ * @property {(kind: Kind, id: number, rating: number | null) => void} setUserRating
+ */
+
+/** @type {React.Context<AppContextValue | undefined>} */
 const AppContext = createContext();
 
 export function AppProvider({ children }) {
@@ -14,6 +101,14 @@ export function AppProvider({ children }) {
     { id: 'plan-to-watch', name: 'Plan to Watch', icon: '📋', shows: [] },
   ]);
   const [movieWatchlist, setMovieWatchlist] = useLocalStorage('cinescope-movie-watchlist', []);
+  // 5-state per-item tracking layered on top of the existing watchlists.
+  //   key = `${kind}-${id}`   where kind ∈ 'show' | 'movie'
+  //   value = 'watching' | 'watched' | 'watchlist' | 'paused' | 'dropped'
+  // Anything in `watchlist`/`movieWatchlist` defaults to 'watchlist' when absent here.
+  const [itemStatus, setItemStatus] = useLocalStorage('bynge-item-status', {});
+  // User ratings, half-star precision (0.5 - 5.0 scale).
+  //   key = `${kind}-${id}`, value = number with 0.5 steps
+  const [userRatings, setUserRatings] = useLocalStorage('bynge-user-ratings', {});
   const [watchHistory, setWatchHistory] = useLocalStorage('cinescope-watch-history', []);
   const [stats, setStats] = useLocalStorage('cinescope-stats', {
     totalEpisodesWatched: 0,
@@ -224,6 +319,51 @@ export function AppProvider({ children }) {
     return { current, best };
   }, [watchHistory]);
 
+  /* ---------------- 5-state status helpers ---------------- */
+
+  const statusKey = (kind, id) => `${kind}-${id}`;
+
+  const getItemStatus = useCallback((kind, id) => {
+    const key = statusKey(kind, id);
+    if (itemStatus[key]) return itemStatus[key];
+    // Implicit default for items already in legacy watchlist arrays.
+    if (kind === 'show' && watchlist.some((s) => s.id === id)) return 'watchlist';
+    if (kind === 'movie' && movieWatchlist.some((m) => m.id === id)) return 'watchlist';
+    return null;
+  }, [itemStatus, watchlist, movieWatchlist]);
+
+  const updateItemStatus = useCallback((kind, id, status) => {
+    setItemStatus((prev) => {
+      const key = statusKey(kind, id);
+      if (!status) {
+        const { [key]: _drop, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [key]: status };
+    });
+  }, [setItemStatus]);
+
+  const getUserRating = useCallback((kind, id) => {
+    return userRatings[`${kind}-${id}`] || null;
+  }, [userRatings]);
+
+  const setUserRating = useCallback((kind, id, rating) => {
+    setUserRatings((prev) => {
+      const key = `${kind}-${id}`;
+      if (rating == null) {
+        const { [key]: _drop, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [key]: rating };
+    });
+  }, [setUserRatings]);
+
+  const itemsByStatus = useCallback((status) => {
+    const shows = watchlist.filter((s) => getItemStatus('show', s.id) === status);
+    const movies = movieWatchlist.filter((m) => getItemStatus('movie', m.id) === status);
+    return { shows, movies };
+  }, [watchlist, movieWatchlist, getItemStatus]);
+
   const getTodayEpisodeCount = useCallback(() => {
     const today = new Date().toISOString().slice(0, 10);
     return watchHistory.filter((e) => e.date === today).length;
@@ -248,13 +388,17 @@ export function AppProvider({ children }) {
     watchHistory, getWatchStreak, getTodayEpisodeCount, getWeekActivity,
     collections, addToCollection, removeFromCollection, isInCollection, createCollection, deleteCollection,
     stats, trackGenres,
+    itemStatus, getItemStatus, updateItemStatus, itemsByStatus,
+    userRatings, getUserRating, setUserRating,
   }), [watchlist, movieWatchlist, recentlyViewed, watchedEpisodes, watchHistory, collections, stats,
     addToWatchlist, removeFromWatchlist, isInWatchlist,
     addMovieToWatchlist, removeMovieFromWatchlist, isMovieInWatchlist,
     addRecentlyViewed,
     markEpisodeWatched, unmarkEpisodeWatched, isEpisodeWatched, getShowProgress, markSeasonWatched, clearShowProgress,
     getWatchStreak, getTodayEpisodeCount, getWeekActivity,
-    addToCollection, removeFromCollection, isInCollection, createCollection, deleteCollection, trackGenres]);
+    addToCollection, removeFromCollection, isInCollection, createCollection, deleteCollection, trackGenres,
+    itemStatus, getItemStatus, updateItemStatus, itemsByStatus,
+    userRatings, getUserRating, setUserRating]);
 
   return (
     <AppContext.Provider value={value}>

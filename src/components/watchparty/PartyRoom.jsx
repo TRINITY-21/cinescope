@@ -93,7 +93,7 @@ export default function PartyRoom({ party }) {
             <div className="flex items-center gap-4">
               <button
                 onClick={copyCode}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-elevated border border-white/10 hover:border-accent-violet/30 transition-all group"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-elevated border border-white/10 hover:border-accent-peach/30 transition-all group"
               >
                 <span className="text-xs text-text-secondary">Room</span>
                 <span className="font-mono font-bold text-sm text-white tracking-widest">{roomCode}</span>
@@ -123,7 +123,7 @@ export default function PartyRoom({ party }) {
                 <>
                   <button
                     onClick={() => setMobilePanel('chat')}
-                    className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-elevated border border-white/10 hover:border-accent-violet/30 text-text-secondary hover:text-white transition-all"
+                    className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-elevated border border-white/10 hover:border-accent-peach/30 text-text-secondary hover:text-white transition-all"
                   >
                     <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
@@ -184,7 +184,7 @@ export default function PartyRoom({ party }) {
                   {sidebarTab === tab.id && (
                     <motion.span
                       layoutId="sidebar-tab"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-violet to-accent-gold"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-peach to-accent-gold"
                     />
                   )}
                 </button>

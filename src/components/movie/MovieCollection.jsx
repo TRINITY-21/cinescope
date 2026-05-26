@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { getTmdbPosterUrl, getTmdbBackdropUrl } from '../../utils/imageUrl';
+import { Link } from 'react-router-dom';
+import { getTmdbBackdropUrl, getTmdbPosterUrl } from '../../utils/imageUrl';
 
 export default function MovieCollection({ collection, currentMovieId }) {
   if (!collection?.id) return null;
@@ -48,7 +48,7 @@ export default function MovieCollection({ collection, currentMovieId }) {
         </div>
 
         {/* Scrollable movie list */}
-        <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+        <div className="flex gap-3 scroll-x-track">
           {parts.map((movie, i) => {
             const isCurrent = movie.id === Number(currentMovieId);
             const poster = getTmdbPosterUrl(movie.poster_path);
@@ -68,7 +68,7 @@ export default function MovieCollection({ collection, currentMovieId }) {
                   className={`relative aspect-[2/3] rounded-xl overflow-hidden ring-2 transition-all ${
                     isCurrent
                       ? 'ring-accent-gold shadow-[0_0_20px_rgba(245,197,24,0.2)]'
-                      : 'ring-white/[0.06] group-hover:ring-accent-violet/40'
+                      : 'ring-white/[0.06] group-hover:ring-accent-peach/40'
                   }`}
                 >
                   <img src={poster} alt={movie.title} loading="lazy" className="w-full h-full object-cover" />
@@ -86,7 +86,7 @@ export default function MovieCollection({ collection, currentMovieId }) {
                     <span className="text-[10px] font-mono text-text-muted">#{i + 1}</span>
                   </div>
                 </motion.div>
-                <p className={`text-xs mt-1.5 truncate ${isCurrent ? 'text-accent-gold font-semibold' : 'text-text-secondary group-hover:text-white transition-colors'}`}>
+                <p className={`text-xs mt-1.5 break-words min-w-0 ${isCurrent ? 'text-accent-gold font-semibold' : 'text-text-secondary group-hover:text-white transition-colors'}`}>
                   {movie.title}
                 </p>
                 {year && <p className="text-[10px] text-text-muted">{year}</p>}

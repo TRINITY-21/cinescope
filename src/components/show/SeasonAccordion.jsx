@@ -1,13 +1,91 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import EpisodeRow from './EpisodeRow';
-import { formatAirDate } from '../../utils/formatters';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { formatAirDate } from '../../utils/formatters';
+import EpisodeRow from './EpisodeRow';
 
-export default function SeasonAccordion({ seasons, episodes, specialEpisodes, showId, onEpisodeSelect, onPlayEpisode }) {
+const INITIAL_EPISODE_CHUNK = 30;
+const EPISODE_CHUNK_INCREMENT = 30;
+
+/**
+ * Renders episode rows in chunks — first 30 mount immediately, then as the
+ * user scrolls near the bottom, the next batch renders. Keeps the DOM cheap
+ * for shows with 100+ episodes in a single season (Doctor Who, Simpsons,
+ * etc.) without pulling in a virtualization library.
+ */
+function LazyEpisodeList({ episodes, showId, onEpisodeSelect, onPlayEpisode, playingEpisode, playOnRowClick }) {
+  const [visibleCount, setVisibleCount] = useState(
+    Math.min(episodes.length, INITIAL_EPISODE_CHUNK)
+  );
+  const sentinelRef = useRef(null);
+
+  useEffect(() => {
+    setVisibleCount(Math.min(episodes.length, INITIAL_EPISODE_CHUNK));
+  }, [episodes]);
+
+  useEffect(() => {
+    if (visibleCount >= episodes.length) return undefined;
+    const node = sentinelRef.current;
+    if (!node) return undefined;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisibleCount((c) => Math.min(episodes.length, c + EPISODE_CHUNK_INCREMENT));
+        }
+      },
+      { rootMargin: '400px 0px' }
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [visibleCount, episodes.length]);
+
+  if (episodes.length === 0) {
+    return <p className="p-4 text-text-secondary text-sm">No episodes available.</p>;
+  }
+
+  return (
+    <>
+      {episodes.slice(0, visibleCount).map((ep) => (
+        <EpisodeRow
+          key={ep.id}
+          episode={ep}
+          showId={showId}
+          onSelect={onEpisodeSelect}
+          onPlay={onPlayEpisode}
+          isPlaying={
+            playingEpisode?.season === ep.season && playingEpisode?.episode === ep.number
+          }
+          playOnRowClick={playOnRowClick}
+        />
+      ))}
+      {visibleCount < episodes.length && (
+        <div ref={sentinelRef} className="py-4 text-center text-caption text-text-muted">
+          Loading {episodes.length - visibleCount} more episode{episodes.length - visibleCount === 1 ? '' : 's'}…
+        </div>
+      )}
+    </>
+  );
+}
+
+export default function SeasonAccordion({
+  seasons,
+  episodes,
+  specialEpisodes,
+  showId,
+  onEpisodeSelect,
+  onPlayEpisode,
+  playingEpisode,
+  playOnRowClick = false,
+}) {
   const [openSeason, setOpenSeason] = useState(seasons?.[0]?.id);
   const [showSpecials, setShowSpecials] = useState(false);
   const { isEpisodeWatched, markSeasonWatched } = useApp();
+
+  useEffect(() => {
+    if (!playingEpisode || !seasons?.length) return;
+    const match = seasons.find((s) => s.number === playingEpisode.season);
+    if (match) setOpenSeason(match.id);
+  }, [playingEpisode?.season, playingEpisode?.episode, seasons]);
 
   if (!seasons || seasons.length === 0) return <p className="text-text-secondary">No season data available.</p>;
 
@@ -70,7 +148,7 @@ export default function SeasonAccordion({ seasons, episodes, specialEpisodes, sh
                 {showId && seasonEps.length > 0 && (
                   <div className="hidden sm:flex items-center gap-2 ml-auto mr-4">
                     <div className="w-24 h-1.5 bg-bg-primary rounded-full overflow-hidden">
-                      <div className="h-full bg-accent-violet rounded-full transition-all duration-500" style={{ width: `${progressPct}%` }} />
+                      <div className="h-full bg-accent-peach rounded-full transition-all duration-500" style={{ width: `${progressPct}%` }} />
                     </div>
                     <span className="text-xs text-text-muted whitespace-nowrap">{watchedCount}/{seasonEps.length}</span>
                   </div>
@@ -80,7 +158,7 @@ export default function SeasonAccordion({ seasons, episodes, specialEpisodes, sh
                 {showId && seasonEps.length > 0 && watchedCount < seasonEps.length && (
                   <button
                     onClick={(e) => { e.stopPropagation(); handleMarkSeasonWatched(season.number); }}
-                    className="text-xs px-3 py-1 rounded-lg bg-accent-violet/10 text-accent-violet hover:bg-accent-violet/20 transition-colors whitespace-nowrap"
+                    className="text-xs px-3 py-1 rounded-lg bg-accent-peach/10 text-accent-peach hover:bg-accent-peach/20 transition-colors whitespace-nowrap"
                   >
                     Mark all
                   </button>
@@ -108,10 +186,14 @@ export default function SeasonAccordion({ seasons, episodes, specialEpisodes, sh
                   className="overflow-hidden"
                 >
                   <div className="divide-y divide-white/5">
-                    {seasonEps.map((ep) => (
-                      <EpisodeRow key={ep.id} episode={ep} showId={showId} onSelect={onEpisodeSelect} onPlay={onPlayEpisode} />
-                    ))}
-                    {seasonEps.length === 0 && <p className="p-4 text-text-secondary text-sm">No episodes available.</p>}
+                    <LazyEpisodeList
+                      episodes={seasonEps}
+                      showId={showId}
+                      onEpisodeSelect={onEpisodeSelect}
+                      onPlayEpisode={onPlayEpisode}
+                      playingEpisode={playingEpisode}
+                      playOnRowClick={playOnRowClick}
+                    />
                   </div>
                 </motion.div>
               )}

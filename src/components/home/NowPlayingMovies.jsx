@@ -20,7 +20,7 @@ export default function NowPlayingMovies() {
   if (!isLoading && movies.length === 0) return null;
 
   return (
-    <Carousel title="In Theaters" subtitle="Now playing in cinemas" viewAllLink="/movies">
+    <Carousel eyebrow="In cinemas" title="Now playing" viewAllLink="/movies">
       {isLoading
         ? Array.from({ length: 8 }, (_, i) => (
             <ShowCardSkeleton key={i} className="w-36 sm:w-40 md:w-44" />

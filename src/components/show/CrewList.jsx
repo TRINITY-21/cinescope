@@ -12,27 +12,35 @@ export default function CrewList({ crew }) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
       {Object.entries(grouped).map(([type, people]) => (
-        <div key={type}>
-          <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">{type}</h4>
-          <div className="flex flex-wrap gap-2">
-            {people.map((person) => (
+        <div key={type} className="py-5 grid grid-cols-1 md:grid-cols-[180px_1fr] gap-4 md:gap-8">
+          <p className="text-meta uppercase tracking-widest text-text-muted font-semibold md:pt-1">
+            {type}
+            <span className="ml-2 font-mono tabular-nums text-text-muted/60 normal-case tracking-normal">
+              {String(people.length).padStart(2, '0')}
+            </span>
+          </p>
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            {people.map((person, i) => (
               <Link
                 key={person.id}
                 to={`/person/${person.id}`}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-bg-elevated/50 hover:bg-bg-elevated transition-colors group"
+                className="inline-flex items-center gap-2 group"
               >
                 {person.image && (
                   <img
                     src={person.image.medium}
                     alt={person.name}
-                    className="w-6 h-6 rounded-full object-cover"
+                    className="w-6 h-6 rounded-full object-cover ring-1 ring-white/[0.06] group-hover:ring-white/30 transition-all"
                   />
                 )}
-                <span className="text-sm text-text-secondary group-hover:text-accent-violet transition-colors">
+                <span className="text-body-sm text-white group-hover:text-accent-peach transition-colors">
                   {person.name}
                 </span>
+                {i < people.length - 1 && (
+                  <span className="text-text-muted/40 ml-1">·</span>
+                )}
               </Link>
             ))}
           </div>

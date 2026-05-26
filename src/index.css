@@ -13,6 +13,15 @@
   *::-webkit-scrollbar-thumb:hover { background: #c4835b; }
 
   html, body { overflow-x: hidden; scroll-behavior: smooth; max-width: 100vw; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 @layer components {
@@ -72,7 +81,7 @@
 
   /* ─── TEXT UTILITIES ─── */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent-violet to-accent-red;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent-peach to-accent-red;
   }
   .text-shadow-hero {
     text-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 4px 40px rgba(0,0,0,0.3);
@@ -81,10 +90,28 @@
     text-shadow: 0 1px 4px rgba(0,0,0,0.5);
   }
   .page-title {
-    @apply text-3xl sm:text-4xl font-extrabold text-white tracking-tight;
+    @apply text-h1 sm:text-display-sm font-extrabold text-white tracking-tight leading-tight;
   }
   .page-subtitle {
-    @apply text-text-secondary mt-2 text-base;
+    @apply text-body-sm sm:text-body text-text-secondary mt-2 leading-relaxed max-w-2xl;
+  }
+  .page-shell {
+    @apply pt-20 sm:pt-24 pb-section-lg;
+  }
+
+  /* Shared radii — cards/buttons/pills */
+  .radius-card {
+    @apply rounded-xl;
+  }
+  .radius-btn {
+    @apply rounded-lg;
+  }
+  .radius-pill {
+    @apply rounded-full;
+  }
+
+  .prose-width {
+    @apply max-w-2xl;
   }
 
   /* ─── BUTTON GLOW ─── */
@@ -188,4 +215,26 @@
   /* ─── SCROLLBAR HIDE ─── */
   .hide-scrollbar::-webkit-scrollbar { display: none; }
   .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Horizontal scroll tracks — overflow-x clips Y; pad so rings/hover aren't cut off */
+  .scroll-x-track {
+    @apply overflow-x-auto hide-scrollbar;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    margin-top: -0.75rem;
+    margin-bottom: -0.75rem;
+  }
+
+  /* ─── ROUTE LOADER (top progress bar during lazy route chunk fetch) ─── */
+  .route-loader-bar {
+    width: 30%;
+    transform: translateX(-100%);
+    animation: routeLoaderSlide 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes routeLoaderSlide {
+  0%   { transform: translateX(-100%); width: 30%; }
+  50%  { transform: translateX(150%); width: 40%; }
+  100% { transform: translateX(350%); width: 30%; }
 }

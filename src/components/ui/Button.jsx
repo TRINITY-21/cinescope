@@ -2,9 +2,10 @@ import { motion } from 'framer-motion';
 
 const variants = {
   primary: 'bg-accent-red hover:bg-accent-red/90 text-white btn-glow-red',
+  red: 'bg-accent-red hover:bg-accent-red/90 text-white btn-glow-red',
   secondary: 'bg-bg-elevated hover:bg-bg-elevated/90 text-text-primary border border-white/10 hover:border-white/15',
   ghost: 'bg-transparent hover:bg-white/5 text-text-secondary hover:text-text-primary',
-  violet: 'bg-accent-violet hover:bg-accent-violet/90 text-white btn-glow-violet',
+  violet: 'bg-accent-peach hover:bg-accent-peach/90 text-white btn-glow-violet',
   gradient: 'btn-gradient-primary text-white',
 };
 
@@ -23,7 +24,7 @@ export default function Button({ children, variant = 'primary', size = 'md', cla
         inline-flex items-center justify-center gap-2
         font-semibold rounded-lg
         transition-all duration-200
-        focus:outline-none focus:ring-2 focus:ring-accent-violet focus:ring-offset-2 focus:ring-offset-bg-primary
+        focus:outline-none focus:ring-2 focus:ring-accent-peach focus:ring-offset-2 focus:ring-offset-bg-primary
         disabled:opacity-50 disabled:cursor-not-allowed
         ${variants[variant]}
         ${sizes[size]}

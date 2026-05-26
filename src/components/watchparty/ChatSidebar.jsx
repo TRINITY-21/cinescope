@@ -65,7 +65,7 @@ export default function ChatSidebar({ messages, onSend, role, isOpen, onClose, i
               <div
                 className={`max-w-[85%] px-3 py-2 rounded-xl text-sm ${
                   isMyMessage
-                    ? 'bg-accent-violet/15 border border-accent-violet/20 text-white'
+                    ? 'bg-accent-peach/15 border border-accent-peach/20 text-white'
                     : 'bg-bg-elevated border border-white/5 text-text-primary'
                 }`}
               >
@@ -94,12 +94,12 @@ export default function ChatSidebar({ messages, onSend, role, isOpen, onClose, i
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Type a message..."
           maxLength={500}
-          className="flex-1 bg-bg-elevated border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-text-muted focus:outline-none focus:border-accent-violet/50 transition-colors"
+          className="flex-1 bg-bg-elevated border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-text-muted focus:outline-none focus:border-accent-peach/50 transition-colors"
         />
         <button
           type="submit"
           disabled={!draft.trim()}
-          className="px-3 py-2 rounded-lg bg-accent-violet/20 border border-accent-violet/30 text-accent-violet hover:bg-accent-violet/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          className="px-3 py-2 rounded-lg bg-accent-peach/20 border border-accent-peach/30 text-accent-peach hover:bg-accent-peach/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />

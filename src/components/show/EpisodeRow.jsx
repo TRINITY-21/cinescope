@@ -1,11 +1,11 @@
 import { memo } from 'react';
+import { useApp } from '../../context/AppContext';
+import { formatAirDate, formatEpisodeCode } from '../../utils/formatters';
 import { getMediumImage } from '../../utils/imageUrl';
-import { formatEpisodeCode, formatAirDate } from '../../utils/formatters';
 import { stripHtml } from '../../utils/stripHtml';
 import RatingBadge from '../ui/RatingBadge';
-import { useApp } from '../../context/AppContext';
 
-const EpisodeRow = memo(function EpisodeRow({ episode, showId, onSelect, onPlay }) {
+const EpisodeRow = memo(function EpisodeRow({ episode, showId, onSelect, onPlay, isPlaying = false, playOnRowClick = false }) {
   const { isEpisodeWatched, markEpisodeWatched, unmarkEpisodeWatched } = useApp();
   const watched = showId ? isEpisodeWatched(showId, episode.id) : false;
   const summary = stripHtml(episode.summary || '');
@@ -21,18 +21,28 @@ const EpisodeRow = memo(function EpisodeRow({ episode, showId, onSelect, onPlay 
     }
   }
 
+  function handleRowClick() {
+    if (playOnRowClick && onPlay && episode.season != null && episode.number != null) {
+      onPlay(episode.season, episode.number);
+      return;
+    }
+    onSelect?.(episode);
+  }
+
   return (
     <div
-      onClick={() => onSelect?.(episode)}
-      className={`flex gap-3 sm:gap-4 p-4 hover:bg-white/[0.03] transition-colors group ${watched ? 'opacity-60' : ''} ${onSelect ? 'cursor-pointer' : ''}`}
+      onClick={handleRowClick}
+      className={`flex gap-3 sm:gap-4 p-4 transition-colors group ${
+        isPlaying ? 'bg-accent-peach/10 ring-1 ring-inset ring-accent-peach/30' : 'hover:bg-white/[0.03]'
+      } ${watched && !isPlaying ? 'opacity-60' : ''} ${onSelect || playOnRowClick ? 'cursor-pointer' : ''}`}
     >
       {showId && (
         <button
           onClick={handleToggleWatched}
           className={`flex-shrink-0 w-6 h-6 rounded-md border-2 mt-1 flex items-center justify-center transition-all ${
             watched
-              ? 'bg-accent-violet border-accent-violet'
-              : 'border-white/20 hover:border-accent-violet/50'
+              ? 'bg-accent-peach border-accent-peach'
+              : 'border-white/20 hover:border-accent-peach/50'
           }`}
           aria-label={watched ? 'Mark as unwatched' : 'Mark as watched'}
         >
@@ -78,13 +88,18 @@ const EpisodeRow = memo(function EpisodeRow({ episode, showId, onSelect, onPlay 
                     {formatEpisodeCode(episode.season, episode.number)}
                   </span>
                 ) : (
-                  <span className="text-xs font-mono text-accent-violet">SPECIAL</span>
+                  <span className="text-xs font-mono text-accent-peach">SPECIAL</span>
                 )}
                 {episode.airdate && (
                   <span className="text-xs text-text-muted">{formatAirDate(episode.airdate)}</span>
                 )}
-                {watched && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-violet/20 text-accent-violet font-medium">
+                {isPlaying && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-peach/25 text-accent-peach font-medium">
+                    NOW PLAYING
+                  </span>
+                )}
+                {watched && !isPlaying && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-peach/20 text-accent-peach font-medium">
                     WATCHED
                   </span>
                 )}
@@ -94,7 +109,7 @@ const EpisodeRow = memo(function EpisodeRow({ episode, showId, onSelect, onPlay 
                   </span>
                 )}
               </div>
-              <h4 className={`font-semibold text-sm mt-1 truncate ${watched ? 'text-text-secondary line-through' : 'text-white group-hover:text-accent-violet transition-colors'}`}>
+              <h4 className={`font-semibold text-sm mt-1 leading-snug break-words ${watched ? 'text-text-secondary line-through' : 'text-white group-hover:text-accent-peach transition-colors'}`}>
                 {episode.name}
               </h4>
             </div>
@@ -111,7 +126,7 @@ const EpisodeRow = memo(function EpisodeRow({ episode, showId, onSelect, onPlay 
           </div>
 
           {summary && (
-            <p className="text-xs text-text-secondary mt-2 leading-relaxed line-clamp-2">
+            <p className="text-xs text-text-secondary mt-2 leading-relaxed break-words">
               {summary}
             </p>
           )}

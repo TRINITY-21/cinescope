@@ -1,24 +1,41 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useApp } from '../../context/AppContext';
-import { formatRuntime } from '../../utils/formatters';
+import { useToast } from '../../context/ToastContext';
+import { useMovieFanart } from '../../hooks/useFanart';
+import { useOmdb } from '../../hooks/useOmdb';
+import { computeByngeScore } from '../../utils/byngeScore';
+import { blurred, responsive } from '../../utils/imageOptimize';
 import { getTmdbBackdropUrl, getTmdbPosterUrl } from '../../utils/imageUrl';
 import { shareContent } from '../../utils/share';
-import AddToCollectionDropdown from '../ui/AddToCollectionDropdown';
+import DetailHeroActions from '../detail/DetailHeroActions';
 import Badge from '../ui/Badge';
-import Button from '../ui/Button';
+import ByngeScoreBadge from '../ui/ByngeScoreBadge';
 import RatingBadge from '../ui/RatingBadge';
+import RatingsStrip from '../ui/RatingsStrip';
 import StarRating from '../ui/StarRating';
+import UserStarRating from '../ui/UserStarRating';
 
-export default function MovieHero({ movie, certification, onPlayTrailer, onWatchNow }) {
+export default function MovieHero({ movie, onPlayTrailer, onWatchNow }) {
   const { addMovieToWatchlist, removeMovieFromWatchlist, isMovieInWatchlist } = useApp();
+  const { toast } = useToast();
   const inWatchlist = isMovieInWatchlist(movie.id);
-  const backdropUrl = getTmdbBackdropUrl(movie.backdrop_path);
+  const { logo: fanartLogo, background: fanartBackdrop } = useMovieFanart(movie?.id);
+  const { ratings: omdbRatings, awards: omdbAwards, raw: omdbRaw } = useOmdb(movie?.imdb_id);
+  const byngeScore = computeByngeScore({
+    tmdbRating: movie?.vote_average,
+    tmdbVotes: movie?.vote_count,
+    imdbRating: omdbRatings?.imdb ? parseFloat(omdbRatings.imdb) : null,
+    imdbVotes: omdbRaw?.imdbVotes ? parseInt(String(omdbRaw.imdbVotes).replace(/[^0-9]/g, ''), 10) : null,
+    rottenTomatoes: omdbRatings?.rottenTomatoes ? parseInt(omdbRatings.rottenTomatoes, 10) : null,
+    metacritic: omdbRatings?.metacritic ? parseInt(omdbRatings.metacritic, 10) : null,
+    releaseDate: movie?.release_date,
+    hasFanart: !!fanartLogo,
+  });
+  const hdBackdrop = fanartBackdrop || getTmdbBackdropUrl(movie.backdrop_path);
   const posterUrl = movie.poster_path ? getTmdbPosterUrl(movie.poster_path, 'w500') : null;
-  const year = movie.release_date?.slice(0, 4);
-
-  const [shareTooltip, setShareTooltip] = useState(null);
-
+  const backdropSrc = hdBackdrop
+    ? responsive(hdBackdrop, { w: 1920 })
+    : (posterUrl ? blurred(posterUrl, { w: 1920, blur: 60 }) : null);
   async function handleShare() {
     const url = `${window.location.origin}/movie/${movie.id}`;
     const rating = movie.vote_average ? `${movie.vote_average.toFixed(1)}/10` : '';
@@ -29,15 +46,24 @@ export default function MovieHero({ movie, certification, onPlayTrailer, onWatch
       url,
     });
     if (result === 'copied') {
-      setShareTooltip('Link copied!');
-      setTimeout(() => setShareTooltip(null), 2000);
+      toast({ message: 'Link copied to clipboard', variant: 'success' });
     }
   }
 
   return (
     <div className="relative min-h-[60vh] md:min-h-[70vh] lg:min-h-[75vh]">
       <div className="absolute inset-0">
-        {backdropUrl && <img src={backdropUrl} alt="" className="w-full h-full object-cover" />}
+        {backdropSrc && (
+          <img
+            src={backdropSrc}
+            alt=""
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+            className="w-full h-full object-cover transition-opacity duration-500"
+            style={{ opacity: hdBackdrop ? 1 : 0.85 }}
+          />
+        )}
         <div className="absolute inset-0 hero-gradient-overlay" />
         <div className="absolute inset-0 hero-gradient-left" />
       </div>
@@ -61,33 +87,31 @@ export default function MovieHero({ movie, certification, onPlayTrailer, onWatch
             transition={{ delay: 0.3 }}
             className="flex-1"
           >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight text-shadow-hero">
-              {movie.title}
-            </h1>
+            {fanartLogo ? (
+              <motion.img
+                key={fanartLogo}
+                src={fanartLogo}
+                alt={movie.title}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.5 }}
+                className="h-20 sm:h-24 md:h-32 lg:h-40 w-auto max-w-full object-contain object-left"
+                style={{ filter: 'drop-shadow(0 6px 24px rgba(0,0,0,0.7))' }}
+              />
+            ) : (
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight text-shadow-hero">
+                {movie.title}
+              </h1>
+            )}
 
             {movie.tagline && (
               <p className="text-text-secondary text-lg italic mt-2">&ldquo;{movie.tagline}&rdquo;</p>
             )}
 
-            <div className="flex flex-wrap items-center gap-3 mt-4">
-              {year && <span className="text-text-secondary text-sm">{year}</span>}
-              {movie.runtime > 0 && (
-                <>
-                  <span className="text-text-muted">&middot;</span>
-                  <span className="text-text-secondary text-sm">{formatRuntime(movie.runtime)}</span>
-                </>
-              )}
-              {certification && (
-                <>
-                  <span className="text-text-muted">&middot;</span>
-                  <span className="text-xs px-2 py-0.5 rounded border border-white/20 text-text-secondary font-mono">{certification}</span>
-                </>
-              )}
-              <span className="text-text-muted">&middot;</span>
-              <span className="text-text-secondary text-sm px-2 py-0.5 rounded-full bg-white/10">Movie</span>
-            </div>
+            <RatingsStrip ratings={omdbRatings} awards={omdbAwards} className="mt-4" />
 
             <div className="flex flex-wrap items-center gap-3 mt-4">
+              {byngeScore != null && <ByngeScoreBadge score={byngeScore} size="lg" showLabel />}
               {movie.vote_average > 0 && (
                 <div className="flex items-center gap-3">
                   <RatingBadge rating={movie.vote_average} size="lg" />
@@ -96,74 +120,30 @@ export default function MovieHero({ movie, certification, onPlayTrailer, onWatch
               )}
             </div>
 
+            <div className="mt-3 flex items-center gap-3">
+              <span className="text-xs text-text-muted uppercase tracking-wide">Your rating</span>
+              <UserStarRating kind="movie" id={movie.id} size={22} />
+            </div>
+
             <div className="flex flex-wrap gap-2 mt-4">
               {movie.genres?.map((g) => <Badge key={g.id}>{g.name}</Badge>)}
             </div>
 
-            <div className="flex flex-wrap gap-2 sm:gap-3 mt-4 sm:mt-6">
-              <Button variant="primary" size="lg" onClick={onWatchNow}>
-                <span className="flex items-center gap-2">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                  Watch Now
-                </span>
-              </Button>
-              <Button
-                variant="secondary"
-                size="lg"
-                onClick={() => {
-                  if (inWatchlist) removeMovieFromWatchlist(movie.id);
-                  else addMovieToWatchlist(movie);
-                }}
-              >
-                {inWatchlist ? '✓ In Watchlist' : '+ Watchlist'}
-              </Button>
-              <AddToCollectionDropdown
-                item={{
-                  id: movie.id,
-                  name: movie.title,
-                  image: posterUrl,
-                  genres: movie.genres?.map((g) => g.name) ?? [],
-                  type: 'movie',
-                }}
-              />
-              <Button variant="ghost" onClick={onPlayTrailer}>
-                <span className="flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-500">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                  Watch Trailer
-                </span>
-              </Button>
-              <div className="relative">
-                <Button variant="ghost" onClick={handleShare}>
-                  <span className="flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
-                      <polyline points="16,6 12,2 8,6" />
-                      <line x1="12" y1="2" x2="12" y2="15" />
-                    </svg>
-                    Share
-                  </span>
-                </Button>
-                <AnimatePresence>
-                  {shareTooltip && (
-                    <motion.span
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 4 }}
-                      className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-bg-elevated text-text-primary px-2.5 py-1 rounded-lg whitespace-nowrap shadow-lg border border-white/10"
-                    >
-                      {shareTooltip}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </div>
-              {movie.homepage && (
-                <a href={movie.homepage} target="_blank" rel="noopener noreferrer">
-                  <Button variant="ghost">Visit Official Site &rarr;</Button>
-                </a>
-              )}
-            </div>
+            <DetailHeroActions
+              onWatchNow={onWatchNow}
+              onPlayTrailer={onPlayTrailer}
+              statusKind="movie"
+              statusId={movie.id}
+              statusItem={movie}
+              collectionItem={{
+                id: movie.id,
+                name: movie.title,
+                image: posterUrl,
+                genres: movie.genres?.map((g) => g.name) ?? [],
+                type: 'movie',
+              }}
+              onShare={handleShare}
+            />
           </motion.div>
         </div>
       </div>

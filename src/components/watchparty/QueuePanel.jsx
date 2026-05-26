@@ -83,11 +83,11 @@ export default function QueuePanel({ queue, onAdd, onVote, onRemove, role }) {
             onChange={(e) => setSearch(e.target.value)}
             onFocus={() => results.length > 0 && setShowResults(true)}
             placeholder="Search movies to add..."
-            className="w-full bg-bg-elevated border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-text-muted focus:outline-none focus:border-accent-violet/50 transition-colors"
+            className="w-full bg-bg-elevated border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-text-muted focus:outline-none focus:border-accent-peach/50 transition-colors"
           />
           {searching && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <div className="w-3.5 h-3.5 border-2 border-accent-violet/30 border-t-accent-violet rounded-full animate-spin" />
+              <div className="w-3.5 h-3.5 border-2 border-accent-peach/30 border-t-accent-peach rounded-full animate-spin" />
             </div>
           )}
         </div>
@@ -122,14 +122,14 @@ export default function QueuePanel({ queue, onAdd, onVote, onRemove, role }) {
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm text-white truncate">{movie.title}</p>
+                    <p className="text-sm text-white break-words min-w-0">{movie.title}</p>
                     <p className="text-[11px] text-text-muted">
                       {movie.release_date?.slice(0, 4) || 'Unknown year'}
                       {alreadyAdded && ' · Already in queue'}
                     </p>
                   </div>
                   {!alreadyAdded && (
-                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-violet flex-shrink-0">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-peach flex-shrink-0">
                       <path d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
                   )}
@@ -177,7 +177,7 @@ export default function QueuePanel({ queue, onAdd, onVote, onRemove, role }) {
 
               {/* Info */}
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-white font-medium truncate">{item.title}</p>
+                <p className="text-sm text-white font-medium break-words min-w-0">{item.title}</p>
                 <p className="text-[10px] text-text-muted">
                   {item.year} · Added by {item.addedBy}
                 </p>

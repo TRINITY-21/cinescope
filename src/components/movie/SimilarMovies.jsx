@@ -1,6 +1,8 @@
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { getTmdbBackdropUrl, getTmdbPosterUrl } from '../../utils/imageUrl';
+import { sortByRatingThenYear } from '../../utils/sort';
 
 function SimilarCard({ movie, index }) {
   const backdrop = getTmdbBackdropUrl(movie.backdrop_path, 'w780');
@@ -16,7 +18,7 @@ function SimilarCard({ movie, index }) {
       transition={{ delay: Math.min(index * 0.05, 0.3), duration: 0.3 }}
     >
       <Link to={`/movie/${movie.id}`} className="group block flex-shrink-0 w-[160px] sm:w-[200px] md:w-[240px]">
-        <div className="relative aspect-[16/10] rounded-xl overflow-hidden ring-1 ring-white/[0.06] group-hover:ring-accent-violet/30 transition-all">
+        <div className="relative aspect-[16/10] rounded-xl overflow-hidden ring-1 ring-white/[0.06] group-hover:ring-accent-peach/30 transition-all">
           {image ? (
             <img src={image} alt={movie.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           ) : (
@@ -30,11 +32,11 @@ function SimilarCard({ movie, index }) {
         </div>
         <div className="mt-2.5 flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-sm font-medium text-white truncate group-hover:text-accent-violet transition-colors">{movie.title}</p>
+            <p className="text-sm font-medium text-white break-words min-w-0 group-hover:text-accent-peach transition-colors">{movie.title}</p>
             {year && <p className="text-xs text-text-muted mt-0.5">{year}</p>}
           </div>
           {vote !== null && vote > 0 && (
-            <span className="flex-shrink-0 text-xs font-semibold px-1.5 py-0.5 rounded-md bg-accent-violet/15 text-accent-violet">{vote}%</span>
+            <span className="flex-shrink-0 text-xs font-semibold px-1.5 py-0.5 rounded-md bg-accent-peach/15 text-accent-peach">{vote}%</span>
           )}
         </div>
       </Link>
@@ -43,19 +45,20 @@ function SimilarCard({ movie, index }) {
 }
 
 export default function SimilarMovies({ movies }) {
-  if (!movies || movies.length === 0) return null;
+  const sorted = useMemo(() => sortByRatingThenYear(movies || []), [movies]);
+  if (sorted.length === 0) return null;
 
   return (
     <div>
       <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-5">
-        <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-violet flex-shrink-0">
+        <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-peach flex-shrink-0">
           <path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
         </svg>
         <h3 className="text-base sm:text-lg font-semibold text-white">Similar Movies</h3>
-        <span className="text-[10px] sm:text-xs text-text-muted">{movies.length} movies</span>
+        <span className="text-[10px] sm:text-xs text-text-muted">{sorted.length} movies</span>
       </div>
-      <div className="flex gap-3 sm:gap-4 overflow-x-auto hide-scrollbar pb-2">
-        {movies.map((movie, i) => (
+      <div className="flex gap-3 sm:gap-4 scroll-x-track">
+        {sorted.map((movie, i) => (
           <SimilarCard key={movie.id} movie={movie} index={i} />
         ))}
       </div>

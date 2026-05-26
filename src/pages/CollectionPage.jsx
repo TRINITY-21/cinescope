@@ -1,12 +1,29 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Container from '../components/ui/Container';
-import Loader from '../components/ui/Loader';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getMovieCollection, hasTmdbKey } from '../api/tmdb';
 import MovieCard from '../components/movie/MovieCard';
-import { getMovieCollection, hasTmdbKey, TMDB_IMAGE_BASE } from '../api/tmdb';
+import Container from '../components/ui/Container';
+import EmptyState from '../components/ui/EmptyState';
+import Loader from '../components/ui/Loader';
+import DetailPageLayout from '../layouts/DetailPageLayout';
+import PageLayout from '../layouts/PageLayout';
 import { getTmdbBackdropUrl } from '../utils/imageUrl';
-import { formatCurrency } from '../utils/formatters';
+import { SITE_ORIGIN, usePageHead } from '../hooks/usePageHead';
+
+function StatBlock({ value, label, suffix }) {
+  return (
+    <div>
+      <p className="text-display-sm sm:text-display font-extrabold font-mono tabular-nums text-white leading-none">
+        {value}
+        {suffix && <span className="text-h3 font-normal text-text-muted ml-1">{suffix}</span>}
+      </p>
+      <p className="text-meta uppercase tracking-widest text-text-muted mt-2 font-semibold">
+        {label}
+      </p>
+    </div>
+  );
+}
 
 export default function CollectionPage() {
   const { id } = useParams();
@@ -28,10 +45,27 @@ export default function CollectionPage() {
     load();
   }, [id]);
 
-  useEffect(() => {
-    if (collection) document.title = `${collection.name} — Bynge`;
-    return () => { document.title = 'Bynge'; };
-  }, [collection]);
+  const collectionHead = useMemo(() => {
+    if (!collection) return {};
+    return {
+      title: `${collection.name} — Bynge`,
+      description: collection.overview?.slice(0, 220),
+      canonical: `${SITE_ORIGIN}/collection/${id}`,
+      ogType: 'website',
+      jsonLd: [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_ORIGIN },
+            { '@type': 'ListItem', position: 2, name: 'Movies', item: `${SITE_ORIGIN}/movies` },
+            { '@type': 'ListItem', position: 3, name: collection.name, item: `${SITE_ORIGIN}/collection/${id}` },
+          ],
+        },
+      ],
+    };
+  }, [collection, id]);
+  usePageHead(collectionHead);
 
   useEffect(() => { window.scrollTo(0, 0); }, [id]);
 
@@ -39,12 +73,21 @@ export default function CollectionPage() {
 
   if (!collection) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center glass rounded-2xl p-10">
-          <p className="text-text-secondary text-lg">Collection not found</p>
-          <Link to="/" className="text-accent-violet hover:underline text-sm mt-3 inline-block">Go home</Link>
-        </div>
-      </div>
+      <PageLayout>
+        <Container>
+        <EmptyState
+          icon={
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            </svg>
+          }
+          title="Collection not found"
+          description="The movie collection you're looking for doesn't exist or has been removed."
+          action={{ label: 'Browse movies', to: '/movies' }}
+          secondaryAction={{ label: 'Go home', to: '/' }}
+        />
+        </Container>
+      </PageLayout>
     );
   }
 
@@ -56,81 +99,113 @@ export default function CollectionPage() {
 
   const backdropUrl = getTmdbBackdropUrl(collection.backdrop_path, 'w1280');
   const totalRevenue = parts.reduce((sum, m) => sum + (m.revenue || 0), 0);
-  const avgRating = parts.length > 0
-    ? parts.reduce((sum, m) => sum + (m.vote_average || 0), 0) / parts.filter((m) => m.vote_average).length
+  const ratedParts = parts.filter((m) => m.vote_average);
+  const avgRating = ratedParts.length > 0
+    ? ratedParts.reduce((sum, m) => sum + m.vote_average, 0) / ratedParts.length
     : 0;
   const years = parts.map((m) => m.release_date?.slice(0, 4)).filter(Boolean);
-  const yearRange = years.length > 0 ? `${years[0]} - ${years[years.length - 1]}` : '';
+  const yearRange = years.length > 0
+    ? (years[0] === years[years.length - 1] ? years[0] : `${years[0]}–${years[years.length - 1]}`)
+    : '';
+  const span = years.length > 1 ? parseInt(years[years.length - 1]) - parseInt(years[0]) : 0;
 
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-      {/* Hero */}
-      <div className="relative h-[40vh] sm:h-[50vh] min-h-[280px] sm:min-h-[350px]">
+  const hero = (
+      <div className="relative h-[55vh] sm:h-[65vh] min-h-[420px]">
         {backdropUrl && (
-          <img src={backdropUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <img
+            src={backdropUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-bg-primary/70 to-bg-primary/30" />
-        <div className="absolute inset-0 bg-gradient-to-r from-bg-primary/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-bg-primary/85 to-bg-primary/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-bg-primary/70 via-transparent to-transparent" />
 
         <div className="absolute inset-0 flex items-end">
-          <Container className="pb-10">
+          <Container className="pb-12 sm:pb-16">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.15, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="max-w-4xl"
             >
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-accent-gold/20 text-accent-gold mb-3 backdrop-blur-sm">
+              <p className="text-meta uppercase text-accent-peach font-semibold tracking-widest">
                 Collection
-              </span>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">{collection.name}</h1>
-              <div className="flex flex-wrap items-center gap-4 mt-4">
-                <span className="text-sm text-text-secondary">{parts.length} movie{parts.length !== 1 ? 's' : ''}</span>
-                {yearRange && <span className="text-sm text-text-secondary">{yearRange}</span>}
-                {avgRating > 0 && (
-                  <span className="flex items-center gap-1 text-sm text-accent-gold">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                    {avgRating.toFixed(1)} avg
-                  </span>
+                {yearRange && (
+                  <>
+                    <span className="text-text-muted mx-2">·</span>
+                    <span className="font-mono tabular-nums">{yearRange}</span>
+                  </>
                 )}
-                {totalRevenue > 0 && (
-                  <span className="text-sm text-text-secondary">{formatCurrency(totalRevenue)} total box office</span>
-                )}
-              </div>
+              </p>
+              <h1 className="mt-3 text-display-sm sm:text-display lg:text-display-lg font-extrabold tracking-tight text-white leading-[1.05]">
+                {collection.name}
+              </h1>
+              {collection.overview && (
+                <p className="mt-5 text-body sm:text-h3 text-text-secondary leading-relaxed max-w-2xl font-light">
+                  {collection.overview}
+                </p>
+              )}
             </motion.div>
           </Container>
         </div>
       </div>
+  );
 
-      {/* Overview */}
+  return (
+    <DetailPageLayout hero={hero}>
       <Container>
-        {collection.overview && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-8 max-w-4xl glass-subtle rounded-xl p-6"
-          >
-            <p className="text-text-secondary leading-relaxed text-sm">{collection.overview}</p>
-          </motion.div>
-        )}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="border-y border-white/[0.06] py-section my-section grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-8"
+        >
+          <StatBlock value={parts.length} label="Films" />
+          {avgRating > 0 && (
+            <StatBlock
+              value={avgRating.toFixed(1)}
+              suffix="/10"
+              label="Avg rating"
+            />
+          )}
+          {span > 0 && (
+            <StatBlock value={span} suffix="yr" label="Span" />
+          )}
+          {totalRevenue > 0 && (
+            <StatBlock
+              value={`$${(totalRevenue / 1_000_000_000).toFixed(1)}B`}
+              label="Box office"
+            />
+          )}
+        </motion.div>
 
-        {/* Movies grid */}
-        <div className="mt-8 mb-12">
-          <h2 className="text-xl font-bold text-white mb-5">All Movies</h2>
+        {/* Films list */}
+        <section className="mb-section-lg">
+          <div className="flex items-baseline gap-3 mb-section">
+            <h2 className="text-h2 font-extrabold tracking-tight text-white">
+              The films
+            </h2>
+            <div className="flex-1 h-px bg-white/[0.06]" />
+            <span className="text-caption text-text-muted font-mono tabular-nums">
+              {String(parts.length).padStart(2, '0')}
+            </span>
+          </div>
+
           <div className="card-grid">
             {parts.map((movie, i) => (
               <motion.div
                 key={movie.id}
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(i * 0.05, 0.3) }}
+                transition={{ delay: Math.min(i * 0.04, 0.3) }}
               >
                 <MovieCard movie={movie} />
               </motion.div>
             ))}
           </div>
-        </div>
+        </section>
       </Container>
-    </motion.div>
+    </DetailPageLayout>
   );
 }

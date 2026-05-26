@@ -1,26 +1,32 @@
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { fetchApi } from '../api/tvmaze';
+import { useEffect, useState } from 'react';
 import { endpoints } from '../api/endpoints';
-import Container from '../components/ui/Container';
-import Button from '../components/ui/Button';
-import RandomShowPicker from '../components/ui/RandomShowPicker';
-import HeroSpotlight from '../components/home/HeroSpotlight';
+import { fetchApi } from '../api/tvmaze';
 import AiringTodayStrip from '../components/home/AiringTodayStrip';
 import ContinueWatching from '../components/home/ContinueWatching';
 import GenreRow from '../components/home/GenreRow';
-import TopRatedSection from '../components/home/TopRatedSection';
+import HeroSpotlight from '../components/home/HeroSpotlight';
+import SimilarPicksStrip from '../components/home/SimilarPicksStrip';
 import TonightsPlan from '../components/home/TonightsPlan';
-import WhatsNew from '../components/home/WhatsNew';
-import OnThisDay from '../components/home/OnThisDay';
+import TopRatedSection from '../components/home/TopRatedSection';
 import TrendingMoviesRow from '../components/home/TrendingMoviesRow';
-import NowPlayingMovies from '../components/home/NowPlayingMovies';
-import UpcomingMovies from '../components/home/UpcomingMovies';
 import TrendingPeople from '../components/home/TrendingPeople';
+import Container from '../components/ui/Container';
+import RollDiceButton from '../components/ui/RollDiceButton';
+import SurpriseMePicker from '../components/ui/SurpriseMePicker';
+import { SITE_ORIGIN, usePageHead } from '../hooks/usePageHead';
 
-const HOME_GENRES = ['Drama', 'Comedy', 'Science-Fiction', 'Thriller', 'Action', 'Crime'];
+const HOME_GENRES = ['Drama', 'Comedy', 'Science-Fiction'];
 
 export default function HomePage() {
+  usePageHead({
+    title: 'Bynge — Discover, track and binge movies & TV shows',
+    description:
+      'Discover what to watch tonight. Track every episode, explore ranked Best Of lists, similar picks, hidden gems, and never miss what\'s coming next.',
+    canonical: `${SITE_ORIGIN}/`,
+    ogImage: `${SITE_ORIGIN}/api/og?type=default`,
+  });
+
   const [shows, setShows] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [randomPickerOpen, setRandomPickerOpen] = useState(false);
@@ -47,11 +53,17 @@ export default function HomePage() {
       <HeroSpotlight />
 
       <div>
-        <Container className="space-y-14 mt-10">
-          <div className="flex justify-center">
-            <Button onClick={() => setRandomPickerOpen(true)} variant="secondary" size="md">
-              Surprise Me — Pick a Random Show
-            </Button>
+        <Container className="space-y-section-lg mt-section">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-5 px-5 sm:px-6 rounded-xl border border-white/[0.06] bg-white/[0.02]">
+            <div className="max-w-md">
+              <p className="text-meta uppercase text-text-muted font-semibold tracking-widest">
+                Can't decide?
+              </p>
+              <p className="mt-1 text-h3 sm:text-h2 font-bold tracking-tight text-white leading-snug">
+                Roll the dice — we'll pick a show.
+              </p>
+            </div>
+            <RollDiceButton onClick={() => setRandomPickerOpen(true)} className="shrink-0" />
           </div>
 
           <ContinueWatching />
@@ -60,15 +72,11 @@ export default function HomePage() {
 
           <TrendingMoviesRow />
 
+          <SimilarPicksStrip />
+
           <AiringTodayStrip />
 
-          <NowPlayingMovies />
-
           <TrendingPeople />
-
-          <OnThisDay />
-
-          <WhatsNew />
 
           <div className="space-y-10">
             {HOME_GENRES.map((genre) => (
@@ -76,14 +84,12 @@ export default function HomePage() {
             ))}
           </div>
 
-          <UpcomingMovies />
-
           <TopRatedSection shows={shows} />
 
         </Container>
       </div>
 
-      <RandomShowPicker isOpen={randomPickerOpen} onClose={() => setRandomPickerOpen(false)} />
+      <SurpriseMePicker isOpen={randomPickerOpen} onClose={() => setRandomPickerOpen(false)} />
     </motion.div>
   );
 }

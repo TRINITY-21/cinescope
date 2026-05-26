@@ -2,13 +2,66 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0d0b08" />
+
+    <title>Bynge — Discover, track and binge movies & TV shows</title>
+    <meta name="description" content="Bynge is a premium movie and TV discovery app. Track every episode, find hidden gems, compare shows, follow your favorite cast, and never miss what's coming next." />
+    <meta name="keywords" content="movie tracker, tv show tracker, what to watch, binge, streaming guide, episode tracker, watchlist" />
+    <meta name="author" content="Bynge" />
+    <link rel="canonical" href="https://bynge.app/" />
+
+    <!-- Open Graph defaults -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bynge" />
+    <meta property="og:title" content="Bynge — Discover, track and binge movies & TV shows" />
+    <meta property="og:description" content="Track every episode, find hidden gems, compare shows, follow your favorite cast." />
+    <meta property="og:url" content="https://bynge.app/" />
+    <meta property="og:image" content="https://bynge.app/api/og?type=default" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Bynge — Discover, track and binge movies & TV shows" />
+    <meta name="twitter:description" content="Track every episode, find hidden gems, compare shows, follow your favorite cast." />
+    <meta name="twitter:image" content="https://bynge.app/api/og?type=default" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Bynge" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <title>Bynge</title>
+
+    <!-- Structured data: WebSite + Organization (unlocks Google sitelinks searchbox + brand panel) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://bynge.app/#website",
+          "url": "https://bynge.app/",
+          "name": "Bynge",
+          "description": "Discover, track and binge movies & TV shows",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://bynge.app/search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://bynge.app/#organization",
+          "name": "Bynge",
+          "url": "https://bynge.app/",
+          "logo": "https://bynge.app/favicon.svg"
+        }
+      ]
+    }
+    </script>
   </head>
   <body class="bg-bg-primary text-text-primary antialiased">
     <div id="root"></div>

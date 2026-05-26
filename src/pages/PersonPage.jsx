@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useApiQuery } from '../hooks/useApiQuery';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { endpoints } from '../api/endpoints';
-import Container from '../components/ui/Container';
-import TabGroup from '../components/ui/TabGroup';
-import Loader from '../components/ui/Loader';
-import PersonHero from '../components/person/PersonHero';
+import { getTmdbPersonDetails, getTmdbPersonExternalIds, getTmdbPersonImages, hasTmdbKey, searchTmdbPerson } from '../api/tmdb';
 import FilmographyList from '../components/person/FilmographyList';
-import { searchTmdbPerson, getTmdbPersonDetails, getTmdbPersonExternalIds, getTmdbPersonImages, hasTmdbKey } from '../api/tmdb';
+import PersonHero from '../components/person/PersonHero';
+import Container from '../components/ui/Container';
+import Loader from '../components/ui/Loader';
+import TabGroup from '../components/ui/TabGroup';
+import { useApiQuery } from '../hooks/useApiQuery';
+import { SITE_ORIGIN, usePageHead } from '../hooks/usePageHead';
 
 export default function PersonPage() {
   const { id } = useParams();
@@ -22,12 +23,30 @@ export default function PersonPage() {
   const { data: crewCredits } = useApiQuery(endpoints.personCrew(id));
   const { data: guestCredits } = useApiQuery(endpoints.personGuestCast(id));
 
-  useEffect(() => {
-    if (person) {
-      document.title = `${person.name} — Bynge`;
-    }
-    return () => { document.title = 'Bynge'; };
-  }, [person]);
+  usePageHead(
+    person
+      ? {
+          title: `${person.name} — Bynge`,
+          description: `${person.name} on Bynge — filmography, credits, and shows they've appeared in.`,
+          canonical: `${SITE_ORIGIN}/person/${id}`,
+          ogImage: tmdbData?.id
+            ? `${SITE_ORIGIN}/api/og?type=tmdb-person&id=${tmdbData.id}`
+            : `${SITE_ORIGIN}/api/og?type=person&id=${id}`,
+          ogType: 'profile',
+          jsonLd: [
+            {
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_ORIGIN },
+                { '@type': 'ListItem', position: 2, name: 'People', item: `${SITE_ORIGIN}/people` },
+                { '@type': 'ListItem', position: 3, name: person.name, item: `${SITE_ORIGIN}/person/${id}` },
+              ],
+            },
+          ],
+        }
+      : {},
+  );
 
   useEffect(() => {
     window.scrollTo(0, 0);

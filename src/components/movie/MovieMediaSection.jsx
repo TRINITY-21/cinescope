@@ -125,7 +125,7 @@ export default function MovieMediaSection({ images, videos, selectVideosTrigger 
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl p-4 sm:p-6">
       <div className="flex items-center justify-between mb-3 sm:mb-5">
         <div className="flex items-center gap-2 sm:gap-3">
-          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-violet flex-shrink-0">
+          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-peach flex-shrink-0">
             <path d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
           </svg>
           <h3 className="text-base sm:text-lg font-semibold text-white">Media</h3>
@@ -141,7 +141,7 @@ export default function MovieMediaSection({ images, videos, selectVideosTrigger 
             )}
             <span className="relative z-10 flex items-center gap-2">
               {TAB_LABELS[tab]}
-              <span className={`text-xs font-mono ${activeTab === tab ? 'text-accent-violet' : 'text-text-muted'}`}>{counts[tab]}</span>
+              <span className={`text-xs font-mono ${activeTab === tab ? 'text-accent-peach' : 'text-text-muted'}`}>{counts[tab]}</span>
             </span>
           </button>
         ))}
@@ -152,7 +152,7 @@ export default function MovieMediaSection({ images, videos, selectVideosTrigger 
           <motion.div key="backdrops" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {displayBackdrops.map((img, i) => (
-                <motion.button key={img.file_path} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03, duration: 0.3 }} onClick={() => setLightbox({ images: currentBackdrops, index: i, type: 'backdrop' })} className="group relative aspect-video rounded-xl overflow-hidden ring-1 ring-white/[0.06] hover:ring-accent-violet/30 transition-all">
+                <motion.button key={img.file_path} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03, duration: 0.3 }} onClick={() => setLightbox({ images: currentBackdrops, index: i, type: 'backdrop' })} className="group relative aspect-video rounded-xl overflow-hidden ring-1 ring-white/[0.06] hover:ring-accent-peach/30 transition-all">
                   <img src={`${TMDB_IMAGE_BASE}/w780${img.file_path}`} alt="" loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -168,7 +168,7 @@ export default function MovieMediaSection({ images, videos, selectVideosTrigger 
           <motion.div key="posters" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {displayPosters.map((img, i) => (
-                <motion.button key={img.file_path} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03, duration: 0.3 }} onClick={() => setLightbox({ images: currentPosters, index: i, type: 'poster' })} className="group relative aspect-[2/3] rounded-xl overflow-hidden ring-1 ring-white/[0.06] hover:ring-accent-violet/30 transition-all">
+                <motion.button key={img.file_path} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03, duration: 0.3 }} onClick={() => setLightbox({ images: currentPosters, index: i, type: 'poster' })} className="group relative aspect-[2/3] rounded-xl overflow-hidden ring-1 ring-white/[0.06] hover:ring-accent-peach/30 transition-all">
                   <img src={`${TMDB_IMAGE_BASE}/w342${img.file_path}`} alt="" loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </motion.button>
@@ -191,7 +191,7 @@ export default function MovieMediaSection({ images, videos, selectVideosTrigger 
                     </div>
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="text-xs font-medium text-white truncate">{video.name}</p>
+                    <p className="text-xs font-medium text-white break-words min-w-0">{video.name}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-text-secondary">{video.type}</span>
                       {video.official && <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-red/20 text-accent-red">Official</span>}

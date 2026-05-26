@@ -20,7 +20,7 @@ export default function TrendingMoviesRow() {
   if (!isLoading && movies.length === 0) return null;
 
   return (
-    <Carousel title="Trending Movies" subtitle="Popular this week" viewAllLink="/movies">
+    <Carousel eyebrow="This week" title="Trending movies" viewAllLink="/movies">
       {isLoading
         ? Array.from({ length: 8 }, (_, i) => (
             <ShowCardSkeleton key={i} className="w-36 sm:w-40 md:w-44" />

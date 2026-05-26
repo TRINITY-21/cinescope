@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { markWsrvFailed } from '../../utils/imageOptimize';
 import { PLACEHOLDER } from '../../utils/imageUrl';
 
 const aspectClasses = {
@@ -13,6 +14,11 @@ export default function ImageWithFallback({ src, alt, fallback = PLACEHOLDER, cl
 
   const imgSrc = error ? fallback : src || fallback;
 
+  function handleError() {
+    if (typeof imgSrc === 'string' && imgSrc.includes('wsrv.nl')) markWsrvFailed();
+    setError(true);
+  }
+
   return (
     <div className={`relative overflow-hidden bg-bg-elevated ${aspectClasses[aspect] || ''} ${className}`}>
       {!loaded && (
@@ -23,7 +29,7 @@ export default function ImageWithFallback({ src, alt, fallback = PLACEHOLDER, cl
         alt={alt}
         loading="lazy"
         onLoad={() => setLoaded(true)}
-        onError={() => setError(true)}
+        onError={handleError}
         className={`w-full h-full object-cover transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
     </div>

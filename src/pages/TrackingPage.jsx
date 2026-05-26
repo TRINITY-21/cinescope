@@ -4,19 +4,21 @@ import { Link } from 'react-router-dom';
 import { endpoints } from '../api/endpoints';
 import { fetchApi } from '../api/tvmaze';
 import Container from '../components/ui/Container';
+import EmptyState from '../components/ui/EmptyState';
+import HorizontalScroll from '../components/ui/HorizontalScroll';
 import { useApp } from '../context/AppContext';
+import PageLayout from '../layouts/PageLayout';
 import { GENRE_COLORS } from '../utils/constants';
 import { formatYear } from '../utils/formatters';
 import { getMediumImage, getTmdbPosterUrl } from '../utils/imageUrl';
 
-
-const stagger = { animate: { transition: { staggerChildren: 0.07 } } };
+const stagger = { animate: { transition: { staggerChildren: 0.05 } } };
 const fadeUp = {
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] } },
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } },
 };
 
-/* ─── Visualizations ─── */
+/* ──────────────────  VISUALIZATIONS  ────────────────── */
 
 function GenreDonut({ entries, totalViews }) {
   const radius = 76;
@@ -41,13 +43,15 @@ function GenreDonut({ entries, totalViews }) {
       <circle r={radius} cx="100" cy="100" fill="none" stroke="currentColor" strokeWidth={stroke} className="text-white/[0.03]" />
       {segments.map((seg, i) => (
         <motion.circle
-          key={seg.genre} r={radius} cx="100" cy="100" fill="none" stroke={seg.color}
+          key={seg.genre}
+          r={radius} cx="100" cy="100"
+          fill="none" stroke={seg.color}
           strokeWidth={stroke} strokeLinecap="round"
           strokeDasharray={`${seg.arcLen} ${circumference - seg.arcLen}`}
           transform={`rotate(${seg.angle - 90} 100 100)`}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: 0 }}
-          transition={{ duration: 1.2, delay: 0.3 + i * 0.12, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 1.0, delay: 0.2 + i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
         />
       ))}
     </svg>
@@ -59,7 +63,6 @@ function ProgressRing({ percentage, size = 48, strokeWidth = 4 }) {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (percentage / 100) * circumference;
   const color = percentage === 100 ? '#22c55e' : '#c4835b';
-
   return (
     <svg width={size} height={size} className="transform -rotate-90">
       <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={strokeWidth} />
@@ -70,7 +73,7 @@ function ProgressRing({ percentage, size = 48, strokeWidth = 4 }) {
       />
       <text
         x={size / 2} y={size / 2} textAnchor="middle" dominantBaseline="central"
-        fill="white" fontSize={size * 0.24} fontWeight="700"
+        fill="white" fontSize={size * 0.26} fontWeight="700"
         className="transform rotate-90" style={{ transformOrigin: 'center' }}
       >
         {percentage}%
@@ -79,7 +82,42 @@ function ProgressRing({ percentage, size = 48, strokeWidth = 4 }) {
   );
 }
 
-/* ─── Tracked Show Card ─── */
+/* ──────────────────  SHARED PRIMITIVES  ────────────────── */
+
+function SectionHeader({ title, count, right }) {
+  return (
+    <div className="flex items-baseline gap-3 mb-4">
+      <h2 className="text-h3 font-semibold text-white">{title}</h2>
+      <div className="flex-1 h-px bg-white/[0.06]" />
+      {count != null && (
+        <span className="text-caption text-text-muted font-mono tabular-nums">
+          {String(count).padStart(2, '0')}
+        </span>
+      )}
+      {right}
+    </div>
+  );
+}
+
+function StatBlock({ value, suffix, label, accent }) {
+  return (
+    <div>
+      <p className="font-mono text-h1 sm:text-display-sm font-extrabold text-white tabular-nums leading-none">
+        {value}
+        {suffix && <span className="text-h3 font-semibold text-text-muted ml-0.5">{suffix}</span>}
+      </p>
+      <p className="mt-2 text-meta uppercase text-text-muted font-semibold tracking-widest">
+        {label}
+      </p>
+      <div
+        className="w-10 h-0.5 rounded-full mt-2"
+        style={{ background: `linear-gradient(to right, ${accent}, transparent)` }}
+      />
+    </div>
+  );
+}
+
+/* ──────────────────  TRACKED SHOW CARD  ────────────────── */
 
 function TrackedShowCard({ showId, watchedIds, onClear }) {
   const [show, setShow] = useState(null);
@@ -94,8 +132,14 @@ function TrackedShowCard({ showId, watchedIds, onClear }) {
           fetchApi(endpoints.show(showId)),
           fetchApi(endpoints.showEpisodes(showId)),
         ]);
-        if (!cancelled) { setShow(showData); setTotalEpisodes(epsData?.length || 0); setLoading(false); }
-      } catch { if (!cancelled) setLoading(false); }
+        if (!cancelled) {
+          setShow(showData);
+          setTotalEpisodes(epsData?.length || 0);
+          setLoading(false);
+        }
+      } catch {
+        if (!cancelled) setLoading(false);
+      }
     }
     load();
     return () => { cancelled = true; };
@@ -103,10 +147,14 @@ function TrackedShowCard({ showId, watchedIds, onClear }) {
 
   if (loading) {
     return (
-      <div className="glass rounded-xl p-4 animate-pulse">
+      <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 sm:p-4 animate-pulse">
         <div className="flex gap-4">
-          <div className="w-20 h-28 rounded-lg bg-bg-elevated flex-shrink-0" />
-          <div className="flex-1 space-y-3"><div className="h-4 w-3/4 bg-bg-elevated rounded" /><div className="h-3 w-1/2 bg-bg-elevated rounded" /><div className="h-2 w-full bg-bg-elevated rounded mt-4" /></div>
+          <div className="w-20 h-28 rounded-lg bg-white/[0.04] flex-shrink-0" />
+          <div className="flex-1 space-y-3">
+            <div className="h-4 w-3/4 bg-white/[0.04] rounded" />
+            <div className="h-3 w-1/2 bg-white/[0.04] rounded" />
+            <div className="h-2 w-full bg-white/[0.04] rounded mt-4" />
+          </div>
         </div>
       </div>
     );
@@ -120,43 +168,91 @@ function TrackedShowCard({ showId, watchedIds, onClear }) {
   const hoursWatched = Math.round((watched * runtime) / 60);
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} layout className="glass rounded-xl p-3 sm:p-4 hover:border-white/10 transition-all group">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      layout
+      className="
+        rounded-xl border border-white/[0.06] bg-white/[0.02] p-3
+        hover:bg-white/[0.05] hover:border-white/[0.14]
+        transition-colors group
+      "
+    >
       <div className="flex gap-3 sm:gap-4">
         <Link to={`/show/${show.id}`} className="flex-shrink-0">
-          <img src={getMediumImage(show.image)} alt={show.name} className="w-16 h-22 sm:w-20 sm:h-28 rounded-lg object-cover group-hover:ring-2 ring-accent-violet/50 transition-all" />
+          <img
+            src={getMediumImage(show.image)}
+            alt={show.name}
+            className="w-16 h-24 sm:w-20 sm:h-28 rounded-lg object-cover border border-white/[0.06] group-hover:border-accent-peach/30 transition-colors"
+          />
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 sm:gap-3">
             <div className="min-w-0">
-              <Link to={`/show/${show.id}`} className="hover:text-accent-violet transition-colors">
-                <h3 className="font-semibold text-white text-xs sm:text-sm truncate">{show.name}</h3>
+              <Link to={`/show/${show.id}`} className="block">
+                <h3 className="font-semibold text-white text-body-sm sm:text-body break-words min-w-0 group-hover:text-accent-peach transition-colors">
+                  {show.name}
+                </h3>
               </Link>
-              <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
-                <span className="text-[11px] sm:text-xs text-text-secondary">{formatYear(show.premiered)}</span>
-                {show.network && (<><span className="text-text-muted text-[11px] sm:text-xs">·</span><span className="text-[11px] sm:text-xs text-text-secondary">{show.network.name}</span></>)}
-                {isComplete && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400 font-medium">Complete</span>}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-caption text-text-secondary">
+                <span>{formatYear(show.premiered)}</span>
+                {show.network && (
+                  <>
+                    <span className="text-text-muted">·</span>
+                    <span>{show.network.name}</span>
+                  </>
+                )}
+                {isComplete && (
+                  <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-green-500/15 text-green-400">
+                    Complete
+                  </span>
+                )}
               </div>
             </div>
           </div>
-          <div className="mt-2 sm:mt-3">
-            <div className="flex items-center justify-between mb-1 sm:mb-1.5">
-              <span className="text-[10px] sm:text-[11px] text-text-secondary">{watched} of {totalEpisodes} episodes</span>
-              {hoursWatched > 0 && <span className="text-[10px] sm:text-[11px] text-text-muted">{hoursWatched}h watched</span>}
+
+          <div className="mt-3">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-caption text-text-secondary">
+                <span className="font-mono text-white">{watched}</span> of{' '}
+                <span className="font-mono">{totalEpisodes}</span> episodes
+              </span>
+              {hoursWatched > 0 && (
+                <span className="text-caption text-text-muted font-mono">{hoursWatched}h watched</span>
+              )}
             </div>
-            <div className="h-1 sm:h-1.5 rounded-full bg-white/5 overflow-hidden">
-              <motion.div initial={{ width: 0 }} animate={{ width: `${percentage}%` }} transition={{ duration: 0.6, ease: 'easeOut' }} className={`h-full rounded-full ${isComplete ? 'bg-green-500' : 'bg-accent-violet'}`} />
+            <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${percentage}%` }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className={`h-full rounded-full ${isComplete ? 'bg-green-500' : 'bg-accent-peach'}`}
+              />
             </div>
           </div>
-          <div className="flex items-center justify-between mt-2 sm:mt-3">
-            <Link to={`/show/${show.id}`} className="text-[11px] sm:text-xs text-accent-violet hover:text-accent-gold transition-colors font-medium whitespace-nowrap">
-              {isComplete ? 'View show' : 'Continue watching'}
+
+          <div className="flex items-center justify-between mt-3">
+            <Link
+              to={`/show/${show.id}`}
+              className="text-caption text-accent-peach hover:text-accent-gold font-semibold whitespace-nowrap transition-colors"
+            >
+              {isComplete ? 'View show' : 'Continue watching →'}
             </Link>
             <div className="flex items-center gap-2 sm:gap-3">
-              <button onClick={() => onClear(show.id, show.name)} className="text-[11px] sm:text-xs text-text-muted hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
+              <button
+                type="button"
+                onClick={() => onClear(show.id, show.name)}
+                className="text-caption text-text-muted hover:text-accent-red transition-colors sm:opacity-0 sm:group-hover:opacity-100"
+              >
                 Clear progress
               </button>
-              <div className="flex-shrink-0 sm:hidden"><ProgressRing percentage={percentage} size={28} strokeWidth={2.5} /></div>
-              <div className="flex-shrink-0 hidden sm:block"><ProgressRing percentage={percentage} size={34} strokeWidth={3} /></div>
+              <div className="flex-shrink-0 sm:hidden">
+                <ProgressRing percentage={percentage} size={28} strokeWidth={2.5} />
+              </div>
+              <div className="flex-shrink-0 hidden sm:block">
+                <ProgressRing percentage={percentage} size={36} strokeWidth={3} />
+              </div>
             </div>
           </div>
         </div>
@@ -165,16 +261,74 @@ function TrackedShowCard({ showId, watchedIds, onClear }) {
   );
 }
 
-/* ─── Main Page ─── */
+/* ──────────────────  PAGE  ────────────────── */
+
+const LIBRARY_TAB_ICONS = {
+  watching: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M8 5v14l11-7z" />
+    </svg>
+  ),
+  watchlist: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
+  watched: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  ),
+  paused: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <rect x="6" y="4" width="4" height="16" rx="1" />
+      <rect x="14" y="4" width="4" height="16" rx="1" />
+    </svg>
+  ),
+  dropped: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+      <path d="M18 6L6 18M6 6l12 12" />
+    </svg>
+  ),
+};
+
+const LIBRARY_TABS = [
+  { key: 'watching', label: 'Watching', color: 'text-green-400' },
+  { key: 'watchlist', label: 'Watchlist', color: 'text-accent-peach' },
+  { key: 'watched', label: 'Watched', color: 'text-blue-400' },
+  { key: 'paused', label: 'Paused', color: 'text-yellow-400' },
+  { key: 'dropped', label: 'Dropped', color: 'text-red-400' },
+];
 
 export default function TrackingPage() {
   const {
     watchedEpisodes, stats, clearShowProgress,
     watchlist, movieWatchlist, removeMovieFromWatchlist,
-    recentlyViewed, collections,
+    recentlyViewed, collections, itemsByStatus,
     getWatchStreak, getTodayEpisodeCount, getWeekActivity,
   } = useApp();
   const [confirmClear, setConfirmClear] = useState(null);
+  const [libraryTab, setLibraryTab] = useState('watchlist');
+  const [insightsOpen, setInsightsOpen] = useState(false);
+
+  // Bucket every tracked item into its 5-state slot (defaults to 'watchlist'
+  // when the user hasn't picked a status — that's the legacy behavior).
+  const byStatus = useMemo(() => {
+    const out = {};
+    for (const t of LIBRARY_TABS) out[t.key] = itemsByStatus(t.key);
+    return out;
+  }, [itemsByStatus]);
+
+  const libraryCounts = useMemo(() => {
+    const out = {};
+    for (const t of LIBRARY_TABS) {
+      const b = byStatus[t.key];
+      out[t.key] = (b?.shows?.length || 0) + (b?.movies?.length || 0);
+    }
+    return out;
+  }, [byStatus]);
+
+  const libraryTotal = Object.values(libraryCounts).reduce((s, n) => s + n, 0);
 
   useEffect(() => {
     document.title = 'My Library — Bynge';
@@ -197,8 +351,8 @@ export default function TrackingPage() {
 
   const genreEntries = Object.entries(stats.genresWatched || {}).sort((a, b) => b[1] - a[1]);
   const totalGenreViews = genreEntries.reduce((sum, [, c]) => sum + c, 0);
-
   const collectionsTotal = collections.reduce((sum, c) => sum + c.shows.length, 0);
+  const usedCollections = collections.filter((c) => c.shows.length > 0);
 
   const hasData = totalEpisodes > 0 || watchlist.length > 0 || movieWatchlist.length > 0 || collectionsTotal > 0;
 
@@ -209,417 +363,612 @@ export default function TrackingPage() {
     setConfirmClear(null);
   }
 
-  // Empty state
+  /* ─── Empty state ─── */
   if (!hasData) {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-20 sm:pt-24 pb-8 sm:pb-12">
+      <PageLayout
+        as={motion.div}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+      >
         <Container>
-          <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
-            <div className="relative mb-8">
-              <div className="w-28 h-28 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center">
-                <svg width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" className="text-text-muted">
-                  <path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-                </svg>
-              </div>
-              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-bg-elevated border border-white/10 flex items-center justify-center">
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-violet"><path d="M12 4.5v15m7.5-7.5h-15" /></svg>
-              </div>
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Your library is empty</h2>
-            <p className="text-text-secondary max-w-sm mb-8 text-sm leading-relaxed">
-              Start watching shows, tracking episodes, and saving movies. Your personal entertainment hub will come alive with data.
+          <header className="mb-section">
+            <p className="text-meta uppercase text-text-muted font-semibold tracking-widest">
+              Your library
             </p>
-            <div className="flex gap-3">
-              <Link to="/browse" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-accent-violet to-accent-violet/80 text-white font-semibold text-sm hover:shadow-lg hover:shadow-accent-violet/20 transition-all">
-                Browse Shows
-              </Link>
-              <Link to="/movies" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl glass text-white font-semibold text-sm hover:bg-white/10 transition-all">
-                Browse Movies
-              </Link>
-            </div>
-          </div>
+            <h1 className="mt-2 text-h1 sm:text-display-sm font-extrabold tracking-tight text-white leading-none">
+              Your library <span className="text-text-secondary">is empty.</span>
+            </h1>
+          </header>
+          <EmptyState
+            icon={
+              <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+              </svg>
+            }
+            title="Nothing tracked yet"
+            description="Track episodes, save shows and movies. Your personal library fills in as you watch."
+            action={{ label: 'Browse shows', to: '/browse' }}
+            secondaryAction={{ label: 'Browse movies', to: '/movies' }}
+          />
         </Container>
-      </motion.div>
+      </PageLayout>
     );
   }
 
+  const streak = totalEpisodes > 0 ? getWatchStreak() : { current: 0, best: 0 };
+  const todayCount = totalEpisodes > 0 ? getTodayEpisodeCount() : 0;
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-20 sm:pt-24 pb-12 sm:pb-16">
+    <PageLayout
+      as={motion.div}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <Container>
+        {/* Editorial header */}
+        <header className="mb-8">
+          <p className="text-meta uppercase text-text-muted font-semibold tracking-widest">
+            Your library
+          </p>
+          <h1 className="mt-2 text-h1 sm:text-h2 font-extrabold tracking-tight text-white leading-none">
+            My library
+          </h1>
+          <p className="mt-2 text-body-sm text-text-secondary">
+            <span className="text-white font-mono">{trackedShowIds.length}</span> shows tracked
+            {movieWatchlist.length > 0 && (
+              <> · <span className="text-white font-mono">{movieWatchlist.length}</span> movies saved</>
+            )}
+            {watchlist.length > 0 && (
+              <> · <span className="text-white font-mono">{watchlist.length}</span> in watchlist</>
+            )}
+          </p>
+        </header>
+
         <motion.div variants={stagger} initial="initial" animate="animate">
 
-          {/* ═══════════ HEADER ═══════════ */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-white">My Library</h1>
-              <p className="text-text-secondary mt-2 text-sm">
-                {trackedShowIds.length} show{trackedShowIds.length !== 1 ? 's' : ''} tracked
-                {movieWatchlist.length > 0 ? ` · ${movieWatchlist.length} movie${movieWatchlist.length !== 1 ? 's' : ''} saved` : ''}
-                {watchlist.length > 0 ? ` · ${watchlist.length} in watchlist` : ''}
-              </p>
-            </div>
-          </div>
+          {/* Quick summary */}
+          <motion.div variants={fadeUp} className="flex flex-wrap gap-2 mb-8">
+            {libraryTotal > 0 && (
+              <span className="text-caption px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-text-secondary">
+                <span className="text-white font-mono">{libraryTotal}</span> in library
+              </span>
+            )}
+            {trackedShowIds.length > 0 && (
+              <span className="text-caption px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-text-secondary">
+                <span className="text-white font-mono">{trackedShowIds.length}</span> in progress
+              </span>
+            )}
+            {totalEpisodes > 0 && (
+              <span className="text-caption px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-text-secondary">
+                <span className="text-white font-mono">{totalEpisodes}</span> episodes ·{' '}
+                <span className="text-white font-mono">{streak.current}</span>d streak
+              </span>
+            )}
+          </motion.div>
 
-          {/* ═══════════ WATCH STREAK ═══════════ */}
+          {/* LIBRARY — primary */}
+          {libraryTotal > 0 && (
+            <motion.section variants={fadeUp} className="mb-10">
+              <SectionHeader
+                title="Library"
+                count={libraryTotal}
+                right={
+                  <Link
+                    to="/browse"
+                    className="ml-2 inline-flex items-center gap-1 text-caption text-accent-peach hover:text-accent-gold transition-colors"
+                  >
+                    Add more
+                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path d="M5 12h14M13 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                }
+              />
+
+              <div className="flex flex-wrap gap-2 pb-1 mb-4">
+                {LIBRARY_TABS.map((t) => {
+                  const n = libraryCounts[t.key];
+                  const active = libraryTab === t.key;
+                  return (
+                    <button
+                      key={t.key}
+                      type="button"
+                      onClick={() => setLibraryTab(t.key)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                        active
+                          ? 'bg-accent-peach text-white'
+                          : 'bg-bg-elevated/50 text-text-secondary hover:text-white hover:bg-bg-elevated'
+                      }`}
+                    >
+                      <span className={`flex items-center justify-center ${active ? 'text-white' : t.color}`}>
+                        {LIBRARY_TAB_ICONS[t.key]}
+                      </span>
+                      <span>{t.label}</span>
+                      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${
+                        active ? 'bg-white/15' : 'bg-white/[0.05]'
+                      }`}>
+                        {n}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {(() => {
+                const bucket = byStatus[libraryTab] || { shows: [], movies: [] };
+                const total = bucket.shows.length + bucket.movies.length;
+                if (total === 0) {
+                  const tabConfig = LIBRARY_TABS.find((t) => t.key === libraryTab);
+                  return (
+                    <div className="glass-subtle rounded-2xl py-8 px-6 text-center border border-white/[0.04]">
+                      <p className={`mb-2 flex justify-center ${tabConfig?.color || 'text-text-muted'}`}>
+                        {LIBRARY_TAB_ICONS[libraryTab]}
+                      </p>
+                      <p className="text-body-sm text-text-secondary">
+                        Nothing in <span className="text-white font-semibold">{tabConfig?.label}</span> yet.
+                      </p>
+                      <p className="text-caption text-text-muted mt-1">
+                        Use the Track button on any show or movie to add it here.
+                      </p>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2.5 sm:gap-3">
+                    {bucket.shows.map((show, i) => (
+                      <motion.div
+                        key={`s-${show.id}`}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: Math.min(0.04 + i * 0.02, 0.4), duration: 0.3 }}
+                      >
+                        <Link to={`/show/${show.id}`} className="group block">
+                          <div className="relative rounded-xl overflow-hidden aspect-[2/3] border border-white/[0.06] group-hover:border-accent-peach/40 transition-colors">
+                            <img
+                              src={getMediumImage(show.image)}
+                              alt={show.name}
+                              loading="lazy"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] uppercase tracking-wider font-bold rounded bg-black/55 backdrop-blur text-white/90">
+                              TV
+                            </span>
+                          </div>
+                          <p className="text-caption text-text-secondary mt-1.5 break-words min-w-0 group-hover:text-white transition-colors">
+                            {show.name}
+                          </p>
+                        </Link>
+                      </motion.div>
+                    ))}
+                    {bucket.movies.map((movie, i) => (
+                      <motion.div
+                        key={`m-${movie.id}`}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: Math.min(0.04 + (bucket.shows.length + i) * 0.02, 0.4), duration: 0.3 }}
+                      >
+                        <Link to={`/movie/${movie.id}`} className="group block relative">
+                          <div className="relative rounded-xl overflow-hidden aspect-[2/3] border border-white/[0.06] group-hover:border-accent-gold/40 transition-colors">
+                            <img
+                              src={getTmdbPosterUrl(movie.poster_path)}
+                              alt={movie.title}
+                              loading="lazy"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] uppercase tracking-wider font-bold rounded bg-black/55 backdrop-blur text-white/90">
+                              Movie
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeMovieFromWatchlist(movie.id); }}
+                              aria-label="Remove from library"
+                              className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 backdrop-blur flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-accent-red transition-all"
+                            >
+                              <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                          <p className="text-caption text-text-secondary mt-1.5 break-words min-w-0 group-hover:text-white transition-colors">
+                            {movie.title}
+                          </p>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </motion.section>
+          )}
+
+          {/* TRACKED SHOWS */}
+          {trackedShowIds.length > 0 && (
+            <motion.section variants={fadeUp} className="mb-10">
+              <SectionHeader title="Continue watching" count={trackedShowIds.length} />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <AnimatePresence>
+                  {trackedShowIds.map((showId) => (
+                    <TrackedShowCard
+                      key={showId}
+                      showId={showId}
+                      watchedIds={watchedEpisodes[showId] || []}
+                      onClear={handleClearProgress}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+            </motion.section>
+          )}
+
+          {/* Collapsible stats & insights */}
+          {(totalEpisodes > 0 || genreEntries.length > 0 || collectionsTotal > 0) && (
+            <motion.section variants={fadeUp} className="mb-10">
+              <button
+                type="button"
+                onClick={() => setInsightsOpen((v) => !v)}
+                className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.05] transition-colors text-left"
+                aria-expanded={insightsOpen}
+              >
+                <span className="text-body-sm font-semibold text-white">Stats & insights</span>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className={`shrink-0 transition-transform ${insightsOpen ? 'rotate-180' : ''}`}
+                  aria-hidden
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+
+              {insightsOpen && (
+                <div className="mt-4 space-y-4">
           {totalEpisodes > 0 && (() => {
-            const streak = getWatchStreak();
-            const todayCount = getTodayEpisodeCount();
             const week = getWeekActivity();
             const maxWeekCount = Math.max(1, ...week.map((d) => d.count));
 
             return (
-              <motion.div variants={fadeUp} className="mb-8">
-                <div className="rounded-2xl bg-bg-elevated/50 border border-white/[0.05] p-5 sm:p-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
-                    {/* Streak + today stats */}
-                    <div className="flex items-center gap-6 sm:gap-8">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center">
-                          <span className="text-xl">{streak.current > 0 ? '\uD83D\uDD25' : '\u2744\uFE0F'}</span>
-                        </div>
-                        <div>
-                          <p className="text-2xl font-extrabold text-white leading-none">{streak.current}</p>
-                          <p className="text-[11px] text-text-muted mt-0.5">day streak</p>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-extrabold text-white leading-none">{todayCount}</p>
-                        <p className="text-[11px] text-text-muted mt-0.5">today</p>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-extrabold text-accent-gold leading-none">{streak.best}</p>
-                        <p className="text-[11px] text-text-muted mt-0.5">best streak</p>
-                      </div>
-                    </div>
+              <motion.section
+                variants={fadeUp}
+                className="
+                  relative overflow-hidden rounded-2xl
+                  border border-white/[0.06]
+                  bg-gradient-to-br from-bg-elevated/60 to-bg-secondary/30
+                  p-4 sm:p-5 mb-8
+                "
+              >
+                <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10">
+                  {/* Streak triplet */}
+                  <div className="grid grid-cols-3 gap-6 sm:gap-10 flex-shrink-0">
+                    <StatTriplet
+                      value={streak.current}
+                      label="Day streak"
+                      accent={streak.current > 0 ? '#f97316' : '#5a4a3a'}
+                    />
+                    <StatTriplet
+                      value={todayCount}
+                      label="Today"
+                      accent="#c4835b"
+                    />
+                    <StatTriplet
+                      value={streak.best}
+                      label="Best streak"
+                      accent="#d4a056"
+                    />
+                  </div>
 
-                    {/* Weekly activity */}
-                    <div className="flex-1 flex items-end gap-1.5 sm:gap-2 h-10 sm:justify-end">
-                      {week.map((d) => (
-                        <div key={d.date} className="flex flex-col items-center gap-1 flex-1 sm:flex-none sm:w-8">
-                          <div className="w-full sm:w-6 rounded-sm transition-all duration-500" style={{
-                            height: d.count > 0 ? `${Math.max(6, (d.count / maxWeekCount) * 32)}px` : '3px',
-                            backgroundColor: d.count > 0 ? `rgba(249, 115, 22, ${0.3 + (d.count / maxWeekCount) * 0.7})` : 'rgba(255,255,255,0.05)',
-                          }} />
-                          <span className="text-[9px] text-text-muted">{d.day}</span>
-                        </div>
-                      ))}
+                  {/* Week activity bars */}
+                  <div className="flex-1 lg:flex lg:justify-end">
+                    <div className="flex items-end gap-1.5 sm:gap-2 h-12">
+                      {week.map((d) => {
+                        const heightPx = d.count > 0
+                          ? Math.max(8, (d.count / maxWeekCount) * 40)
+                          : 4;
+                        return (
+                          <div key={d.date} className="flex flex-col items-center gap-1.5 flex-1 sm:flex-none sm:w-8 max-w-10">
+                            <div
+                              className="w-full sm:w-7 rounded-sm transition-all duration-500"
+                              style={{
+                                height: `${heightPx}px`,
+                                background: d.count > 0
+                                  ? `linear-gradient(to top, #c4553a, #d4a056)`
+                                  : 'rgba(255,255,255,0.05)',
+                                opacity: d.count > 0 ? Math.max(0.45, d.count / maxWeekCount) : 1,
+                              }}
+                              title={`${d.count} ep${d.count === 1 ? '' : 's'}`}
+                            />
+                            <span className="text-[10px] font-mono uppercase text-text-muted tracking-widest">
+                              {d.day.slice(0, 1)}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </motion.section>
             );
           })()}
 
-          {/* ═══════════ STATS + GENRE DNA + COLLECTIONS (single row) ═══════════ */}
+          {/* STATS BENTO — 3-card row */}
           {(totalEpisodes > 0 || genreEntries.length > 0 || collectionsTotal > 0) && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-10">
-              {/* Card 1: Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {/* Card 1: Watch stats */}
               {totalEpisodes > 0 && (
-                <motion.div variants={fadeUp} className="relative overflow-hidden rounded-2xl bg-bg-elevated/50 border border-white/[0.05] noise-overlay min-h-[200px] flex flex-col justify-center">
-                  <div className="absolute inset-0 bg-gradient-to-br from-accent-violet/[0.08] via-transparent to-accent-red/[0.06]" />
-                  <div className="absolute inset-0 border border-white/[0.06] rounded-2xl pointer-events-none" />
-                  <div className="relative z-10 p-6">
-                    <div className="grid grid-cols-2 gap-4 sm:gap-5">
-                      {[
-                        { value: totalEpisodes, label: 'Episodes', suffix: '', color: 'accent-violet', delay: 0.3 },
-                        { value: totalHours, label: 'Watch time', suffix: 'h', color: 'accent-gold', delay: 0.4 },
-                        { value: totalShows, label: 'Shows', suffix: '', color: 'accent-red', delay: 0.5 },
-                        { value: totalDays, label: 'Days of content', suffix: 'd', color: 'green-500', delay: 0.6 },
-                      ].map((stat) => (
-                        <div key={stat.label}>
-                          <motion.p
-                            className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-none"
-                            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: stat.delay, duration: 0.5 }}
-                          >
-                            {stat.value}{stat.suffix && <span className="text-base font-semibold text-text-muted ml-0.5">{stat.suffix}</span>}
-                          </motion.p>
-                          <p className="text-xs text-text-secondary mt-1">{stat.label}</p>
-                          <div className={`w-8 h-0.5 rounded-full bg-gradient-to-r from-${stat.color} to-transparent mt-1.5 animate-glow-breathe`} />
-                        </div>
-                      ))}
-                    </div>
+                <motion.section
+                  variants={fadeUp}
+                  className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5"
+                >
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-5">
+                    <StatBlock value={totalEpisodes} label="Episodes" accent="#c4835b" />
+                    <StatBlock value={totalHours} suffix="h" label="Watch time" accent="#d4a056" />
+                    <StatBlock value={totalShows} label="Shows" accent="#c4553a" />
+                    <StatBlock value={totalDays} suffix="d" label="Days of content" accent="#22c55e" />
                   </div>
-                </motion.div>
+                </motion.section>
               )}
 
               {/* Card 2: Genre DNA */}
               {genreEntries.length > 0 && (
-                <motion.div variants={fadeUp} className="rounded-2xl bg-bg-elevated/50 border border-white/[0.05] gradient-border p-6 flex flex-col min-h-[200px]">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-violet/20 to-accent-violet/5 flex items-center justify-center">
-                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-violet">
-                        <path d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-white">Genre DNA</h3>
-                      <p className="text-xs text-text-muted">{genreEntries.length} genres explored</p>
-                    </div>
+                <motion.section
+                  variants={fadeUp}
+                  className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 flex flex-col min-h-[180px]"
+                >
+                  <div className="flex items-baseline justify-between mb-4">
+                    <h3 className="text-h3 font-semibold text-white">Genre DNA</h3>
+                    <span className="text-caption text-text-muted font-mono">
+                      {String(genreEntries.length).padStart(2, '0')}
+                    </span>
                   </div>
                   <div className="flex items-center gap-4 flex-1 min-h-0">
                     <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex-shrink-0">
                       <GenreDonut entries={genreEntries} totalViews={totalGenreViews} />
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-xl font-extrabold text-white">{totalGenreViews}</span>
-                        <span className="text-[9px] uppercase tracking-widest text-text-muted">views</span>
+                        <span className="font-mono text-h2 font-extrabold text-white tabular-nums leading-none">
+                          {totalGenreViews}
+                        </span>
+                        <span className="text-[9px] uppercase tracking-widest text-text-muted mt-0.5">
+                          views
+                        </span>
                       </div>
                     </div>
-                    <div className="flex-1 space-y-1.5 min-w-0 overflow-hidden">
+                    <div className="flex-1 space-y-1.5 min-w-0">
                       {genreEntries.slice(0, 6).map(([genre, count], i) => {
                         const pct = Math.round((count / totalGenreViews) * 100);
+                        const color = GENRE_COLORS[genre] || '#c4835b';
                         return (
-                          <motion.div key={genre} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.05 }} className="flex items-center gap-2 group">
-                            <div className="w-2 h-2 rounded-sm flex-shrink-0" style={{ backgroundColor: GENRE_COLORS[genre] || '#c4835b' }} />
-                            <span className="text-xs text-text-secondary group-hover:text-white transition-colors truncate flex-1">{genre}</span>
-                            <span className="text-[11px] font-mono text-text-muted tabular-nums">{pct}%</span>
+                          <motion.div
+                            key={genre}
+                            initial={{ opacity: 0, x: -6 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 + i * 0.04 }}
+                            className="flex items-center gap-2 group min-w-0"
+                          >
+                            <div className="w-2 h-2 rounded-sm flex-shrink-0" style={{ backgroundColor: color }} />
+                            <span className="text-caption text-text-secondary group-hover:text-white transition-colors break-words min-w-0 flex-1">
+                              {genre}
+                            </span>
+                            <span className="text-caption font-mono text-text-muted tabular-nums">
+                              {pct}%
+                            </span>
                           </motion.div>
                         );
                       })}
                     </div>
                   </div>
-                </motion.div>
+                </motion.section>
               )}
 
               {/* Card 3: Collections */}
-              
-                <motion.div variants={fadeUp} className="rounded-2xl bg-bg-elevated/50 border border-white/[0.05] p-6 min-h-[200px] flex flex-col justify-center">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-red/20 to-accent-red/5 flex items-center justify-center">
-                      <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" className="text-accent-red">
-                        <path d="M6 6.878V6a2.25 2.25 0 012.25-2.25h7.5A2.25 2.25 0 0118 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 004.5 9v.878m13.5-3A2.25 2.25 0 0119.5 9v.878m0 0a2.246 2.246 0 00-.75-.128H5.25c-.263 0-.515.045-.75.128m15 0A2.25 2.25 0 0121 12v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6c0-1.243 1.007-2.25 2.25-2.25h13.5z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-white leading-none">{collections.length}</p>
-                      <p className="text-xs text-text-muted mt-1">Collections &middot; {collectionsTotal} shows</p>
-                    </div>
+              <motion.section
+                variants={fadeUp}
+                className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5 flex flex-col"
+              >
+                <div className="flex items-baseline justify-between mb-4">
+                  <div>
+                    <p className="font-mono text-h1 sm:text-display-sm font-extrabold text-white tabular-nums leading-none">
+                      {collections.length}
+                    </p>
+                    <p className="mt-2 text-meta uppercase text-text-muted font-semibold tracking-widest">
+                      Collections · {collectionsTotal} items
+                    </p>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {collections.map((c) => (
-                      <span key={c.id} className="text-[11px] px-2.5 py-1 rounded-lg bg-white/[0.03] text-text-secondary border border-white/[0.04] hover:border-white/10 transition-colors cursor-default">
-                        {c.name}{c.shows.length > 0 && <span className="text-text-muted ml-1.5">{c.shows.length}</span>}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="text-[11px] text-text-muted mt-3">
-                    Add shows and movies from their pages via &ldquo;Add to collection&rdquo;.
-                  </p>
-                </motion.div>
-              
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {collections.map((c) => (
+                    <span
+                      key={c.id}
+                      className="inline-flex items-center gap-1.5 text-caption px-2.5 py-1 rounded-full bg-white/[0.03] text-text-secondary border border-white/[0.06]"
+                    >
+                      {c.name}
+                      {c.shows.length > 0 && (
+                        <span className="font-mono text-text-muted tabular-nums">{c.shows.length}</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-auto pt-4 text-caption text-text-muted">
+                  Add from any show or movie page via &ldquo;Add to collection&rdquo;.
+                </p>
+              </motion.section>
             </div>
           )}
+                </div>
+              )}
+            </motion.section>
+          )}
 
-          {/* ═══════════ YOUR COLLECTIONS (items) ═══════════ */}
-          {collectionsTotal > 0 && (
-            <motion.div variants={fadeUp} className="mb-10">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-red/20 to-accent-red/5 flex items-center justify-center">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-red">
-                    <path d="M6 6.878V6a2.25 2.25 0 012.25-2.25h7.5A2.25 2.25 0 0118 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 004.5 9v.878m13.5-3A2.25 2.25 0 0119.5 9v.878m0 0a2.246 2.246 0 00-.75-.128H5.25c-.263 0-.515.045-.75.128m15 0A2.25 2.25 0 0121 12v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6c0-1.243 1.007-2.25 2.25-2.25h13.5z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">Your collections</h3>
-                  <p className="text-xs text-text-muted">{collectionsTotal} item{collectionsTotal !== 1 ? 's' : ''} across {collections.filter((c) => c.shows.length > 0).length} collection{collections.filter((c) => c.shows.length > 0).length !== 1 ? 's' : ''}</p>
-                </div>
-              </div>
+          {/* YOUR COLLECTIONS */}
+          {usedCollections.length > 0 && (
+            <motion.section variants={fadeUp} className="mb-10">
+              <SectionHeader
+                title="Your collections"
+                count={usedCollections.length}
+              />
               <div className="space-y-6">
-                {collections.filter((c) => c.shows.length > 0).map((col) => (
-                  <div key={col.id} className="rounded-xl bg-bg-elevated/30 border border-white/[0.05] p-4">
-                    <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                      <span>{col.icon}</span> {col.name}
-                    </h4>
-                    <div className="relative">
-                      <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1 -mx-1 px-1">
-                        {col.shows.map((item) => {
-                          const href = (item.type === 'movie' ? '/movie/' : '/show/') + item.id;
-                          const imgSrc = typeof item.image === 'string' ? item.image : getMediumImage(item.image);
-                          return (
-                            <Link key={item.id} to={href} className="group block w-[6.5rem] sm:w-[7.5rem] flex-shrink-0">
-                              <div className="relative rounded-lg overflow-hidden aspect-[2/3] ring-1 ring-white/[0.06] group-hover:ring-accent-violet/30 transition-all">
-                                <img src={imgSrc} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                              </div>
-                              <p className="text-xs text-text-secondary mt-1.5 truncate group-hover:text-white transition-colors">{item.name}</p>
-                            </Link>
-                          );
-                        })}
-                      </div>
+                {usedCollections.map((col) => (
+                  <div
+                    key={col.id}
+                    className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5"
+                  >
+                    <div className="flex items-baseline justify-between mb-4">
+                      <h3 className="text-body font-semibold text-white flex items-center gap-2">
+                        <span className="text-base opacity-80">{col.icon}</span>
+                        {col.name}
+                      </h3>
+                      <span className="text-caption text-text-muted font-mono">
+                        {String(col.shows.length).padStart(2, '0')}
+                      </span>
                     </div>
+                    <HorizontalScroll gapClass="gap-3" className="-mx-1 px-1">
+                      {col.shows.map((item) => {
+                        const href = (item.type === 'movie' ? '/movie/' : '/show/') + item.id;
+                        const imgSrc = typeof item.image === 'string' ? item.image : getMediumImage(item.image);
+                        return (
+                          <Link
+                            key={`${item.type || 'show'}-${item.id}`}
+                            to={href}
+                            className="group block w-[6.5rem] sm:w-[7.5rem] flex-shrink-0"
+                          >
+                            <div className="relative rounded-lg overflow-hidden aspect-[2/3] border border-white/[0.06] group-hover:border-accent-peach/40 transition-colors">
+                              <img
+                                src={imgSrc}
+                                alt={item.name}
+                                loading="lazy"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                            </div>
+                            <p className="text-caption text-text-secondary mt-1.5 break-words min-w-0 group-hover:text-white transition-colors">
+                              {item.name}
+                            </p>
+                          </Link>
+                        );
+                      })}
+                    </HorizontalScroll>
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </motion.section>
           )}
 
-          {/* ═══════════ TRACKED SHOWS ═══════════ */}
-          {trackedShowIds.length > 0 && (
-            <motion.div variants={fadeUp} className="mb-10">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-violet/20 to-accent-violet/5 flex items-center justify-center">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-violet">
-                    <path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">Tracked Shows</h3>
-                  <p className="text-xs text-text-muted">{trackedShowIds.length} show{trackedShowIds.length !== 1 ? 's' : ''} in progress</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <AnimatePresence>
-                  {trackedShowIds.map((showId) => (
-                    <TrackedShowCard key={showId} showId={showId} watchedIds={watchedEpisodes[showId] || []} onClear={handleClearProgress} />
-                  ))}
-                </AnimatePresence>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ═══════════ SHOW WATCHLIST ═══════════ */}
-          {watchlist.length > 0 && (
-            <motion.div variants={fadeUp} className="mb-10">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-violet/20 to-accent-violet/5 flex items-center justify-center">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-violet">
-                      <path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-white">Show Watchlist</h3>
-                    <p className="text-xs text-text-muted">{watchlist.length} shows saved</p>
-                  </div>
-                </div>
-                <Link to="/browse" className="text-xs text-text-muted hover:text-accent-violet transition-colors flex items-center gap-1.5">
-                  Add more <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
-                {watchlist.map((show, i) => (
-                  <motion.div key={show.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.03, duration: 0.4 }}>
-                    <Link to={`/show/${show.id}`} className="group block">
-                      <div className="relative rounded-xl overflow-hidden aspect-[2/3] ring-1 ring-white/[0.06] group-hover:ring-accent-violet/30 transition-all">
-                        <img src={getMediumImage(show.image)} alt={show.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      </div>
-                      <p className="text-xs text-text-secondary mt-1.5 truncate group-hover:text-white transition-colors">{show.name}</p>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* ═══════════ MOVIE WATCHLIST ═══════════ */}
-          {movieWatchlist.length > 0 && (
-            <motion.div variants={fadeUp} className="mb-10">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-gold/20 to-accent-gold/5 flex items-center justify-center">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-gold">
-                      <path d="M7 4v16M17 4v16M3 8h4M17 8h4M3 12h18M3 16h4M17 16h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-white">Movie Watchlist</h3>
-                    <p className="text-xs text-text-muted">{movieWatchlist.length} movie{movieWatchlist.length !== 1 ? 's' : ''} saved</p>
-                  </div>
-                </div>
-                <Link to="/movies" className="text-xs text-text-muted hover:text-accent-gold transition-colors flex items-center gap-1.5">
-                  Browse movies <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
-                {movieWatchlist.map((movie, i) => (
-                  <motion.div key={movie.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.03, duration: 0.4 }}>
-                    <Link to={`/movie/${movie.id}`} className="group block relative">
-                      <div className="relative rounded-xl overflow-hidden aspect-[2/3] ring-1 ring-white/[0.06] group-hover:ring-accent-gold/30 transition-all">
-                        <img src={getTmdbPosterUrl(movie.poster_path)} alt={movie.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <button
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeMovieFromWatchlist(movie.id); }}
-                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500/80 transition-all"
-                          aria-label="Remove from watchlist"
-                        >
-                          <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
-                        </button>
-                      </div>
-                      <p className="text-xs text-text-secondary mt-1.5 truncate group-hover:text-white transition-colors">{movie.title}</p>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* ═══════════ RECENTLY VIEWED ═══════════ */}
+          {/* RECENTLY VIEWED */}
           {recentlyViewed.length > 0 && (
-            <motion.div variants={fadeUp} className="mb-10">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-gold/20 to-accent-gold/5 flex items-center justify-center">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-gold">
-                    <path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">Recently Viewed</h3>
-                  <p className="text-xs text-text-muted">{recentlyViewed.length} shows</p>
-                </div>
-              </div>
-              <div className="relative">
-                <div className="absolute left-0 top-0 bottom-6 w-8 bg-gradient-to-r from-bg-primary to-transparent z-10 pointer-events-none" />
-                <div className="absolute right-0 top-0 bottom-6 w-8 bg-gradient-to-l from-bg-primary to-transparent z-10 pointer-events-none" />
-                <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 px-1">
+            <motion.section variants={fadeUp} className="mb-10">
+              <SectionHeader title="Recently viewed" count={recentlyViewed.length} />
+              <HorizontalScroll gapClass="gap-3" className="pb-2">
                   {recentlyViewed.slice(0, 14).map((show, i) => (
-                    <motion.div key={show.id} initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 + i * 0.04, duration: 0.4 }} className="flex-shrink-0">
+                    <motion.div
+                      key={show.id}
+                      initial={{ opacity: 0, scale: 0.94 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.1 + i * 0.03 }}
+                      className="flex-shrink-0"
+                    >
                       <Link to={`/show/${show.id}`} className="group block">
-                        <div className="relative w-[7.5rem] rounded-xl overflow-hidden aspect-[2/3] ring-1 ring-white/[0.06] group-hover:ring-accent-violet/30 transition-all">
-                          <img src={getMediumImage(show.image)} alt={show.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          <div className="absolute bottom-0 left-0 right-0 p-2.5 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                            <p className="text-[11px] text-white font-medium truncate">{show.name}</p>
-                          </div>
+                        <div className="relative w-[7.5rem] rounded-xl overflow-hidden aspect-[2/3] border border-white/[0.06] group-hover:border-accent-peach/40 transition-colors">
+                          <img
+                            src={getMediumImage(show.image)}
+                            alt={show.name}
+                            loading="lazy"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-70" />
+                          <p className="absolute inset-x-0 bottom-0 p-2.5 text-[11px] text-white font-medium break-words min-w-0">
+                            {show.name}
+                          </p>
                         </div>
                       </Link>
                     </motion.div>
                   ))}
-                </div>
-              </div>
-            </motion.div>
+              </HorizontalScroll>
+            </motion.section>
           )}
 
-          {/* ═══════════ TRACKING SINCE FOOTER ═══════════ */}
+          {/* TRACKING SINCE FOOTER */}
           {stats.firstTracked && (
             <motion.div variants={fadeUp} className="flex items-center justify-center gap-2 pt-4">
-              <div className="h-px flex-1 max-w-[80px] bg-gradient-to-r from-transparent to-white/10" />
-              <p className="text-[11px] text-text-muted font-mono tracking-wide">
-                Tracking since {new Date(stats.firstTracked).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              <div aria-hidden className="h-px flex-1 max-w-[80px] bg-gradient-to-r from-transparent to-white/10" />
+              <p className="text-meta text-text-muted font-mono tracking-widest uppercase">
+                Tracking since{' '}
+                {new Date(stats.firstTracked).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
               </p>
-              <div className="h-px flex-1 max-w-[80px] bg-gradient-to-l from-transparent to-white/10" />
+              <div aria-hidden className="h-px flex-1 max-w-[80px] bg-gradient-to-l from-transparent to-white/10" />
             </motion.div>
           )}
-
         </motion.div>
       </Container>
 
-      {/* Clear Confirmation Modal */}
+      {/* Clear progress confirmation */}
       <AnimatePresence>
         {confirmClear && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setConfirmClear(null)}>
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="glass rounded-2xl p-6 max-w-sm w-full">
-              <h3 className="text-lg font-semibold text-white mb-2">Clear progress?</h3>
-              <p className="text-sm text-text-secondary mb-6">
-                This will remove all watched episode data for <strong className="text-white">{confirmClear.name}</strong>. This action cannot be undone.
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+            onClick={() => setConfirmClear(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.94, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.94, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="rounded-2xl border border-white/[0.10] bg-bg-elevated p-6 max-w-sm w-full shadow-elevation-3"
+            >
+              <h3 className="text-h3 font-semibold text-white mb-2">Clear progress?</h3>
+              <p className="text-body-sm text-text-secondary mb-6 leading-relaxed">
+                This will remove all watched-episode data for{' '}
+                <strong className="text-white">{confirmClear.name}</strong>. Can't be undone.
               </p>
               <div className="flex gap-3">
-                <button onClick={() => setConfirmClear(null)} className="flex-1 px-4 py-2 rounded-lg bg-white/5 text-text-secondary hover:text-white text-sm font-medium transition-colors">Cancel</button>
-                <button onClick={confirmClearProgress} className="flex-1 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 text-sm font-medium transition-colors">Clear Progress</button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmClear(null)}
+                  className="flex-1 h-10 rounded-lg bg-white/[0.04] border border-white/[0.08] text-text-secondary hover:text-white hover:bg-white/[0.08] text-body-sm font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmClearProgress}
+                  className="flex-1 h-10 rounded-lg bg-accent-red/20 border border-accent-red/30 text-accent-red hover:bg-accent-red/30 text-body-sm font-semibold transition-colors"
+                >
+                  Clear progress
+                </button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </PageLayout>
+  );
+}
+
+/* ──────────────────  STAT TRIPLET  ────────────────── */
+
+function StatTriplet({ value, label, accent }) {
+  return (
+    <div>
+      <p
+        className="font-mono text-h1 sm:text-display-sm font-extrabold tabular-nums leading-none"
+        style={{ color: 'white' }}
+      >
+        {value}
+      </p>
+      <p className="mt-1.5 text-meta uppercase text-text-muted font-semibold tracking-widest">
+        {label}
+      </p>
+      <div
+        className="w-8 h-0.5 rounded-full mt-2"
+        style={{ background: `linear-gradient(to right, ${accent}, transparent)` }}
+      />
+    </div>
   );
 }

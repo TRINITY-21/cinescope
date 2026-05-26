@@ -1,35 +1,40 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import Container from '../components/ui/Container';
-import Loader from '../components/ui/Loader';
-import MovieHero from '../components/movie/MovieHero';
-import MovieMeta from '../components/movie/MovieMeta';
-import MovieCastGrid from '../components/movie/MovieCastGrid';
-import MovieMediaSection from '../components/movie/MovieMediaSection';
-import MovieWhereToWatch from '../components/movie/MovieWhereToWatch';
-import MovieRecommendations from '../components/movie/MovieRecommendations';
-import MovieCollection from '../components/movie/MovieCollection';
-import SimilarMovies from '../components/movie/SimilarMovies';
-import MovieReviews from '../components/movie/MovieReviews';
-import StreamPlayer from '../components/ui/StreamPlayer';
-import { useApp } from '../context/AppContext';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { computeByngeScore } from '../utils/byngeScore';
 import {
-  getMovieDetails,
-  getMovieCredits,
-  getMovieVideos,
-  getMovieImages,
-  getMovieWatchProviders,
-  getMovieRecommendations,
-  getMovieReleaseDates,
-  getMovieCollection,
-  getSimilarMovies,
-  getMovieReviews,
-  hasTmdbKey,
+    getMovieCollection,
+    getMovieCredits,
+    getMovieDetails,
+    getMovieImages,
+    getMovieRecommendations,
+    getMovieReleaseDates,
+    getMovieReviews,
+    getMovieVideos,
+    getMovieWatchProviders,
+    getSimilarMovies,
+    hasTmdbKey,
 } from '../api/tmdb';
+import MovieCastGrid from '../components/movie/MovieCastGrid';
+import MovieCollection from '../components/movie/MovieCollection';
+import MovieHero from '../components/movie/MovieHero';
+import MovieMediaSection from '../components/movie/MovieMediaSection';
+import MovieMeta from '../components/movie/MovieMeta';
+import MovieRecommendations from '../components/movie/MovieRecommendations';
+import MovieReviews from '../components/movie/MovieReviews';
+import MovieSoundtrack from '../components/movie/MovieSoundtrack';
+import MovieWhereToWatch from '../components/movie/MovieWhereToWatch';
+import SimilarMovies from '../components/movie/SimilarMovies';
+import CommunityBuzz from '../components/ui/CommunityBuzz';
+import Container from '../components/ui/Container';
+import DidYouKnowCard from '../components/ui/DidYouKnowCard';
+import { DetailPageSkeleton } from '../components/ui/PageSkeletons';
+import { SITE_ORIGIN, usePageHead } from '../hooks/usePageHead';
+import { useWikiTitle } from '../hooks/useWikipedia';
+import DetailPageLayout from '../layouts/DetailPageLayout';
 
 export default function MoviePage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [movie, setMovie] = useState(null);
   const [credits, setCredits] = useState(null);
   const [videos, setVideos] = useState([]);
@@ -42,13 +47,10 @@ export default function MoviePage() {
   const [certification, setCertification] = useState(null);
   const [loading, setLoading] = useState(true);
   const [videoTrigger, setVideoTrigger] = useState(0);
-  const [playerOpen, setPlayerOpen] = useState(false);
   const mediaRef = useRef(null);
-  const { addMovieToWatchlist } = useApp();
 
   function handleWatchNow() {
-    if (movie) addMovieToWatchlist(movie);
-    setPlayerOpen(true);
+    navigate(`/movie/${id}/watch`);
   }
 
   function handlePlayTrailer() {
@@ -103,29 +105,72 @@ export default function MoviePage() {
     loadMovie();
   }, [id]);
 
-  useEffect(() => {
-    if (movie) document.title = `${movie.title} — Bynge`;
-    return () => { document.title = 'Bynge'; };
-  }, [movie]);
+  const movieHead = useMemo(() => {
+    if (!movie) return {};
+    const byngeScore = computeByngeScore({
+      tmdbRating: movie.vote_average,
+      tmdbVotes: movie.vote_count,
+      releaseDate: movie.release_date,
+    });
+    const year = movie.release_date?.slice(0, 4);
+    // SERP-distinctive: lead with Bynge Score when we have one, then tagline/overview.
+    const scorePrefix = byngeScore != null ? `Bynge Score ${byngeScore.toFixed(1)}/10 — ` : '';
+    const description = `${scorePrefix}${(movie.tagline || movie.overview || '').slice(0, 200 - scorePrefix.length)}`;
+    return {
+      title: `${movie.title}${year ? ` (${year})` : ''} — Bynge`,
+      description,
+      canonical: `${SITE_ORIGIN}/movie/${id}`,
+      ogImage: `${SITE_ORIGIN}/api/og?type=movie&id=${id}`,
+      ogType: 'video.movie',
+      jsonLd: [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_ORIGIN },
+            { '@type': 'ListItem', position: 2, name: 'Movies', item: `${SITE_ORIGIN}/movies` },
+            { '@type': 'ListItem', position: 3, name: movie.title, item: `${SITE_ORIGIN}/movie/${id}` },
+          ],
+        },
+      ],
+    };
+  }, [movie, id]);
+  usePageHead(movieHead);
 
   useEffect(() => { window.scrollTo(0, 0); }, [id]);
 
-  if (loading || !movie) return <Loader fullScreen />;
+  const wiki = useWikiTitle(movie?.title, { kind: 'movie', year: movie?.release_date?.slice(0, 4) });
+
+  if (loading || !movie) return <DetailPageSkeleton />;
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-      <MovieHero movie={movie} certification={certification} onPlayTrailer={handlePlayTrailer} onWatchNow={handleWatchNow} />
-      <StreamPlayer isOpen={playerOpen} onClose={() => setPlayerOpen(false)} type="movie" id={movie.id} title={movie.title} />
-
-      <div className="relative">
+    <DetailPageLayout
+      hero={(
+        <MovieHero
+          movie={movie}
+          onPlayTrailer={handlePlayTrailer}
+          onWatchNow={handleWatchNow}
+        />
+      )}
+    >
         <Container>
           <div className="mt-8 space-y-8">
             <MovieMeta movie={movie} certification={certification} />
 
-            {movie.overview && (
-              <div className="max-w-4xl glass-subtle rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-3">Synopsis</h3>
-                <p className="text-text-secondary leading-relaxed text-sm">{movie.overview}</p>
+            {(movie.overview || wiki?.extract) && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {movie.overview && (
+                  <section>
+                    <div className="flex items-baseline gap-3 mb-4">
+                      <p className="text-meta uppercase text-text-muted font-semibold tracking-widest">
+                        Synopsis
+                      </p>
+                      <div className="flex-1 h-px bg-white/[0.06]" />
+                    </div>
+                    <p className="text-body text-text-secondary leading-relaxed">{movie.overview}</p>
+                  </section>
+                )}
+                <DidYouKnowCard wiki={wiki} heading="On Wikipedia" />
               </div>
             )}
 
@@ -139,14 +184,20 @@ export default function MoviePage() {
 
             <MovieCastGrid credits={credits} />
 
+            <MovieSoundtrack title={movie.title} year={movie.release_date?.slice(0, 4)} />
+
             <MovieReviews reviews={reviews} />
 
-            <MovieRecommendations recommendations={recommendations} />
+            <CommunityBuzz title={movie.title} kind="movie" />
+
+            <MovieRecommendations
+              recommendations={recommendations}
+              sourceTitle={movie?.title}
+            />
 
             <SimilarMovies movies={similar} />
           </div>
         </Container>
-      </div>
-    </motion.div>
+    </DetailPageLayout>
   );
 }

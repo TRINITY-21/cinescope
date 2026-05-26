@@ -107,7 +107,7 @@ export default function SearchOverlay({ isOpen, onClose }) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search shows, series, movies..."
-                  className="w-full bg-transparent border-0 border-b border-white/10 outline-none text-base sm:text-2xl md:text-4xl font-light text-white placeholder-text-muted pl-8 sm:pl-12 pb-3 sm:pb-4 focus:border-accent-violet/50 transition-colors"
+                  className="w-full bg-transparent border-0 border-b border-white/10 outline-none text-base sm:text-2xl md:text-4xl font-light text-white placeholder-text-muted pl-8 sm:pl-12 pb-3 sm:pb-4 focus:border-accent-peach/50 transition-colors"
                 />
               </div>
             </form>
@@ -118,7 +118,7 @@ export default function SearchOverlay({ isOpen, onClose }) {
                   <>
                     {hasMovies && (
                       <p className="text-xs text-text-muted uppercase tracking-wider px-3 pt-2 pb-1 flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-accent-violet" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-accent-peach" />
                         TV Shows
                       </p>
                     )}
@@ -137,7 +137,7 @@ export default function SearchOverlay({ isOpen, onClose }) {
                           className="w-12 h-16 object-cover rounded-lg flex-shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-white group-hover:text-accent-violet transition-colors truncate">
+                          <p className="font-semibold text-white group-hover:text-accent-peach transition-colors break-words min-w-0">
                             {show.name}
                           </p>
                           <p className="text-sm text-text-secondary">
@@ -177,7 +177,7 @@ export default function SearchOverlay({ isOpen, onClose }) {
                           className="w-12 h-16 object-cover rounded-lg flex-shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-white group-hover:text-accent-violet transition-colors truncate">
+                          <p className="font-semibold text-white group-hover:text-accent-peach transition-colors break-words min-w-0">
                             {movie.title}
                           </p>
                           <p className="text-sm text-text-secondary">
@@ -199,7 +199,7 @@ export default function SearchOverlay({ isOpen, onClose }) {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.03 * (showSuggestions.length + movieSuggestions.length) }}
                     onClick={handleSubmit}
-                    className="w-full text-center py-3 text-accent-violet hover:text-white transition-all text-sm font-medium btn-glow-violet rounded-lg"
+                    className="w-full text-center py-3 text-accent-peach hover:text-white transition-all text-sm font-medium btn-glow-violet rounded-lg"
                   >
                     View all results for "{query}" &rarr;
                   </motion.button>

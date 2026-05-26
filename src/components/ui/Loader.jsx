@@ -1,9 +1,9 @@
 export default function Loader({ fullScreen = false }) {
   const dots = (
     <div className="flex items-center gap-1.5">
-      <div className="w-2.5 h-2.5 rounded-full bg-accent-violet animate-bounce [animation-delay:-0.3s]" />
-      <div className="w-2.5 h-2.5 rounded-full bg-accent-violet animate-bounce [animation-delay:-0.15s]" />
-      <div className="w-2.5 h-2.5 rounded-full bg-accent-violet animate-bounce" />
+      <div className="w-2.5 h-2.5 rounded-full bg-accent-peach animate-bounce [animation-delay:-0.3s]" />
+      <div className="w-2.5 h-2.5 rounded-full bg-accent-peach animate-bounce [animation-delay:-0.15s]" />
+      <div className="w-2.5 h-2.5 rounded-full bg-accent-peach animate-bounce" />
     </div>
   );
 

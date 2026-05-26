@@ -29,7 +29,7 @@ const ShowCard = memo(function ShowCard({ show, className = '' }) {
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
 
-          <div className="absolute inset-0 bg-accent-violet/0 group-hover:bg-accent-violet/10 transition-colors duration-300" />
+          <div className="absolute inset-0 bg-accent-peach/0 group-hover:bg-accent-peach/10 transition-colors duration-300" />
 
           {show.rating?.average && (
             <div className="absolute top-3 right-3">
@@ -39,7 +39,7 @@ const ShowCard = memo(function ShowCard({ show, className = '' }) {
 
           {watchedCount > 0 && (
             <div className="absolute top-3 left-3">
-              <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-full bg-accent-violet/90 text-white backdrop-blur-sm shadow-[0_0_8px_rgba(196,131,91,0.4)]">
+              <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-full bg-accent-peach/90 text-white backdrop-blur-sm shadow-[0_0_8px_rgba(196,131,91,0.4)]">
                 <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
@@ -49,7 +49,7 @@ const ShowCard = memo(function ShowCard({ show, className = '' }) {
           )}
 
           <div className="absolute bottom-0 left-0 right-0 p-4">
-            <h3 className="font-semibold text-white text-sm leading-tight line-clamp-2 group-hover:line-clamp-none transition-all">
+            <h3 className="font-semibold text-white text-sm leading-tight line-clamp-4 group-hover:line-clamp-none transition-all">
               {show.name}
             </h3>
             <div className="flex items-center gap-2 mt-1.5">

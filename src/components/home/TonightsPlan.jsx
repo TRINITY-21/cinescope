@@ -1,14 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchApi } from '../../api/tvmaze';
 import { endpoints } from '../../api/endpoints';
+import { fetchApi } from '../../api/tvmaze';
 import { useApp } from '../../context/AppContext';
 import { getMediumImage } from '../../utils/imageUrl';
-import GlassPanel from '../ui/GlassPanel';
+
+const BUDGETS = [
+  { label: '1h', value: 60 },
+  { label: '1.5h', value: 90 },
+  { label: '2h', value: 120 },
+  { label: '3h', value: 180 },
+  { label: '4h', value: 240 },
+];
 
 export default function TonightsPlan() {
   const { watchedEpisodes } = useApp();
-  const [budget, setBudget] = useState(120); // minutes
+  const [budget, setBudget] = useState(120);
   const [plan, setPlan] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,7 +57,6 @@ export default function TonightsPlan() {
           }
         }
 
-        // Sort: shows closer to completion first
         items.sort((a, b) => (b.watchedCount / b.totalEps) - (a.watchedCount / a.totalEps));
         setPlan(items);
       } catch {
@@ -66,7 +72,6 @@ export default function TonightsPlan() {
 
   if (loading || inProgressIds.length === 0) return null;
 
-  // Fit episodes into budget
   let remaining = budget;
   const tonight = [];
   for (const item of plan) {
@@ -90,69 +95,97 @@ export default function TonightsPlan() {
 
   const totalMinutes = tonight.reduce((s, t) => s + t.minutesNeeded, 0);
   const totalEps = tonight.reduce((s, t) => s + t.epsToWatch, 0);
+  const hours = Math.round(totalMinutes / 60 * 10) / 10;
 
   return (
-    <GlassPanel glow="violet" className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-violet/20 to-accent-violet/5 flex items-center justify-center">
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-accent-violet">
-              <path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="font-bold text-white text-sm sm:text-base">Tonight's Plan</h3>
-            <p className="text-[11px] text-text-muted">{totalEps} ep{totalEps !== 1 ? 's' : ''} &middot; ~{Math.round(totalMinutes / 60 * 10) / 10}h</p>
-          </div>
+    <section className="border-t border-white/[0.06] pt-section">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+        <div>
+          <p className="text-meta uppercase text-text-muted font-semibold tracking-widest">
+            Tonight's plan
+          </p>
+          <p className="mt-1.5 text-h2 font-extrabold tracking-tight text-white leading-tight">
+            {totalEps} episode{totalEps !== 1 ? 's' : ''}
+            <span className="text-text-muted font-normal mx-2">·</span>
+            <span className="font-mono tabular-nums">{hours}h</span>
+          </p>
+          <p className="mt-1 text-caption text-text-muted">
+            Built around what you're already watching.
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] text-text-muted">Budget:</span>
-          <select
-            value={budget}
-            onChange={(e) => setBudget(Number(e.target.value))}
-            className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-accent-violet/50 cursor-pointer"
-          >
-            <option value={60}>1h</option>
-            <option value={90}>1.5h</option>
-            <option value={120}>2h</option>
-            <option value={180}>3h</option>
-            <option value={240}>4h</option>
-          </select>
+
+        <div className="flex items-center gap-1 p-1 rounded-full bg-white/[0.04] border border-white/[0.06] self-start sm:self-auto">
+          {BUDGETS.map((b) => {
+            const active = budget === b.value;
+            return (
+              <button
+                key={b.value}
+                type="button"
+                onClick={() => setBudget(b.value)}
+                className={`
+                  px-3 h-7 rounded-full text-caption font-semibold tracking-tight font-mono tabular-nums
+                  transition-colors
+                  ${active
+                    ? 'bg-white text-bg-primary'
+                    : 'text-text-secondary hover:text-white'}
+                `}
+              >
+                {b.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div className="space-y-2">
-        {tonight.map(({ show, epsToWatch, firstEp, minutesNeeded, runtime }) => (
+      <div className="divide-y divide-white/[0.04] border-y border-white/[0.06]">
+        {tonight.map(({ show, epsToWatch, firstEp, minutesNeeded, runtime }, idx) => (
           <Link
             key={show.id}
-            to={`/show/${show.id}`}
-            className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.03] transition-colors group"
+            to={`/show/${show.id}/watch?s=${firstEp.season}&e=${firstEp.number}`}
+            className="flex items-center gap-4 py-4 group hover:bg-white/[0.02] transition-colors -mx-2 px-2 rounded-lg"
           >
+            <span className="text-meta font-mono tabular-nums text-text-muted w-6 flex-shrink-0">
+              {String(idx + 1).padStart(2, '0')}
+            </span>
             <img
               src={getMediumImage(show.image)}
               alt={show.name}
-              className="w-10 h-14 rounded-lg object-cover flex-shrink-0 ring-1 ring-white/[0.06] group-hover:ring-accent-violet/30 transition-all"
+              className="w-12 h-16 rounded-md object-cover flex-shrink-0 ring-1 ring-white/[0.06] group-hover:ring-white/20 transition-all"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate group-hover:text-accent-violet transition-colors">{show.name}</p>
-              <p className="text-[11px] text-text-secondary mt-0.5">
-                {epsToWatch > 1 ? `${epsToWatch} episodes` : '1 episode'}
-                {' '}starting S{String(firstEp.season).padStart(2, '0')}E{String(firstEp.number).padStart(2, '0')}
+              <p className="text-body font-semibold text-white break-words group-hover:text-accent-peach transition-colors">
+                {show.name}
+              </p>
+              <p className="text-caption text-text-muted mt-0.5 break-words">
+                <span className="font-mono tabular-nums">
+                  S{String(firstEp.season).padStart(2, '0')}E{String(firstEp.number).padStart(2, '0')}
+                </span>
+                {epsToWatch > 1 && (
+                  <>
+                    <span className="mx-1.5">·</span>
+                    {epsToWatch} episodes
+                  </>
+                )}
               </p>
             </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-xs font-medium text-text-secondary">{minutesNeeded}min</p>
-              <p className="text-[10px] text-text-muted">{runtime}min/ep</p>
+            <div className="text-right flex-shrink-0 hidden sm:block">
+              <p className="text-meta font-mono tabular-nums text-white">{minutesNeeded}m</p>
+              <p className="text-[10px] uppercase tracking-widest text-text-muted mt-0.5">
+                {runtime}m/ep
+              </p>
             </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted group-hover:text-white group-hover:translate-x-0.5 transition-all flex-shrink-0">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
           </Link>
         ))}
       </div>
 
       {remaining < 0 && (
-        <p className="text-[11px] text-accent-gold/70 text-center">
-          ~{Math.abs(Math.round(remaining))}min over budget
+        <p className="mt-3 text-meta uppercase tracking-widest text-accent-gold/70">
+          ~{Math.abs(Math.round(remaining))}m over budget
         </p>
       )}
-    </GlassPanel>
+    </section>
   );
 }

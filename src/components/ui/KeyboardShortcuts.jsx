@@ -29,7 +29,7 @@ export default function KeyboardShortcuts({ onOpenSearch }) {
         case 's': navigate('/schedule'); break;
         case 'b': navigate('/browse'); break;
         case 'd': navigate('/discover'); break;
-        case 't': navigate('/stats'); break;
+        case 't': navigate('/tracking'); break;
         case '?': setShowHelp(true); break;
       }
     }

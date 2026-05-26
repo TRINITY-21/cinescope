@@ -1,23 +1,45 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useApp } from '../../context/AppContext';
-import { formatRuntime, formatYear } from '../../utils/formatters';
+import { useToast } from '../../context/ToastContext';
+import { useShowFanart } from '../../hooks/useFanart';
+import { useOmdb } from '../../hooks/useOmdb';
+import { computeByngeScore } from '../../utils/byngeScore';
+import { blurred, responsive } from '../../utils/imageOptimize';
 import { getBackdropImage, getOriginalImage } from '../../utils/imageUrl';
 import { shareContent } from '../../utils/share';
-import AddToCollectionDropdown from '../ui/AddToCollectionDropdown';
+import DetailHeroActions from '../detail/DetailHeroActions';
 import Badge from '../ui/Badge';
-import Button from '../ui/Button';
+import ByngeScoreBadge from '../ui/ByngeScoreBadge';
 import RatingBadge from '../ui/RatingBadge';
+import RatingsStrip from '../ui/RatingsStrip';
 import StarRating from '../ui/StarRating';
+import UserStarRating from '../ui/UserStarRating';
 
 export default function ShowHero({ show, images, onPlayTrailer, totalEpisodes = 0, onWatchNow }) {
   const { addToWatchlist, removeFromWatchlist, isInWatchlist, getShowProgress } = useApp();
+  const { toast } = useToast();
   const inWatchlist = isInWatchlist(show.id);
   const progress = totalEpisodes > 0 ? getShowProgress(show.id, totalEpisodes) : null;
 
-  const backdropUrl = getBackdropImage(images) || getOriginalImage(show.image);
-
-  const [shareTooltip, setShareTooltip] = useState(null);
+  const { logo: fanartLogo, background: fanartBackdrop } = useShowFanart(
+    show?.externals?.thetvdb,
+    show?.externals?.imdb,
+  );
+  const { ratings: omdbRatings, awards: omdbAwards, raw: omdbRaw } = useOmdb(show?.externals?.imdb);
+  const byngeScore = computeByngeScore({
+    tmdbRating: show?.rating?.average,
+    tmdbVotes: show?.weight || 0,
+    imdbRating: omdbRatings?.imdb ? parseFloat(omdbRatings.imdb) : null,
+    imdbVotes: omdbRaw?.imdbVotes ? parseInt(String(omdbRaw.imdbVotes).replace(/[^0-9]/g, ''), 10) : null,
+    rottenTomatoes: omdbRatings?.rottenTomatoes ? parseInt(omdbRatings.rottenTomatoes, 10) : null,
+    metacritic: omdbRatings?.metacritic ? parseInt(omdbRatings.metacritic, 10) : null,
+    releaseDate: show?.premiered,
+    hasFanart: !!fanartLogo,
+  });
+  const hdBackdrop = fanartBackdrop || getBackdropImage(images);
+  const backdropSrc = hdBackdrop
+    ? responsive(hdBackdrop, { w: 1920 })
+    : blurred(getOriginalImage(show.image), { w: 1920, blur: 60 });
 
   async function handleShare() {
     const url = `${window.location.origin}/show/${show.id}`;
@@ -31,22 +53,22 @@ export default function ShowHero({ show, images, onPlayTrailer, totalEpisodes = 
       url,
     });
     if (result === 'copied') {
-      setShareTooltip('Link copied!');
-      setTimeout(() => setShareTooltip(null), 2000);
+      toast({ message: 'Link copied to clipboard', variant: 'success' });
     }
   }
-
-  const statusColors = {
-    Running: 'bg-green-500/20 text-green-400 border-green-500/30',
-    Ended: 'bg-red-500/20 text-red-400 border-red-500/30',
-    'To Be Determined': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    'In Development': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  };
 
   return (
     <div className="relative min-h-[60vh] md:min-h-[70vh] lg:min-h-[75vh]">
       <div className="absolute inset-0">
-        <img src={backdropUrl} alt="" className="w-full h-full object-cover" />
+        <img
+          src={backdropSrc}
+          alt=""
+          loading="eager"
+          decoding="async"
+          fetchpriority="high"
+          className="w-full h-full object-cover transition-opacity duration-500"
+          style={{ opacity: hdBackdrop ? 1 : 0.85 }}
+        />
         <div className="absolute inset-0 hero-gradient-overlay" />
         <div className="absolute inset-0 hero-gradient-left" />
       </div>
@@ -72,38 +94,27 @@ export default function ShowHero({ show, images, onPlayTrailer, totalEpisodes = 
             transition={{ delay: 0.3 }}
             className="flex-1"
           >
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight text-shadow-hero">
-              {show.name}
-            </h1>
+            {fanartLogo ? (
+              <motion.img
+                key={fanartLogo}
+                src={fanartLogo}
+                alt={show.name}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.5 }}
+                className="h-20 sm:h-24 md:h-32 lg:h-40 w-auto max-w-full object-contain object-left"
+                style={{ filter: 'drop-shadow(0 6px 24px rgba(0,0,0,0.7))' }}
+              />
+            ) : (
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight text-shadow-hero">
+                {show.name}
+              </h1>
+            )}
+
+            <RatingsStrip ratings={omdbRatings} awards={omdbAwards} className="mt-4" />
 
             <div className="flex flex-wrap items-center gap-3 mt-4">
-              <span className="text-text-secondary text-sm">
-                {formatYear(show.premiered)}
-                {show.ended ? ` – ${formatYear(show.ended)}` : show.status === 'Running' ? ' – Present' : ''}
-              </span>
-              {show.runtime && (
-                <>
-                  <span className="text-text-muted">·</span>
-                  <span className="text-text-secondary text-sm">{formatRuntime(show.runtime)}</span>
-                </>
-              )}
-              {(show.network || show.webChannel) && (
-                <>
-                  <span className="text-text-muted">·</span>
-                  <span className="text-text-secondary text-sm px-2 py-0.5 rounded-full bg-white/10">
-                    {show.network?.name || show.webChannel?.name}
-                  </span>
-                </>
-              )}
-              {show.type && (
-                <>
-                  <span className="text-text-muted">·</span>
-                  <span className="text-text-secondary text-sm">{show.type}</span>
-                </>
-              )}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 mt-4">
+              {byngeScore != null && <ByngeScoreBadge score={byngeScore} size="lg" showLabel />}
               {show.rating?.average && (
                 <div className="flex items-center gap-2 sm:gap-3">
                   <span className="sm:hidden"><RatingBadge rating={show.rating.average} size="sm" /></span>
@@ -111,11 +122,10 @@ export default function ShowHero({ show, images, onPlayTrailer, totalEpisodes = 
                   <span className="hidden sm:inline-flex"><StarRating rating={show.rating.average} /></span>
                 </div>
               )}
-              {show.status && (
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${statusColors[show.status] || 'bg-white/10 text-text-secondary border-white/10'}`}>
-                  {show.status}
-                </span>
-              )}
+              <div className="hidden sm:flex items-center gap-2 ml-1">
+                <span className="text-xs text-text-muted uppercase tracking-wide">You</span>
+                <UserStarRating kind="show" id={show.id} size={22} />
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-2 mt-4">
@@ -137,7 +147,7 @@ export default function ShowHero({ show, images, onPlayTrailer, totalEpisodes = 
                     initial={{ width: 0 }}
                     animate={{ width: `${progress.percentage}%` }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}
-                    className={`h-full rounded-full ${progress.percentage === 100 ? 'bg-green-500' : 'bg-accent-violet'}`}
+                    className={`h-full rounded-full ${progress.percentage === 100 ? 'bg-green-500' : 'bg-accent-peach'}`}
                     style={{ boxShadow: progress.percentage === 100 ? '0 0 10px rgba(34,197,94,0.4)' : '0 0 10px rgba(196,131,91,0.3)' }}
                   />
                 </div>
@@ -147,68 +157,21 @@ export default function ShowHero({ show, images, onPlayTrailer, totalEpisodes = 
               </div>
             )}
 
-            <div className="flex flex-wrap gap-2 sm:gap-3 mt-4 sm:mt-6">
-              {onWatchNow && (
-                <Button variant="primary" onClick={onWatchNow}>
-                  <span className="flex items-center gap-2">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                    Watch Now
-                  </span>
-                </Button>
-              )}
-              <Button
-                variant={inWatchlist ? 'secondary' : (onWatchNow ? 'secondary' : 'primary')}
-                onClick={() => inWatchlist ? removeFromWatchlist(show.id) : addToWatchlist(show)}
-              >
-                {inWatchlist ? '✓ In Watchlist' : '+ Add to Watchlist'}
-              </Button>
-              <AddToCollectionDropdown
-                item={{
-                  id: show.id,
-                  name: show.name,
-                  image: show.image,
-                  genres: show.genres,
-                  type: 'show',
-                }}
-              />
-              <Button variant="ghost" onClick={onPlayTrailer}>
-                <span className="flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-500">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                  Watch Trailer
-                </span>
-              </Button>
-              <div className="relative">
-                <Button variant="ghost" onClick={handleShare}>
-                  <span className="flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
-                      <polyline points="16,6 12,2 8,6" />
-                      <line x1="12" y1="2" x2="12" y2="15" />
-                    </svg>
-                    Share
-                  </span>
-                </Button>
-                <AnimatePresence>
-                  {shareTooltip && (
-                    <motion.span
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 4 }}
-                      className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-bg-elevated text-text-primary px-2.5 py-1 rounded-lg whitespace-nowrap shadow-lg border border-white/10"
-                    >
-                      {shareTooltip}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </div>
-              {show.officialSite && (
-                <a href={show.officialSite} target="_blank" rel="noopener noreferrer">
-                  <Button variant="ghost">Visit Official Site →</Button>
-                </a>
-              )}
-            </div>
+            <DetailHeroActions
+              onWatchNow={onWatchNow}
+              onPlayTrailer={onPlayTrailer}
+              statusKind="show"
+              statusId={show.id}
+              statusItem={show}
+              collectionItem={{
+                id: show.id,
+                name: show.name,
+                image: show.image,
+                genres: show.genres,
+                type: 'show',
+              }}
+              onShare={handleShare}
+            />
           </motion.div>
         </div>
       </div>

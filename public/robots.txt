@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Pages with no indexable value or user-specific state
+Disallow: /admin/
+Disallow: /search
+Disallow: /tracking
+Disallow: /settings
+Disallow: /party
+Disallow: /watch
+Disallow: /*/watch
+Disallow: /api/
+
+# Allow image / asset crawling
+Allow: /favicon.svg
+Allow: /og-default.png
+Allow: /manifest.webmanifest
+
+Sitemap: https://bynge.app/sitemap.xml

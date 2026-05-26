@@ -27,12 +27,12 @@ function ReviewCard({ review, index }) {
         {avatarUrl ? (
           <img src={avatarUrl} alt={review.author} className="w-9 h-9 rounded-full object-cover ring-1 ring-white/10" />
         ) : (
-          <div className="w-9 h-9 rounded-full bg-accent-violet/20 flex items-center justify-center ring-1 ring-white/10">
-            <span className="text-sm font-bold text-accent-violet">{(review.author || '?')[0].toUpperCase()}</span>
+          <div className="w-9 h-9 rounded-full bg-accent-peach/20 flex items-center justify-center ring-1 ring-white/10">
+            <span className="text-sm font-bold text-accent-peach">{(review.author || '?')[0].toUpperCase()}</span>
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-white truncate">{review.author}</p>
+          <p className="text-sm font-semibold text-white break-words min-w-0">{review.author}</p>
           {date && <p className="text-[11px] text-text-muted">{date}</p>}
         </div>
         {rating !== null && rating !== undefined && (
@@ -54,7 +54,7 @@ function ReviewCard({ review, index }) {
       {isLong && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-xs text-accent-violet hover:text-accent-violet/80 font-medium transition-colors"
+          className="text-xs text-accent-peach hover:text-accent-peach/80 font-medium transition-colors"
         >
           {expanded ? 'Show less' : 'Read more'}
         </button>

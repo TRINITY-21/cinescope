@@ -5,13 +5,28 @@ const navigateLinks = [
   { to: '/movies', label: 'Movies' },
   { to: '/discover', label: 'Discover' },
   { to: '/browse', label: 'Shows' },
-  { to: '/schedule', label: 'Schedule' },
+  { to: '/schedule', label: 'TV Schedule' },
+];
+
+const discoverLinks = [
+  { to: '/like', label: 'Similar Picks' },
+  { to: '/best', label: 'Best Of (Lists)' },
+  { to: '/trending/week', label: 'Trending' },
+  { to: '/hidden-gems', label: 'Hidden Gems' },
+  { to: '/people', label: 'People' },
+  { to: '/watch-order', label: 'Watch Order Guides' },
+  { to: '/streaming', label: 'Streaming Hubs' },
+  { to: '/coming-soon/movies', label: 'Coming Soon' },
+  { to: '/calendar', label: 'Airing Calendar' },
+  { to: '/trailers', label: 'Trailers' },
+  { to: '/compare', label: 'Compare Shows' },
+  { to: '/how-we-rank', label: 'How We Rank' },
 ];
 
 const featureLinks = [
   { to: '/tracking', label: 'My Library' },
-  { to: '/schedule', label: 'Schedule' },
-  { to: '/people', label: 'People' },
+  { to: '/party', label: 'Watch Party' },
+  { to: '/settings', label: 'Settings' },
 ];
 
 export default function Footer() {
@@ -20,16 +35,13 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative mt-20">
-      {/* Section divider */}
+    <footer className="relative mt-section-lg">
       <div className="section-divider" />
 
-      {/* Gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-bg-primary via-bg-secondary to-bg-secondary" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-14">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
-          {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2 mb-3">
               <svg width="28" height="28" viewBox="0 0 100 100" className="flex-shrink-0">
@@ -41,10 +53,10 @@ export default function Footer() {
               <h3 className="text-xl font-extrabold text-gradient">Bynge</h3>
             </div>
             <p className="text-sm text-text-secondary leading-relaxed max-w-xs">
-              Your cinematic companion for discovering TV shows and movies, tracking progress, and exploring the world of entertainment.
+              Your cinematic companion for discovering TV shows and movies, tracking progress, and exploring entertainment.
             </p>
-            {/* Back to top */}
             <button
+              type="button"
               onClick={scrollToTop}
               className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-lg glass text-xs text-text-secondary hover:text-white transition-all hover:shadow-glow-violet group"
             >
@@ -55,79 +67,55 @@ export default function Footer() {
             </button>
           </div>
 
-          {/* Navigate */}
           <div>
             <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Navigate</h4>
             <div className="space-y-2.5">
               {navigateLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="group block text-sm text-text-secondary hover:text-white transition-colors"
-                >
+                <Link key={link.to} to={link.to} className="group block text-sm text-text-secondary hover:text-white transition-colors">
                   <span className="relative">
                     {link.label}
-                    <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-accent-violet group-hover:w-full transition-all duration-300" />
+                    <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-accent-peach group-hover:w-full transition-all duration-300" />
                   </span>
                 </Link>
               ))}
             </div>
           </div>
 
-          {/* Features */}
           <div>
-            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Features</h4>
+            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Discover</h4>
+            <div className="space-y-2.5">
+              {discoverLinks.map((link) => (
+                <Link key={link.to + link.label} to={link.to} className="group block text-sm text-text-secondary hover:text-white transition-colors">
+                  <span className="relative">
+                    {link.label}
+                    <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-accent-peach group-hover:w-full transition-all duration-300" />
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">You</h4>
             <div className="space-y-2.5">
               {featureLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="group block text-sm text-text-secondary hover:text-white transition-colors"
-                >
+                <Link key={link.to} to={link.to} className="group block text-sm text-text-secondary hover:text-white transition-colors">
                   <span className="relative">
                     {link.label}
-                    <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-accent-violet group-hover:w-full transition-all duration-300" />
+                    <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-accent-peach group-hover:w-full transition-all duration-300" />
                   </span>
                 </Link>
               ))}
             </div>
-          </div>
-
-          {/* Powered By */}
-          <div>
-            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Powered By</h4>
+            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-3 mt-6">Powered by</h4>
             <div className="space-y-2.5">
-              <a
-                href="https://www.tvmaze.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group block text-sm text-text-secondary hover:text-white transition-colors"
-              >
-                <span className="relative">
-                  TVMaze API
-                  <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-accent-violet group-hover:w-full transition-all duration-300" />
-                </span>
-              </a>
-              <a
-                href="https://www.themoviedb.org"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group block text-sm text-text-secondary hover:text-white transition-colors"
-              >
-                <span className="relative">
-                  TMDB
-                  <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-accent-violet group-hover:w-full transition-all duration-300" />
-                </span>
-              </a>
-              <p className="text-xs text-text-muted pt-1 leading-relaxed">
-                Built with React, Tailwind CSS & Framer Motion
-              </p>
+              <a href="https://www.tvmaze.com" target="_blank" rel="noopener noreferrer" className="block text-sm text-text-secondary hover:text-white transition-colors">TVMaze API</a>
+              <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer" className="block text-sm text-text-secondary hover:text-white transition-colors">TMDB</a>
             </div>
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-text-muted">
             &copy; {new Date().getFullYear()} Bynge. All rights reserved.
           </p>

@@ -66,17 +66,17 @@ export default function CastConnections({ cast, currentShowId }) {
           <Link key={`${show.id}-${actor.id}`} to={`/show/${show.id}`} className="flex gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl bg-bg-primary/30 hover:bg-bg-primary/50 transition-colors group">
             <img src={getMediumImage(show.image)} alt={show.name} className="w-9 h-12 sm:w-10 sm:h-14 rounded-lg object-cover flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-semibold text-white truncate group-hover:text-accent-violet transition-colors">{show.name}</p>
+              <p className="text-xs sm:text-sm font-semibold text-white break-words min-w-0 group-hover:text-accent-peach transition-colors">{show.name}</p>
               <div className="flex items-center gap-1.5 mt-1">
                 <img src={getPersonImage(actor.image)} alt={actor.name} className="w-4 h-4 rounded-full object-cover" />
-                <p className="text-xs text-text-secondary truncate">{actor.name}{character ? ` as ${character}` : ''}</p>
+                <p className="text-xs text-text-secondary break-words min-w-0">{actor.name}{character ? ` as ${character}` : ''}</p>
               </div>
             </div>
           </Link>
         ))}
       </div>
       {connections.length > 6 && (
-        <button onClick={() => setExpanded(!expanded)} className="w-full text-center text-sm text-accent-violet hover:text-white transition-colors py-2">
+        <button onClick={() => setExpanded(!expanded)} className="w-full text-center text-sm text-accent-peach hover:text-white transition-colors py-2">
           {expanded ? 'Show less' : `Show ${connections.length - 6} more`}
         </button>
       )}

@@ -20,7 +20,7 @@ const MovieCard = memo(function MovieCard({ movie, className = '' }) {
         <div className="aspect-[2/3] relative">
           <img src={posterUrl} alt={movie.title} loading="lazy" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
-          <div className="absolute inset-0 bg-accent-violet/0 group-hover:bg-accent-violet/10 transition-colors duration-300" />
+          <div className="absolute inset-0 bg-accent-peach/0 group-hover:bg-accent-peach/10 transition-colors duration-300" />
 
           {movie.vote_average > 0 && (
             <div className="absolute top-3 right-3">
@@ -35,7 +35,7 @@ const MovieCard = memo(function MovieCard({ movie, className = '' }) {
           </div>
 
           <div className="absolute bottom-0 left-0 right-0 p-4">
-            <h3 className="font-semibold text-white text-sm leading-tight line-clamp-2 group-hover:line-clamp-none transition-all">
+            <h3 className="font-semibold text-white text-sm leading-tight line-clamp-4 group-hover:line-clamp-none transition-all">
               {movie.title}
             </h3>
             <div className="flex items-center gap-2 mt-1.5">

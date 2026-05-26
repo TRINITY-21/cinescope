@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { TMDB_IMAGE_BASE, getTrendingPeople, hasTmdbKey } from '../../api/tmdb';
 import Carousel from '../ui/Carousel';
-import { getTrendingPeople, hasTmdbKey, TMDB_IMAGE_BASE } from '../../api/tmdb';
 
 function PersonCard({ person, index }) {
   const photo = person.profile_path
@@ -18,7 +18,7 @@ function PersonCard({ person, index }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: Math.min(index * 0.05, 0.3) }}
       >
-        <div className="relative aspect-[3/4] rounded-xl overflow-hidden ring-1 ring-white/[0.06] group-hover:ring-accent-violet/40 transition-all shadow-elevation-1">
+        <div className="relative aspect-[3/4] rounded-xl overflow-hidden ring-1 ring-white/[0.06] group-hover:ring-accent-peach/40 transition-all shadow-elevation-1">
           {photo ? (
             <img src={photo} alt={person.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           ) : (
@@ -37,11 +37,11 @@ function PersonCard({ person, index }) {
             </div>
           )}
           <div className="absolute bottom-0 left-0 right-0 p-2.5">
-            <p className="text-xs font-semibold text-white truncate group-hover:text-accent-violet transition-colors">
+            <p className="text-xs font-semibold text-white break-words group-hover:text-accent-peach transition-colors">
               {person.name}
             </p>
             {knownFor && (
-              <p className="text-[10px] text-text-muted truncate mt-0.5">{knownFor}</p>
+              <p className="text-[10px] text-text-muted break-words mt-0.5">{knownFor}</p>
             )}
           </div>
         </div>
@@ -75,7 +75,7 @@ export default function TrendingPeople() {
   if (!isLoading && people.length === 0) return null;
 
   return (
-    <Carousel title="Trending People" subtitle="Popular actors & creators this week" viewAllLink="/people">
+    <Carousel eyebrow="Talent" title="People to watch" viewAllLink="/people">
       {isLoading
         ? Array.from({ length: 8 }, (_, i) => (
             <PersonSkeleton key={i} className="w-32 sm:w-36" />

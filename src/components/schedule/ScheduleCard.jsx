@@ -13,10 +13,10 @@ export default function ScheduleCard({ episode }) {
             className="w-14 h-20 rounded-lg object-cover flex-shrink-0"
           />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm text-white truncate group-hover:text-accent-violet transition-colors">
+            <p className="font-semibold text-sm text-white break-words min-w-0 group-hover:text-accent-peach transition-colors">
               {episode.show.name}
             </p>
-            <p className="text-xs text-text-secondary mt-0.5 truncate">{episode.name}</p>
+            <p className="text-xs text-text-secondary mt-0.5 break-words min-w-0">{episode.name}</p>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-xs font-mono text-accent-gold">
                 {formatEpisodeCode(episode.season, episode.number)}
