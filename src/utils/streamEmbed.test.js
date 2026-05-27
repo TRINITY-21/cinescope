@@ -132,7 +132,7 @@ describe('buildStreamEmbedUrl', () => {
   describe('VidVault (vidvault) — TMDB only', () => {
     it('builds a movie URL', () => {
       const url = buildStreamEmbedUrl({ server: 'vidvault', tmdbId: 5000 });
-      expect(url).toBe('https://vidvault.ru/movie/5000');
+      expect(url).toBe('https://vidvault.ru/5000');
     });
 
     it('builds a TV URL with season + episode', () => {
@@ -142,7 +142,7 @@ describe('buildStreamEmbedUrl', () => {
         season: 1,
         episode: 2,
       });
-      expect(url).toBe('https://vidvault.ru/tv/1396/1/2');
+      expect(url).toBe('https://vidvault.ru/1396/1/2');
     });
 
     it('returns null when only an IMDB id is available', () => {
