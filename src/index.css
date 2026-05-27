@@ -16,6 +16,23 @@
   /* Keep in-page headings visible under the fixed navbar (h-16) */
   html { scroll-padding-top: 5rem; }
 
+  /*
+   * Android Chrome backdrop-filter bug: when a fixed element with
+   * backdrop-blur overlaps scrolling/animating content, the GPU
+   * compositor fails to allocate the blur buffer and shows raw GPU
+   * memory (colored "TV-static" bands) plus ghost frames of overlaid
+   * elements. The bug is on touch devices with mobile GPUs — desktops
+   * are fine. Kill the filter entirely on `hover: none` devices and
+   * fall back to opaque-ish bg colors that we already set alongside it.
+   * Tracked upstream: crbug 40724059 / 40792524.
+   */
+  @media (hover: none) {
+    *, *::before, *::after {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after {
