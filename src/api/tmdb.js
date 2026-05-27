@@ -364,6 +364,19 @@ export async function getTmdbMovieGenres() {
   return data?.genres || [];
 }
 
+/**
+ * Discover movies or TV shows by origin country (ISO 3166-1 alpha-2, e.g. 'us').
+ * Used by the /country/:code listing page.
+ */
+export async function discoverByCountry(countryCode, mediaType = 'movie', page = 1) {
+  const code = String(countryCode || '').toUpperCase();
+  if (!code) return { results: [], total_pages: 0 };
+  const data = await tmdbFetch(
+    `/discover/${mediaType}?with_origin_country=${code}&sort_by=popularity.desc&page=${page}`,
+  );
+  return data || { results: [], total_pages: 0, total_results: 0, page: 1 };
+}
+
 export const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
 
 // Kept for backwards compatibility — the proxy handles missing-key cases server-side

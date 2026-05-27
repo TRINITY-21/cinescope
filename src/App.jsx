@@ -54,6 +54,9 @@ const MovieComparePage = lazy(() => import('./pages/MovieComparePage'));
 const TermsPage = lazy(() => import('./pages/legal/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/legal/PrivacyPage'));
 const DmcaPage = lazy(() => import('./pages/legal/DmcaPage'));
+const GenresPage = lazy(() => import('./pages/GenresPage'));
+const CountriesPage = lazy(() => import('./pages/CountriesPage'));
+const CountryPage = lazy(() => import('./pages/CountryPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 export default function App() {
@@ -112,6 +115,9 @@ export default function App() {
                   <Route path="/terms" element={<TermsPage />} />
                   <Route path="/privacy" element={<PrivacyPage />} />
                   <Route path="/dmca" element={<DmcaPage />} />
+                  <Route path="/genres" element={<GenresPage />} />
+                  <Route path="/country" element={<CountriesPage />} />
+                  <Route path="/country/:code" element={<CountryPage />} />
                   <Route path="/where-to-watch/:slug" element={<WhereToWatchPage />} />
                   <Route path="/should-i-watch" element={<ShouldIWatchIndexPage />} />
                   <Route path="/should-i-watch/:slug" element={<ShouldIWatchPage />} />
