@@ -8,41 +8,47 @@ export function formatImdbId(imdb) {
 }
 
 /**
- * Stream servers — five public TMDB/IMDB embed providers. Order is fallback
- * order: if the user's favorite has no source for the title, the next one
- * usually does. VidSrc.me + VidEasy match the hosts that movies2watchtv
- * uses live (verified via inspect element), so coverage is comparable.
+ * Stream servers — five public TMDB/IMDB embed providers.
+ *
+ * Each server declares which id types it accepts. buildStreamEmbedUrl uses
+ * that to feed the right id and returns null when the title only has the
+ * "wrong" id type for that server — the UI then shows a "not available on
+ * this server" hint, instead of loading a broken embed.
+ *
+ * Verified live against movies2watchtv.tv inspect-element URLs:
+ *   - vidsrcme.ru/embed/movie/:imdb         (their VidPlay)
+ *   - player.videasy.net/movie/:tmdb        (their VidEasy)
  */
 export const STREAM_SERVERS = [
-  { id: 'vidsrcme', label: 'VidSrc.me' },
-  { id: 'videasy', label: 'VidEasy' },
-  { id: 'vidsrc', label: 'VidSrc' },
-  { id: 'embedsu', label: 'Embed.su' },
-  { id: 'autoembed', label: 'AutoEmbed' },
+  { id: 'vidsrcme', label: 'VidSrc.me', accepts: ['imdb'] },
+  { id: 'videasy', label: 'VidEasy', accepts: ['tmdb'] },
+  { id: 'vidsrc', label: 'VidSrc', accepts: ['tmdb', 'imdb'] },
+  { id: 'embedsu', label: 'Embed.su', accepts: ['tmdb'] },
+  { id: 'autoembed', label: 'AutoEmbed', accepts: ['tmdb', 'imdb'] },
 ];
 
-function resolveId(videoId, useTmdb) {
-  if (videoId == null || videoId === '') return null;
-  return useTmdb ? String(videoId) : formatImdbId(videoId) || String(videoId);
-}
-
-function buildVidSrcMeUrl(id, season, episode) {
+function buildVidSrcMeUrl(imdbId, season, episode) {
+  if (!imdbId) return null;
   const base = 'https://vidsrcme.ru/embed';
   if (season != null && episode != null) {
-    return `${base}/tv/${id}/${season}/${episode}`;
+    return `${base}/tv/${imdbId}/${season}/${episode}`;
   }
-  return `${base}/movie/${id}`;
+  return `${base}/movie/${imdbId}`;
 }
 
-function buildVideasyUrl(id, season, episode) {
+function buildVideasyUrl(tmdbId, season, episode) {
+  if (!tmdbId) return null;
   const base = 'https://player.videasy.net';
   if (season != null && episode != null) {
-    return `${base}/tv/${id}/${season}/${episode}`;
+    return `${base}/tv/${tmdbId}/${season}/${episode}`;
   }
-  return `${base}/movie/${id}`;
+  return `${base}/movie/${tmdbId}`;
 }
 
-function buildVidSrcUrl(id, season, episode) {
+function buildVidSrcUrl(tmdbId, imdbId, season, episode) {
+  // vidsrc.cc accepts either; prefer TMDB (broader coverage on their end).
+  const id = tmdbId || imdbId;
+  if (!id) return null;
   const base = 'https://vidsrc.cc/v2/embed';
   if (season != null && episode != null) {
     return `${base}/tv/${id}/${season}/${episode}`;
@@ -50,42 +56,50 @@ function buildVidSrcUrl(id, season, episode) {
   return `${base}/movie/${id}`;
 }
 
-function buildEmbedSuUrl(id, season, episode) {
+function buildEmbedSuUrl(tmdbId, season, episode) {
+  if (!tmdbId) return null;
   const base = 'https://embed.su/embed';
   if (season != null && episode != null) {
-    return `${base}/tv/${id}/${season}/${episode}`;
+    return `${base}/tv/${tmdbId}/${season}/${episode}`;
   }
-  return `${base}/movie/${id}`;
+  return `${base}/movie/${tmdbId}`;
 }
 
-function buildAutoEmbedUrl(id, useTmdb, season, episode) {
-  const kind = useTmdb ? 'tmdb' : 'imdb';
+function buildAutoEmbedUrl(tmdbId, imdbId, season, episode) {
+  // AutoEmbed has separate /tmdb and /imdb paths; prefer TMDB.
+  const kind = tmdbId ? 'tmdb' : 'imdb';
+  const id = tmdbId || imdbId;
+  if (!id) return null;
   if (season != null && episode != null) {
     return `https://autoembed.co/tv/${kind}/${id}-${season}-${episode}`;
   }
   return `https://autoembed.co/movie/${kind}/${id}`;
 }
 
-export function buildStreamEmbedUrl({
-  server = 'vidsrcme',
-  videoId,
-  useTmdb = false,
-  season,
-  episode,
-}) {
-  const id = resolveId(videoId, useTmdb);
-  if (!id) return null;
+/**
+ * Build a stream embed URL for a given server.
+ * @param {object} args
+ * @param {string} args.server      — server id (see STREAM_SERVERS)
+ * @param {string|null} args.imdbId — tt-prefixed IMDB id (or null)
+ * @param {string|number|null} args.tmdbId — numeric TMDB id (or null)
+ * @param {number} [args.season]
+ * @param {number} [args.episode]
+ * @returns {string|null} embed URL, or null when this server can't serve this title
+ */
+export function buildStreamEmbedUrl({ server = 'vidsrcme', imdbId, tmdbId, season, episode }) {
+  const imdb = formatImdbId(imdbId);
+  const tmdb = tmdbId != null && tmdbId !== '' ? String(tmdbId) : null;
   switch (server) {
     case 'videasy':
-      return buildVideasyUrl(id, season, episode);
+      return buildVideasyUrl(tmdb, season, episode);
     case 'vidsrc':
-      return buildVidSrcUrl(id, season, episode);
+      return buildVidSrcUrl(tmdb, imdb, season, episode);
     case 'embedsu':
-      return buildEmbedSuUrl(id, season, episode);
+      return buildEmbedSuUrl(tmdb, season, episode);
     case 'autoembed':
-      return buildAutoEmbedUrl(id, useTmdb, season, episode);
+      return buildAutoEmbedUrl(tmdb, imdb, season, episode);
     case 'vidsrcme':
     default:
-      return buildVidSrcMeUrl(id, season, episode);
+      return buildVidSrcMeUrl(imdb, season, episode);
   }
 }
