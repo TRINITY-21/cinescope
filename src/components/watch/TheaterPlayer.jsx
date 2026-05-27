@@ -3,6 +3,21 @@ import { buildStreamEmbedUrl, STREAM_SERVERS } from '../../utils/streamEmbed';
 
 const STORAGE_KEY = 'bynge-stream-server';
 
+function CloudIcon({ className = '' }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M19.36 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.64-4.96z" />
+    </svg>
+  );
+}
+
 function getInitialServer() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -53,21 +68,30 @@ export default function TheaterPlayer({ videoId, useTmdb, season, episode, title
   return (
     <div className="space-y-4">
       <div className="flex justify-center">
-        <div className="inline-flex flex-wrap justify-center items-center gap-1 p-1 rounded-xl bg-bg-elevated/80 border border-white/10 backdrop-blur-sm max-w-full">
-          {STREAM_SERVERS.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => selectServer(s.id)}
-              className={`px-4 sm:px-6 py-2 rounded-lg text-sm font-semibold transition-all ${
-                server === s.id
-                  ? 'bg-accent-peach text-white shadow-glow-violet'
-                  : 'text-text-secondary hover:text-white hover:bg-white/5'
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
+        <div className="inline-flex flex-wrap justify-center items-center gap-1 p-1 rounded-full bg-bg-elevated/80 border border-white/10 backdrop-blur-sm max-w-full">
+          {STREAM_SERVERS.map((s) => {
+            const active = server === s.id;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => selectServer(s.id)}
+                className={`flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full text-sm font-semibold transition-all ${
+                  active
+                    ? 'bg-white text-bg-primary'
+                    : 'bg-white/5 text-text-primary/80 hover:text-white hover:bg-white/10'
+                }`}
+                aria-pressed={active}
+              >
+                <CloudIcon
+                  className={
+                    active ? 'text-accent-peach' : 'text-text-primary/50'
+                  }
+                />
+                {s.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 

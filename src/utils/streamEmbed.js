@@ -8,18 +8,17 @@ export function formatImdbId(imdb) {
 }
 
 /**
- * Exposed as neutral "Server 1 / Server 2" — different backends behind each
- * so users get a real fallback when one host doesn't have the title.
- *
- *  Server 1 → vsembed.ru          — what lastflix uses, lightest ad load
- *  Server 2 → multiembed.mov      — SuperEmbed aggregator, exposes many
- *                                    internal server options inside its
- *                                    own player UI (biggest catalog
- *                                    coverage, heavier ads)
+ * Stream servers — five public TMDB/IMDB embed providers. Order is fallback
+ * order: if the user's favorite has no source for the title, the next one
+ * usually does. Labels are the real provider names so users learn which
+ * hosts work best for their region / browser.
  */
 export const STREAM_SERVERS = [
-  { id: 'vsembed', label: 'Server 1' },
-  { id: 'superembed', label: 'Server 2' },
+  { id: 'vsembed', label: 'VSEmbed' },
+  { id: 'superembed', label: 'SuperEmbed' },
+  { id: 'vidsrc', label: 'VidSrc' },
+  { id: 'embedsu', label: 'Embed.su' },
+  { id: 'autoembed', label: 'AutoEmbed' },
 ];
 
 function resolveId(videoId, useTmdb) {
@@ -44,6 +43,30 @@ function buildSuperEmbedUrl(id, useTmdb, season, episode) {
   return `https://multiembed.mov/?${params.toString()}`;
 }
 
+function buildVidSrcUrl(id, season, episode) {
+  const base = 'https://vidsrc.cc/v2/embed';
+  if (season != null && episode != null) {
+    return `${base}/tv/${id}/${season}/${episode}`;
+  }
+  return `${base}/movie/${id}`;
+}
+
+function buildEmbedSuUrl(id, season, episode) {
+  const base = 'https://embed.su/embed';
+  if (season != null && episode != null) {
+    return `${base}/tv/${id}/${season}/${episode}`;
+  }
+  return `${base}/movie/${id}`;
+}
+
+function buildAutoEmbedUrl(id, useTmdb, season, episode) {
+  const kind = useTmdb ? 'tmdb' : 'imdb';
+  if (season != null && episode != null) {
+    return `https://autoembed.co/tv/${kind}/${id}-${season}-${episode}`;
+  }
+  return `https://autoembed.co/movie/${kind}/${id}`;
+}
+
 export function buildStreamEmbedUrl({
   server = 'vsembed',
   videoId,
@@ -56,6 +79,12 @@ export function buildStreamEmbedUrl({
   switch (server) {
     case 'superembed':
       return buildSuperEmbedUrl(id, useTmdb, season, episode);
+    case 'vidsrc':
+      return buildVidSrcUrl(id, season, episode);
+    case 'embedsu':
+      return buildEmbedSuUrl(id, season, episode);
+    case 'autoembed':
+      return buildAutoEmbedUrl(id, useTmdb, season, episode);
     case 'vsembed':
     default:
       return buildVsEmbedUrl(id, season, episode);

@@ -28,13 +28,14 @@ describe('formatImdbId', () => {
 });
 
 describe('STREAM_SERVERS', () => {
-  it('exposes both Server 1 and Server 2 with stable ids', () => {
+  it('exposes all five public embed providers with stable ids', () => {
     const ids = STREAM_SERVERS.map((s) => s.id);
-    expect(ids).toContain('vsembed');
-    expect(ids).toContain('superembed');
-    // Labels must be neutral (no provider names exposed in UI)
+    expect(ids).toEqual(['vsembed', 'superembed', 'vidsrc', 'embedsu', 'autoembed']);
+  });
+
+  it('uses real provider names as labels (no opaque "Server N")', () => {
     const labels = STREAM_SERVERS.map((s) => s.label);
-    expect(labels).toEqual(['Server 1', 'Server 2']);
+    expect(labels).toEqual(['VSEmbed', 'SuperEmbed', 'VidSrc', 'Embed.su', 'AutoEmbed']);
   });
 });
 
@@ -80,6 +81,47 @@ describe('buildStreamEmbedUrl', () => {
     const url = buildStreamEmbedUrl({ server: 'superembed', videoId: 'tt0903747', season: 1, episode: 1 });
     expect(url).toContain('s=1');
     expect(url).toContain('e=1');
+  });
+
+  it('builds a vidsrc.cc movie URL', () => {
+    const url = buildStreamEmbedUrl({ server: 'vidsrc', videoId: 12345, useTmdb: true });
+    expect(url).toBe('https://vidsrc.cc/v2/embed/movie/12345');
+  });
+
+  it('builds a vidsrc.cc TV URL with season + episode', () => {
+    const url = buildStreamEmbedUrl({ server: 'vidsrc', videoId: 1396, useTmdb: true, season: 3, episode: 7 });
+    expect(url).toBe('https://vidsrc.cc/v2/embed/tv/1396/3/7');
+  });
+
+  it('builds an embed.su movie URL', () => {
+    const url = buildStreamEmbedUrl({ server: 'embedsu', videoId: 12345, useTmdb: true });
+    expect(url).toBe('https://embed.su/embed/movie/12345');
+  });
+
+  it('builds an embed.su TV URL with season + episode', () => {
+    const url = buildStreamEmbedUrl({ server: 'embedsu', videoId: 1396, useTmdb: true, season: 1, episode: 2 });
+    expect(url).toBe('https://embed.su/embed/tv/1396/1/2');
+  });
+
+  it('builds an autoembed.co movie URL with tmdb path when useTmdb is true', () => {
+    const url = buildStreamEmbedUrl({ server: 'autoembed', videoId: 12345, useTmdb: true });
+    expect(url).toBe('https://autoembed.co/movie/tmdb/12345');
+  });
+
+  it('builds an autoembed.co movie URL with imdb path by default', () => {
+    const url = buildStreamEmbedUrl({ server: 'autoembed', videoId: 'tt0111161' });
+    expect(url).toBe('https://autoembed.co/movie/imdb/tt0111161');
+  });
+
+  it('builds an autoembed.co TV URL with s/e suffix', () => {
+    const url = buildStreamEmbedUrl({
+      server: 'autoembed',
+      videoId: 1396,
+      useTmdb: true,
+      season: 4,
+      episode: 9,
+    });
+    expect(url).toBe('https://autoembed.co/tv/tmdb/1396-4-9');
   });
 
   it('falls back to vsembed when an unknown server id is passed', () => {
