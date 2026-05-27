@@ -11,7 +11,7 @@ export default function MobileMenu({ isOpen, onClose, links }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/85 sm:bg-black/70 sm:backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div
@@ -19,7 +19,7 @@ export default function MobileMenu({ isOpen, onClose, links }) {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 280 }}
-            className="fixed right-0 top-0 bottom-0 z-50 w-80 max-w-[85vw] bg-bg-secondary/95 backdrop-blur-2xl border-l border-white/[0.06]"
+            className="fixed right-0 top-0 bottom-0 z-50 w-80 max-w-[85vw] bg-bg-secondary sm:bg-bg-secondary/95 sm:backdrop-blur-2xl border-l border-white/[0.06]"
           >
             {/* Header */}
             <div className="flex items-center justify-between h-16 px-6 border-b border-white/[0.06]">

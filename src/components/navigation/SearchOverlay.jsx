@@ -84,13 +84,13 @@ export default function SearchOverlay({ isOpen, onClose }) {
         <>
           <motion.div
             {...overlayFade}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/80 sm:bg-black/50 sm:backdrop-blur-sm"
             onClick={onClose}
             aria-hidden
           />
           <motion.div
             {...searchPanel}
-            className="fixed inset-0 z-50 bg-bg-primary/95 backdrop-blur-2xl noise-overlay pointer-events-none"
+            className="fixed inset-0 z-50 bg-bg-primary sm:bg-bg-primary/95 sm:backdrop-blur-2xl noise-overlay pointer-events-none"
           >
           <div className="pointer-events-auto h-full">
           <button
