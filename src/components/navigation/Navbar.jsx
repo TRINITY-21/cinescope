@@ -86,9 +86,13 @@ const primaryLinks = [
       </svg>
     ),
   },
+];
+
+const exploreLinks = [
   {
     to: '/schedule',
     label: 'TV Schedule',
+    desc: 'What’s airing today and this week',
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -98,9 +102,6 @@ const primaryLinks = [
       </svg>
     ),
   },
-];
-
-const exploreLinks = [
   {
     to: '/like',
     label: 'Similar Picks',
