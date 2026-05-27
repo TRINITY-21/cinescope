@@ -30,12 +30,12 @@ describe('formatImdbId', () => {
 describe('STREAM_SERVERS', () => {
   it('exposes all five public embed providers with stable ids', () => {
     const ids = STREAM_SERVERS.map((s) => s.id);
-    expect(ids).toEqual(['vidsrcme', 'videasy', 'vidsrc', 'embedsu', 'autoembed']);
+    expect(ids).toEqual(['videasy', 'vidsrcme', 'vidsrc', 'autoembed', 'embedsu']);
   });
 
   it('uses real provider names as labels (no opaque "Server N")', () => {
     const labels = STREAM_SERVERS.map((s) => s.label);
-    expect(labels).toEqual(['VidSrc.me', 'VidEasy', 'VidSrc', 'Embed.su', 'AutoEmbed']);
+    expect(labels).toEqual(['VidEasy', 'VidSrc.me', 'VidSrc', 'AutoEmbed', 'Embed.su']);
   });
 
   it('declares which id types each server accepts', () => {
@@ -173,8 +173,8 @@ describe('buildStreamEmbedUrl', () => {
     });
   });
 
-  it('falls back to vidsrcme when an unknown server id is passed', () => {
-    const url = buildStreamEmbedUrl({ server: 'made-up', imdbId: 'tt0111161' });
-    expect(url).toContain('vidsrcme.ru');
+  it('falls back to videasy when an unknown server id is passed', () => {
+    const url = buildStreamEmbedUrl({ server: 'made-up', tmdbId: 1428857 });
+    expect(url).toContain('player.videasy.net');
   });
 });

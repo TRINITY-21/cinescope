@@ -20,11 +20,14 @@ export function formatImdbId(imdb) {
  *   - player.videasy.net/movie/:tmdb        (their VidEasy)
  */
 export const STREAM_SERVERS = [
-  { id: 'vidsrcme', label: 'VidSrc.me', accepts: ['imdb'] },
+  // Reliable on new/long-tail titles — verified live against movies2watchtv.
   { id: 'videasy', label: 'VidEasy', accepts: ['tmdb'] },
+  { id: 'vidsrcme', label: 'VidSrc.me', accepts: ['imdb'] },
+  // Broader fallbacks, larger but spottier catalogs.
   { id: 'vidsrc', label: 'VidSrc', accepts: ['tmdb', 'imdb'] },
-  { id: 'embedsu', label: 'Embed.su', accepts: ['tmdb'] },
   { id: 'autoembed', label: 'AutoEmbed', accepts: ['tmdb', 'imdb'] },
+  // Catalog-light — kept for completeness, last in fallback order.
+  { id: 'embedsu', label: 'Embed.su', accepts: ['tmdb'] },
 ];
 
 function buildVidSrcMeUrl(imdbId, season, episode) {
@@ -86,7 +89,7 @@ function buildAutoEmbedUrl(tmdbId, imdbId, season, episode) {
  * @param {number} [args.episode]
  * @returns {string|null} embed URL, or null when this server can't serve this title
  */
-export function buildStreamEmbedUrl({ server = 'vidsrcme', imdbId, tmdbId, season, episode }) {
+export function buildStreamEmbedUrl({ server = 'videasy', imdbId, tmdbId, season, episode }) {
   const imdb = formatImdbId(imdbId);
   const tmdb = tmdbId != null && tmdbId !== '' ? String(tmdbId) : null;
   switch (server) {
@@ -99,7 +102,8 @@ export function buildStreamEmbedUrl({ server = 'vidsrcme', imdbId, tmdbId, seaso
     case 'autoembed':
       return buildAutoEmbedUrl(tmdb, imdb, season, episode);
     case 'vidsrcme':
-    default:
       return buildVidSrcMeUrl(imdb, season, episode);
+    default:
+      return buildVideasyUrl(tmdb, season, episode);
   }
 }
