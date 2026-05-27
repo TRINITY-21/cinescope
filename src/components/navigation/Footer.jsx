@@ -121,7 +121,16 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-white/5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 pt-6 border-t border-white/5 space-y-3 text-xs text-text-muted leading-relaxed">
+          <p>
+            123Movies - Watch Movies Online For Free and Download the latest movies without Registration at 123Moviesfree.net
+          </p>
+          <p>
+            Disclaimer: This site does not store any files on its server. All contents are provided by non-affiliated third parties.
+          </p>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-white/5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-text-muted">
             &copy; {new Date().getFullYear()} Bynge. All rights reserved.
           </p>
