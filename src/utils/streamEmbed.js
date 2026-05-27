@@ -62,9 +62,9 @@ function buildVidVaultUrl(tmdbId, season, episode) {
   if (!tmdbId) return null;
   const base = 'https://vidvault.ru';
   if (season != null && episode != null) {
-    return `${base}/${tmdbId}/${season}/${episode}`;
+    return `${base}/tv/${tmdbId}/${season}/${episode}`;
   }
-  return `${base}/${tmdbId}`;
+  return `${base}/movie/${tmdbId}`;
 }
 
 function buildAutoEmbedUrl(tmdbId, imdbId, season, episode) {
