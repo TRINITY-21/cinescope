@@ -401,8 +401,8 @@ export default function Navbar() {
       <nav
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-150 ${
           scrolled
-            ? 'bg-bg-primary/85 backdrop-blur-xl border-b border-white/[0.06]'
-            : 'bg-gradient-to-b from-black/85 via-black/55 to-transparent backdrop-blur-[2px]'
+            ? 'bg-bg-primary/95 sm:bg-bg-primary/85 sm:backdrop-blur-xl border-b border-white/[0.06]'
+            : 'bg-bg-primary/90 sm:bg-gradient-to-b sm:from-black/85 sm:via-black/55 sm:to-transparent sm:backdrop-blur-[2px]'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
