@@ -60,7 +60,7 @@ export default function CountdownTimer({ episodes }) {
         </p>
       </div>
 
-      <div className="grid grid-cols-4 gap-2 sm:gap-3 pt-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-2">
         {timeBlocks.map(({ value, label }) => (
           <div key={label} className="border border-white/[0.06] rounded-xl p-2 sm:p-3 text-center">
             <p className="text-h2 sm:text-display-sm font-extrabold font-mono tabular-nums text-white leading-none">

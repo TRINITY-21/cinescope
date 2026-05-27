@@ -122,8 +122,8 @@ export default function BingeCalculator({ show, episodes }) {
                     <p className="text-xl font-bold text-green-400">{daysToFinish}</p>
                     <p className="text-[10px] text-text-muted mt-0.5">days</p>
                   </div>
-                  <div>
-                    <p className="text-lg font-bold text-accent-peach">{finishStr}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm sm:text-base font-bold text-accent-peach truncate">{finishStr}</p>
                     <p className="text-[10px] text-text-muted mt-0.5">finish date</p>
                   </div>
                 </div>
