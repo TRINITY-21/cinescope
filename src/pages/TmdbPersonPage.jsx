@@ -104,12 +104,12 @@ function PhotoLightbox({ photos, startIndex, onClose }) {
       onTouchEnd={handleTouchEnd}
     >
       <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" />
-      <div className="relative z-10 max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} aria-label="Close" className="absolute -top-12 right-0 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+      <div className="relative z-10 max-w-[92vw] max-h-[80vh] sm:max-h-[85vh]" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} aria-label="Close" className="absolute -top-12 right-0 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
           <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" /></svg>
         </button>
         {index > 0 && (
-          <button onClick={goPrev} aria-label="Previous" className="absolute left-2 md:left-[-60px] top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/50 md:bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-20">
+          <button onClick={goPrev} aria-label="Previous" className="absolute left-2 md:left-[-60px] top-1/2 -translate-y-1/2 w-11 h-11 md:w-12 md:h-12 rounded-full bg-black/70 md:bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-20 backdrop-blur-sm">
             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
           </button>
         )}
@@ -119,14 +119,14 @@ function PhotoLightbox({ photos, startIndex, onClose }) {
           animate={{ opacity: 1, scale: 1 }}
           src={`${TMDB_IMAGE_BASE}/original${photo.file_path}`}
           alt=""
-          className="max-h-[85vh] w-auto rounded-lg shadow-2xl"
+          className="max-h-[78vh] sm:max-h-[82vh] w-auto rounded-lg shadow-2xl"
         />
         {index < photos.length - 1 && (
-          <button onClick={goNext} aria-label="Next" className="absolute right-2 md:right-[-60px] top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/50 md:bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-20">
+          <button onClick={goNext} aria-label="Next" className="absolute right-2 md:right-[-60px] top-1/2 -translate-y-1/2 w-11 h-11 md:w-12 md:h-12 rounded-full bg-black/70 md:bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors z-20 backdrop-blur-sm">
             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
           </button>
         )}
-        <p className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-caption text-text-muted font-mono tabular-nums">
+        <p className="absolute -bottom-8 sm:-bottom-10 left-1/2 -translate-x-1/2 text-caption text-text-muted font-mono tabular-nums">
           {index + 1} / {photos.length}
         </p>
       </div>

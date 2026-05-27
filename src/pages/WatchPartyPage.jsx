@@ -102,12 +102,12 @@ function HostPanel({ canHost, onCreate, loading, disabled }) {
       initial={{ opacity: 0, x: -24 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="group relative px-2 sm:px-8 lg:px-12 py-12 md:py-20 text-center md:text-right border-b md:border-b-0 md:border-r border-white/[0.04] md:pr-12 lg:pr-16"
+      className="group relative px-4 sm:px-8 lg:px-12 py-10 sm:py-14 md:py-20 text-center md:text-right border-b md:border-b-0 md:border-r border-white/[0.04] md:pr-12 lg:pr-16"
     >
       <p className="text-[10px] font-semibold tracking-[0.35em] uppercase text-text-muted">
         Side A
       </p>
-      <h2 className="mt-2 text-[2.5rem] sm:text-[3.5rem] md:text-[4rem] font-extrabold leading-none tracking-tighter text-white">
+      <h2 className="mt-2 text-display sm:text-display-lg font-extrabold leading-none tracking-tighter text-white">
         Host
       </h2>
       <p className="mt-4 text-body-sm text-text-secondary max-w-sm md:ml-auto leading-relaxed">
@@ -205,20 +205,20 @@ function JoinPanel({ onJoin, loading, disabled }) {
       initial={{ opacity: 0, x: 24 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.05 }}
-      className="px-2 sm:px-8 lg:px-12 py-12 md:py-20 text-center md:text-left md:pl-12 lg:pl-16"
+      className="px-4 sm:px-8 lg:px-12 py-10 sm:py-14 md:py-20 text-center md:text-left md:pl-12 lg:pl-16"
     >
       <p className="text-[10px] font-semibold tracking-[0.35em] uppercase text-text-muted">
         Side B
       </p>
-      <h2 className="mt-2 text-[2.5rem] sm:text-[3.5rem] md:text-[4rem] font-extrabold leading-none tracking-tighter text-white">
+      <h2 className="mt-2 text-display sm:text-display-lg font-extrabold leading-none tracking-tighter text-white">
         Join
       </h2>
       <p className="mt-4 text-body-sm text-text-secondary max-w-sm leading-relaxed">
         Got a code? Punch it in and you're in the room.
       </p>
 
-      {/* The vault */}
-      <div className="mt-8 flex items-center justify-center md:justify-start gap-2 sm:gap-2.5">
+      {/* The vault — 6 cells; sized to fit on a ~340px wide phone with 16px page padding */}
+      <div className="mt-8 flex items-center justify-center md:justify-start gap-1.5 sm:gap-2 md:gap-2.5">
         {code.map((ch, i) => (
           <input
             key={i}
@@ -234,8 +234,8 @@ function JoinPanel({ onJoin, loading, disabled }) {
             disabled={disabled}
             aria-label={`Room code character ${i + 1}`}
             className="
-              w-11 h-14 sm:w-12 sm:h-16 md:w-14 md:h-[72px]
-              text-center font-mono text-2xl sm:text-3xl md:text-[2rem] font-bold
+              w-[2.4rem] h-12 sm:w-12 sm:h-16 md:w-14 md:h-[72px]
+              text-center font-mono text-xl sm:text-3xl md:text-[2rem] font-bold
               text-white caret-accent-gold
               bg-white/[0.03] border border-white/[0.10]
               rounded-lg

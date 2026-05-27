@@ -53,20 +53,20 @@ function ProviderGroup({ heading, providers, accent }) {
           {String(providers.length).padStart(2, '0')}
         </span>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
         {providers.map((p) => (
           <div
             key={p.provider_id}
-            className="flex items-center gap-3 p-3 rounded-xl border border-white/[0.06] bg-white/[0.02]"
+            className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl border border-white/[0.06] bg-white/[0.02] min-w-0"
           >
             {logoUrl(p.logo_path) && (
               <img
                 src={logoUrl(p.logo_path)}
                 alt={p.provider_name}
-                className="w-10 h-10 rounded-lg object-contain flex-shrink-0"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-contain flex-shrink-0"
               />
             )}
-            <span className="text-body-sm font-medium text-white truncate">
+            <span className="text-body-sm font-medium text-white truncate min-w-0">
               {p.provider_name}
             </span>
           </div>

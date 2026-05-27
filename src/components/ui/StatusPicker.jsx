@@ -117,7 +117,7 @@ export default function StatusPicker({ kind, id, item, className = '' }) {
       </button>
 
       {open && (
-        <div className="absolute z-30 top-full left-0 mt-2 w-52 bg-bg-secondary border border-white/10 rounded-xl shadow-2xl overflow-hidden">
+        <div className="absolute z-30 top-full left-0 mt-2 w-52 max-w-[calc(100vw-2rem)] bg-bg-secondary border border-white/10 rounded-xl shadow-2xl overflow-hidden">
           {STATES.map((s) => {
             const active = s.key === status;
             return (

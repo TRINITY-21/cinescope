@@ -148,7 +148,7 @@ export default function SearchPage() {
             placeholder="Search shows, movies, people…"
             autoFocus
             className="
-              w-full h-13 sm:h-14 pl-12 pr-4 rounded-2xl
+              w-full h-12 sm:h-14 pl-11 sm:pl-12 pr-12 rounded-2xl
               text-body sm:text-h3 text-white placeholder-text-muted
               bg-white/[0.04] border border-white/[0.10]
               focus:outline-none focus:border-accent-peach/60 focus:bg-white/[0.06]
@@ -161,7 +161,7 @@ export default function SearchPage() {
               type="button"
               onClick={() => setQuery('')}
               aria-label="Clear search"
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/[0.04] hover:bg-white/[0.10] text-text-secondary hover:text-white flex items-center justify-center transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/[0.04] hover:bg-white/[0.10] text-text-secondary hover:text-white flex items-center justify-center transition-colors"
             >
               <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path d="M18 6L6 18M6 6l12 12" />

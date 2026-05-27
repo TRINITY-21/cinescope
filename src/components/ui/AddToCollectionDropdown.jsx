@@ -53,7 +53,7 @@ export default function AddToCollectionDropdown({
         </Button>
       )}
       {open && (
-        <div className="absolute left-0 top-full mt-2 min-w-[200px] rounded-xl bg-bg-elevated border border-white/10 shadow-xl py-1.5 z-50">
+        <div className="absolute left-0 top-full mt-2 min-w-[200px] max-w-[calc(100vw-2rem)] rounded-xl bg-bg-elevated border border-white/10 shadow-xl py-1.5 z-50">
           {collections.map((c) => {
             const inCol = isInCollection(c.id, item.id);
             return (

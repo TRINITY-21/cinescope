@@ -1,8 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { endpoints } from '../../api/endpoints';
-import { useApiQuery } from '../../hooks/useApiQuery';
+import { fetchApi } from '../../api/tvmaze';
 import { useShowFanart } from '../../hooks/useFanart';
 import { useOmdb } from '../../hooks/useOmdb';
 import { FEATURED_SHOW_IDS } from '../../utils/constants';
@@ -20,26 +20,57 @@ import StatusPicker from '../ui/StatusPicker';
 
 export default function HeroSpotlight() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [shows, setShows] = useState([]);
+  const [slides, setSlides] = useState([]);
   const [showScrollHint, setShowScrollHint] = useState(true);
 
-  const showId = FEATURED_SHOW_IDS[currentIndex % FEATURED_SHOW_IDS.length];
+  // Fetch every featured show + its images up front, in parallel. Render off
+  // the loaded array — rotating then never re-queries and never blanks out,
+  // which is what caused the visible "refresh" between slides.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const results = await Promise.all(
+        FEATURED_SHOW_IDS.map(async (id) => {
+          try {
+            const [show, images] = await Promise.all([
+              fetchApi(endpoints.show(id, ['cast'])),
+              fetchApi(endpoints.showImages(id)),
+            ]);
+            return { show, images };
+          } catch {
+            return null;
+          }
+        }),
+      );
+      if (!cancelled) setSlides(results.filter((r) => r && r.show));
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-  const { data: show } = useApiQuery(endpoints.show(showId, ['cast']));
-  const { data: images } = useApiQuery(endpoints.showImages(showId));
+  // Warm the browser image cache for every backdrop so rotations don't show
+  // a half-loaded image.
+  useEffect(() => {
+    slides.forEach(({ show, images }) => {
+      const hd = getBackdropImage(images);
+      const url = hd
+        ? responsive(hd, { w: 1920 })
+        : show?.image
+          ? blurred(getOriginalImage(show.image), { w: 1920, blur: 60 })
+          : null;
+      if (url) {
+        const img = new Image();
+        img.src = url;
+      }
+    });
+  }, [slides]);
 
   useEffect(() => {
-    if (show && !shows.find((s) => s.id === show.id)) {
-      setShows((prev) => [...prev, { ...show, _images: images }]);
-    }
-  }, [show, images]);
-
-  useEffect(() => {
+    if (slides.length === 0) return undefined;
     const timer = setInterval(() => {
-      setCurrentIndex((i) => (i + 1) % FEATURED_SHOW_IDS.length);
+      setCurrentIndex((i) => (i + 1) % slides.length);
     }, 8000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -50,6 +81,10 @@ export default function HeroSpotlight() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  const slide = slides[currentIndex % Math.max(1, slides.length)] || null;
+  const show = slide?.show || null;
+  const images = slide?.images || null;
+
   // All hooks must be called unconditionally, before any early return.
   const { ratings: omdbRatings } = useOmdb(show?.externals?.imdb);
   const { logo: fanartLogo, background: fanartBackdrop } = useShowFanart(
@@ -57,12 +92,13 @@ export default function HeroSpotlight() {
     show?.externals?.imdb,
   );
 
-  const hdBackdrop = fanartBackdrop || getBackdropImage(images);
-  const backdropSrc = hdBackdrop
-    ? responsive(hdBackdrop, { w: 1920 })
-    : show?.image
-      ? blurred(getOriginalImage(show.image), { w: 1920, blur: 60 })
-      : null;
+  const backdropSrc = useMemo(() => {
+    const hd = fanartBackdrop || getBackdropImage(images);
+    if (hd) return responsive(hd, { w: 1920 });
+    if (show?.image) return blurred(getOriginalImage(show.image), { w: 1920, blur: 60 });
+    return null;
+  }, [fanartBackdrop, images, show]);
+
   if (!show) {
     return (
       <div className="h-screen bg-bg-primary flex items-center justify-center">
@@ -82,7 +118,7 @@ export default function HeroSpotlight() {
   }
 
   return (
-    <div id="hero-spotlight" className="relative h-[75vh] sm:h-[85vh] md:h-screen overflow-hidden">
+    <div id="hero-spotlight" className="relative h-[78svh] sm:h-[82vh] md:h-screen overflow-hidden">
       <AnimatePresence mode="sync">
         <motion.div
           key={show.id}
@@ -104,7 +140,7 @@ export default function HeroSpotlight() {
       <div className="absolute inset-0 hero-gradient-left" />
 
       <div className="absolute inset-0 flex items-end">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-16 md:pb-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-12 sm:pb-16 md:pb-24">
           <AnimatePresence mode="wait">
             <motion.div
               key={show.id}
@@ -142,7 +178,7 @@ export default function HeroSpotlight() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight text-shadow-hero"
+                  className="text-display sm:text-display-lg font-extrabold text-white leading-[1.05] text-shadow-hero break-words"
                 >
                   {show.name}
                 </motion.h1>
@@ -224,12 +260,12 @@ export default function HeroSpotlight() {
           </AnimatePresence>
 
           <div className="absolute bottom-14 right-6 md:right-12 hidden sm:flex gap-2">
-            {FEATURED_SHOW_IDS.map((_, i) => (
+            {slides.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrentIndex(i)}
                 className={`w-2 h-2 rounded-full transition-all ${
-                  i === currentIndex % FEATURED_SHOW_IDS.length ? 'bg-accent-peach w-6' : 'bg-white/30 hover:bg-white/50'
+                  i === currentIndex % slides.length ? 'bg-accent-peach w-6' : 'bg-white/30 hover:bg-white/50'
                 }`}
                 aria-label={`Go to slide ${i + 1}`}
               />
@@ -254,7 +290,7 @@ export default function HeroSpotlight() {
             }}
             className="
               absolute bottom-6 left-1/2 -translate-x-1/2 z-20
-              flex flex-col items-center gap-1
+              hidden sm:flex flex-col items-center gap-1
               text-white/70 hover:text-white
               focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-peach focus-visible:ring-offset-2 focus-visible:ring-offset-transparent
               transition-colors

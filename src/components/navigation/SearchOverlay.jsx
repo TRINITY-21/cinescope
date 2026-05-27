@@ -95,16 +95,16 @@ export default function SearchOverlay({ isOpen, onClose }) {
           <div className="pointer-events-auto h-full">
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-accent-red/20 flex items-center justify-center transition-colors"
+            className="absolute top-4 right-4 sm:top-5 sm:right-5 w-11 h-11 rounded-full bg-white/10 hover:bg-accent-red/20 flex items-center justify-center transition-colors"
             aria-label="Close search"
           >
             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
 
-          <div className="max-w-3xl mx-auto px-4 pt-20 sm:pt-24">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-16 sm:pt-20 md:pt-24">
             <form onSubmit={handleSubmit}>
               <div className="relative">
-                <svg className="absolute left-0 top-0 mt-[3px] sm:mt-[5px] text-text-muted w-5 h-5 sm:w-7 sm:h-7" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <svg className="absolute left-0 top-1/2 -translate-y-1/2 -mt-1 sm:-mt-1.5 text-text-muted w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
                 </svg>
                 <input
@@ -113,7 +113,7 @@ export default function SearchOverlay({ isOpen, onClose }) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search shows, series, movies..."
-                  className="w-full bg-transparent border-0 border-b border-white/10 outline-none text-base sm:text-2xl md:text-4xl font-light text-white placeholder-text-muted pl-8 sm:pl-12 pb-3 sm:pb-4 focus:border-accent-peach/50 transition-colors"
+                  className="w-full bg-transparent border-0 border-b border-white/10 outline-none text-xl sm:text-2xl md:text-3xl lg:text-4xl font-light text-white placeholder-text-muted pl-8 sm:pl-10 md:pl-12 pb-3 sm:pb-4 focus:border-accent-peach/50 transition-colors"
                 />
               </div>
             </form>

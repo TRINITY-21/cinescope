@@ -189,7 +189,7 @@ export default function SettingsPage() {
             <h2 className="text-meta uppercase text-accent-red/80 mb-3 font-semibold">Danger zone</h2>
             <div className="rounded-2xl border border-accent-red/20 bg-accent-red/[0.04] p-card">
               <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex-1 min-w-[200px]">
+                <div className="flex-1 min-w-0 sm:min-w-[200px]">
                   <h3 className="text-body font-semibold text-white">Clear all data</h3>
                   <p className="text-body-sm text-text-secondary mt-1">
                     Wipes your entire library on this device. Export a backup first if you want to keep it.
