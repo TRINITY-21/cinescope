@@ -57,6 +57,7 @@ const DmcaPage = lazy(() => import('./pages/legal/DmcaPage'));
 const GenresPage = lazy(() => import('./pages/GenresPage'));
 const CountriesPage = lazy(() => import('./pages/CountriesPage'));
 const CountryPage = lazy(() => import('./pages/CountryPage'));
+const AnimePage = lazy(() => import('./pages/AnimePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 export default function App() {
@@ -118,6 +119,7 @@ export default function App() {
                   <Route path="/genres" element={<GenresPage />} />
                   <Route path="/country" element={<CountriesPage />} />
                   <Route path="/country/:code" element={<CountryPage />} />
+                  <Route path="/anime" element={<AnimePage />} />
                   <Route path="/where-to-watch/:slug" element={<WhereToWatchPage />} />
                   <Route path="/should-i-watch" element={<ShouldIWatchIndexPage />} />
                   <Route path="/should-i-watch/:slug" element={<ShouldIWatchPage />} />

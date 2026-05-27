@@ -59,6 +59,7 @@ const STATIC_ROUTES = [
   // Genres + countries index hubs
   { path: '/genres', priority: '0.7', changefreq: 'monthly' },
   { path: '/country', priority: '0.7', changefreq: 'monthly' },
+  { path: '/anime', priority: '0.8', changefreq: 'daily' },
   // New SEO surfaces
   { path: '/compare/movies', priority: '0.6', changefreq: 'monthly' },
 ];

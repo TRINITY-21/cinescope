@@ -6,6 +6,7 @@ import { fetchApi } from '../../api/tvmaze';
 import { useApp } from '../../context/AppContext';
 import { useHoverMenu } from '../../hooks/useHoverMenu';
 import KeyboardShortcuts from '../ui/KeyboardShortcuts';
+import SurpriseMePicker from '../ui/SurpriseMePicker';
 import MobileMenu from './MobileMenu';
 import SearchOverlay from './SearchOverlay';
 
@@ -59,6 +60,17 @@ const primaryLinks = [
         <circle cx="12" cy="12" r="10" />
         <line x1="2" y1="12" x2="22" y2="12" />
         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </svg>
+    ),
+  },
+  {
+    to: '/anime',
+    label: 'Anime',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2 4 7v10l8 5 8-5V7l-8-5z" />
+        <path d="M8 11h.01M16 11h.01" />
+        <path d="M9 16c1 .8 2 1 3 1s2-.2 3-1" />
       </svg>
     ),
   },
@@ -325,6 +337,7 @@ export default function Navbar() {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [surpriseOpen, setSurpriseOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [airingCount, setAiringCount] = useState(0);
   const exploreMenu = useHoverMenu();
@@ -525,6 +538,36 @@ export default function Navbar() {
               </kbd>
             </button>
 
+            {/* Surprise Me — random pick swipe deck */}
+            <button
+              onClick={() => setSurpriseOpen(true)}
+              className="
+                group flex-shrink-0 w-9 h-9 rounded-lg
+                bg-white/[0.05] border border-white/[0.10]
+                text-text-secondary hover:text-accent-peach hover:border-accent-peach/40 hover:bg-accent-peach/[0.08]
+                flex items-center justify-center
+                transition-colors duration-150
+              "
+              aria-label="Surprise me — random pick"
+              title="Surprise me"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="transition-transform duration-200 group-hover:rotate-12"
+                aria-hidden
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2.5" />
+                <path d="M16 8h.01M8 8h.01M12 12h.01M8 16h.01M16 16h.01" />
+              </svg>
+            </button>
+
             {/* Bell — only shown when there's airing content */}
             {airingCount > 0 && (
               <button
@@ -634,6 +677,7 @@ export default function Navbar() {
       </nav>
 
       <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SurpriseMePicker isOpen={surpriseOpen} onClose={() => setSurpriseOpen(false)} />
       <MobileMenu isOpen={mobileOpen} onClose={() => setMobileOpen(false)} links={allMobileLinks} />
       <KeyboardShortcuts onOpenSearch={() => setSearchOpen(true)} />
     </>

@@ -377,6 +377,18 @@ export async function discoverByCountry(countryCode, mediaType = 'movie', page =
   return data || { results: [], total_pages: 0, total_results: 0, page: 1 };
 }
 
+/**
+ * Discover anime — animation films/series from Japan, sorted by popularity.
+ * TMDB genre 16 = Animation. Combining with with_origin_country=JP catches
+ * anime without dragging in Pixar, Aardman, etc.
+ */
+export async function discoverAnime(mediaType = 'movie', page = 1) {
+  const data = await tmdbFetch(
+    `/discover/${mediaType}?with_genres=16&with_origin_country=JP&sort_by=popularity.desc&page=${page}`,
+  );
+  return data || { results: [], total_pages: 0, total_results: 0, page: 1 };
+}
+
 export const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
 
 // Kept for backwards compatibility — the proxy handles missing-key cases server-side
