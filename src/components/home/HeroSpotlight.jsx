@@ -92,11 +92,14 @@ export default function HeroSpotlight() {
     show?.externals?.imdb,
   );
 
-  const backdropSrc = useMemo(() => {
+  // Both the URL and whether it came from an HD source — the latter drives
+  // the opacity dim on the fallback (blurred poster). Refactoring those into
+  // two values was the source of a "hdBackdrop is not defined" crash.
+  const { src: backdropSrc, isHd: hdBackdrop } = useMemo(() => {
     const hd = fanartBackdrop || getBackdropImage(images);
-    if (hd) return responsive(hd, { w: 1920 });
-    if (show?.image) return blurred(getOriginalImage(show.image), { w: 1920, blur: 60 });
-    return null;
+    if (hd) return { src: responsive(hd, { w: 1920 }), isHd: true };
+    if (show?.image) return { src: blurred(getOriginalImage(show.image), { w: 1920, blur: 60 }), isHd: false };
+    return { src: null, isHd: false };
   }, [fanartBackdrop, images, show]);
 
   if (!show) {
