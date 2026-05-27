@@ -48,7 +48,7 @@ export default function MovieCastGrid({ credits }) {
   return (
     <section>
       <div className="flex items-baseline gap-3 mb-section">
-        <h2 className="text-h2 font-extrabold tracking-tight text-white">
+        <h2 className="text-h3 sm:text-h2 font-extrabold tracking-tight text-white">
           The cast
         </h2>
         <div className="flex-1 h-px bg-white/[0.06]" />

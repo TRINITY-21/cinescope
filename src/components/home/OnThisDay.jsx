@@ -62,7 +62,7 @@ export default function OnThisDay() {
           <p className="text-meta uppercase text-text-muted font-semibold tracking-widest">
             {todayWeekday} · Airing today
           </p>
-          <h2 className="mt-1.5 text-h2 font-extrabold tracking-tight text-white leading-tight">
+          <h2 className="mt-1.5 text-h3 sm:text-h2 font-extrabold tracking-tight text-white leading-tight">
             New episodes on {todayFormatted}
           </h2>
         </div>

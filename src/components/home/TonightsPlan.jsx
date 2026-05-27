@@ -104,7 +104,7 @@ export default function TonightsPlan() {
           <p className="text-meta uppercase text-text-muted font-semibold tracking-widest">
             Tonight's plan
           </p>
-          <p className="mt-1.5 text-h2 font-extrabold tracking-tight text-white leading-tight">
+          <p className="mt-1.5 text-h3 sm:text-h2 font-extrabold tracking-tight text-white leading-tight">
             {totalEps} episode{totalEps !== 1 ? 's' : ''}
             <span className="text-text-muted font-normal mx-2">·</span>
             <span className="font-mono tabular-nums">{hours}h</span>

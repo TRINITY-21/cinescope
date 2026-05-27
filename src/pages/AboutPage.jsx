@@ -42,7 +42,7 @@ export default function AboutPage() {
 
       <Container className="mt-section space-y-section-lg max-w-3xl">
         <section>
-          <h2 className="text-h2 font-semibold text-white mb-3">What Bynge does</h2>
+          <h2 className="text-h3 sm:text-h2 font-semibold text-white mb-3">What Bynge does</h2>
           <p className="text-body text-text-secondary leading-relaxed">
             We combine every major rating source (TMDB, IMDb, Rotten Tomatoes, Metacritic), live streaming availability,
             franchise watch-order guides, curated mood lists, and hand-ranked Best Of lists into one place. We score every title
@@ -56,7 +56,7 @@ export default function AboutPage() {
         </section>
 
         <section>
-          <h2 className="text-h2 font-semibold text-white mb-3">Where the data comes from</h2>
+          <h2 className="text-h3 sm:text-h2 font-semibold text-white mb-3">Where the data comes from</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <SourceCard
               name="TMDB"
@@ -92,7 +92,7 @@ export default function AboutPage() {
         </section>
 
         <section>
-          <h2 className="text-h2 font-semibold text-white mb-3">How we rank</h2>
+          <h2 className="text-h3 sm:text-h2 font-semibold text-white mb-3">How we rank</h2>
           <p className="text-body text-text-secondary leading-relaxed">
             Every list on Bynge is sorted by the Bynge Score. It blends:
           </p>
@@ -134,7 +134,7 @@ export default function AboutPage() {
         </section>
 
         <section>
-          <h2 className="text-h2 font-semibold text-white mb-3">Editorial standards</h2>
+          <h2 className="text-h3 sm:text-h2 font-semibold text-white mb-3">Editorial standards</h2>
           <p className="text-body text-text-secondary leading-relaxed">
             Our automated lists refresh daily as the underlying data moves. Our curated lists (seasonal pages,
             watch-order guides, mood lists) are reviewed by editors before publishing — and re-reviewed yearly. We
@@ -145,7 +145,7 @@ export default function AboutPage() {
         </section>
 
         <section>
-          <h2 className="text-h2 font-semibold text-white mb-3">Contact</h2>
+          <h2 className="text-h3 sm:text-h2 font-semibold text-white mb-3">Contact</h2>
           <p className="text-body text-text-secondary leading-relaxed">
             Found a bug, missing a franchise, or want a list we don\'t cover yet? We read every message.
           </p>

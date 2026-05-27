@@ -25,7 +25,6 @@ const discoverLinks = [
   { to: '/compare/movies', label: 'Compare Movies' },
   { to: '/about', label: 'About Bynge' },
   { to: '/how-we-rank', label: 'How We Rank' },
-  { to: '/newsletter', label: 'Newsletter' },
   { to: '/contact', label: 'Contact' },
 ];
 
