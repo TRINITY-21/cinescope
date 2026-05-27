@@ -123,10 +123,11 @@ export default function Footer() {
 
         <div className="mt-10 pt-6 border-t border-white/5 space-y-3 text-xs text-text-muted leading-relaxed">
           <p>
-            123Movies - Watch Movies Online For Free and Download the latest movies without Registration at 123Moviesfree.net
+            Bynge — discover, track and watch movies and TV shows online. No signup, no registration, free at bynge.app.
           </p>
           <p>
-            Disclaimer: This site does not store any files on its server. All contents are provided by non-affiliated third parties.
+            Disclaimer: Bynge does not store any files on its servers. All streaming content is provided by non-affiliated third parties.
+            For copyright concerns, see our <Link to="/dmca" className="hover:text-white transition-colors underline-offset-2 hover:underline">DMCA notice</Link>.
           </p>
         </div>
 
@@ -138,6 +139,8 @@ export default function Footer() {
             <Link to="/terms" className="hover:text-white transition-colors">Terms</Link>
             <span aria-hidden>·</span>
             <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <span aria-hidden>·</span>
+            <Link to="/dmca" className="hover:text-white transition-colors">DMCA</Link>
             <span aria-hidden>·</span>
             <Link to="/contact" className="hover:text-white transition-colors">Contact</Link>
           </div>

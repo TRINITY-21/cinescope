@@ -53,6 +53,7 @@ const ShouldIWatchPage = lazy(() => import('./pages/ShouldIWatchPage'));
 const MovieComparePage = lazy(() => import('./pages/MovieComparePage'));
 const TermsPage = lazy(() => import('./pages/legal/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/legal/PrivacyPage'));
+const DmcaPage = lazy(() => import('./pages/legal/DmcaPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 export default function App() {
@@ -110,6 +111,7 @@ export default function App() {
                   <Route path="/newsletter" element={<NewsletterPage />} />
                   <Route path="/terms" element={<TermsPage />} />
                   <Route path="/privacy" element={<PrivacyPage />} />
+                  <Route path="/dmca" element={<DmcaPage />} />
                   <Route path="/where-to-watch/:slug" element={<WhereToWatchPage />} />
                   <Route path="/should-i-watch" element={<ShouldIWatchIndexPage />} />
                   <Route path="/should-i-watch/:slug" element={<ShouldIWatchPage />} />
