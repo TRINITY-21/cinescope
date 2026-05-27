@@ -30,12 +30,12 @@ describe('formatImdbId', () => {
 describe('STREAM_SERVERS', () => {
   it('exposes all five public embed providers with stable ids', () => {
     const ids = STREAM_SERVERS.map((s) => s.id);
-    expect(ids).toEqual(['videasy', 'vidsrcme', 'vidsrc', 'autoembed', 'embedsu']);
+    expect(ids).toEqual(['videasy', 'vidsrcme', 'vidsrc', 'autoembed', 'vidvault']);
   });
 
   it('uses real provider names as labels (no opaque "Server N")', () => {
     const labels = STREAM_SERVERS.map((s) => s.label);
-    expect(labels).toEqual(['VidEasy', 'VidSrc.me', 'VidSrc', 'AutoEmbed', 'Embed.su']);
+    expect(labels).toEqual(['VidEasy', 'VidSrc.me', 'VidSrc', 'AutoEmbed', 'VidVault']);
   });
 
   it('declares which id types each server accepts', () => {
@@ -43,7 +43,7 @@ describe('STREAM_SERVERS', () => {
     expect(map.vidsrcme).toEqual(['imdb']);
     expect(map.videasy).toEqual(['tmdb']);
     expect(map.vidsrc).toEqual(['tmdb', 'imdb']);
-    expect(map.embedsu).toEqual(['tmdb']);
+    expect(map.vidvault).toEqual(['tmdb']);
     expect(map.autoembed).toEqual(['tmdb', 'imdb']);
   });
 });
@@ -129,24 +129,24 @@ describe('buildStreamEmbedUrl', () => {
     });
   });
 
-  describe('Embed.su (embedsu) — TMDB only', () => {
+  describe('VidVault (vidvault) — TMDB only', () => {
     it('builds a movie URL', () => {
-      const url = buildStreamEmbedUrl({ server: 'embedsu', tmdbId: 12345 });
-      expect(url).toBe('https://embed.su/embed/movie/12345');
+      const url = buildStreamEmbedUrl({ server: 'vidvault', tmdbId: 5000 });
+      expect(url).toBe('https://vidvault.ru/movie/5000');
     });
 
     it('builds a TV URL with season + episode', () => {
       const url = buildStreamEmbedUrl({
-        server: 'embedsu',
+        server: 'vidvault',
         tmdbId: 1396,
         season: 1,
         episode: 2,
       });
-      expect(url).toBe('https://embed.su/embed/tv/1396/1/2');
+      expect(url).toBe('https://vidvault.ru/tv/1396/1/2');
     });
 
     it('returns null when only an IMDB id is available', () => {
-      const url = buildStreamEmbedUrl({ server: 'embedsu', imdbId: 'tt0111161' });
+      const url = buildStreamEmbedUrl({ server: 'vidvault', imdbId: 'tt0111161' });
       expect(url).toBeNull();
     });
   });

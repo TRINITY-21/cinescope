@@ -26,8 +26,7 @@ export const STREAM_SERVERS = [
   // Broader fallbacks, larger but spottier catalogs.
   { id: 'vidsrc', label: 'VidSrc', accepts: ['tmdb', 'imdb'] },
   { id: 'autoembed', label: 'AutoEmbed', accepts: ['tmdb', 'imdb'] },
-  // Catalog-light — kept for completeness, last in fallback order.
-  { id: 'embedsu', label: 'Embed.su', accepts: ['tmdb'] },
+  { id: 'vidvault', label: 'VidVault', accepts: ['tmdb'] },
 ];
 
 function buildVidSrcMeUrl(imdbId, season, episode) {
@@ -59,9 +58,9 @@ function buildVidSrcUrl(tmdbId, imdbId, season, episode) {
   return `${base}/movie/${id}`;
 }
 
-function buildEmbedSuUrl(tmdbId, season, episode) {
+function buildVidVaultUrl(tmdbId, season, episode) {
   if (!tmdbId) return null;
-  const base = 'https://embed.su/embed';
+  const base = 'https://vidvault.ru';
   if (season != null && episode != null) {
     return `${base}/tv/${tmdbId}/${season}/${episode}`;
   }
@@ -97,8 +96,8 @@ export function buildStreamEmbedUrl({ server = 'videasy', imdbId, tmdbId, season
       return buildVideasyUrl(tmdb, season, episode);
     case 'vidsrc':
       return buildVidSrcUrl(tmdb, imdb, season, episode);
-    case 'embedsu':
-      return buildEmbedSuUrl(tmdb, season, episode);
+    case 'vidvault':
+      return buildVidVaultUrl(tmdb, season, episode);
     case 'autoembed':
       return buildAutoEmbedUrl(tmdb, imdb, season, episode);
     case 'vidsrcme':
