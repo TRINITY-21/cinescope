@@ -329,16 +329,16 @@ function FilterRow({ sortBy, onSort, statusFilter, onStatus, minRating, onMinRat
 
 function SegmentedControl({ label, options, value, onChange, compact = false }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-meta uppercase text-text-muted font-semibold whitespace-nowrap">{label}</span>
-      <div className="inline-flex rounded-lg bg-white/[0.03] border border-white/[0.08] p-0.5">
+    <div className="flex items-center gap-2 min-w-0 max-w-full">
+      <span className="text-meta uppercase text-text-muted font-semibold whitespace-nowrap shrink-0">{label}</span>
+      <div className="inline-flex rounded-lg bg-white/[0.03] border border-white/[0.08] p-0.5 overflow-x-auto hide-scrollbar max-w-full">
         {options.map((opt) => (
           <button
             key={opt.id}
             type="button"
             onClick={() => onChange(opt.id)}
             className={`
-              ${compact ? 'px-2.5' : 'px-3'} py-1 rounded-md text-body-sm font-medium
+              ${compact ? 'px-2.5' : 'px-3'} py-1 rounded-md text-body-sm font-medium whitespace-nowrap shrink-0
               transition-colors
               ${value === opt.id
                 ? 'bg-white/[0.10] text-white'

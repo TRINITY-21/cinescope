@@ -11,6 +11,7 @@ import SubtitleLink from '../components/watch/SubtitleLink';
 import TheaterPlayer from '../components/watch/TheaterPlayer';
 import { useApp } from '../context/AppContext';
 import { useMovieFanart } from '../hooks/useFanart';
+import { usePageHead } from '../hooks/usePageHead';
 import PageLayout from '../layouts/PageLayout';
 import { formatRuntime, formatYear } from '../utils/formatters';
 import { getTmdbPosterUrl, getTmdbProfileUrl } from '../utils/imageUrl';
@@ -50,11 +51,18 @@ export default function MovieWatchPage() {
     load();
   }, [id]);
 
+  // /watch routes are never indexed. robots.txt blocks the path, and this meta
+  // tag tells any bot that ignores robots.txt to back off too. The user-visible
+  // <title> stays generic so a rendered page doesn't read like a piracy landing
+  // to anti-piracy scrapers.
+  usePageHead({
+    title: 'Player — Bynge',
+    robots: 'noindex, nofollow',
+  });
+
   useEffect(() => {
     if (!movie) return;
-    document.title = `Watch ${movie.title} — Bynge`;
     addMovieToWatchlist(movie);
-    return () => { document.title = 'Bynge'; };
   }, [movie, addMovieToWatchlist]);
 
   if (loading) return <Loader fullScreen />;

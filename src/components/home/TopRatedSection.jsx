@@ -20,7 +20,7 @@ export default function TopRatedSection({ shows }) {
           <p className="text-meta uppercase text-text-muted font-semibold tracking-widest">
             Ranked · By audience score
           </p>
-          <h2 className="mt-1.5 text-h2 font-extrabold tracking-tight text-white leading-tight">
+          <h2 className="mt-1.5 text-h3 sm:text-h2 font-extrabold tracking-tight text-white leading-tight">
             The top ten right now
           </h2>
         </div>

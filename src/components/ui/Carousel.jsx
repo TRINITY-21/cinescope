@@ -39,7 +39,7 @@ export default function Carousel({ children, title, subtitle, eyebrow, viewAllLi
               </p>
             )}
             {title && (
-              <h2 className="text-h2 font-extrabold tracking-tight text-white leading-tight">
+              <h2 className="text-h3 sm:text-h2 font-extrabold tracking-tight text-white leading-tight">
                 {title}
               </h2>
             )}

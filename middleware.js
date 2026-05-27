@@ -22,8 +22,17 @@
 
 import { createCrawlerHandlers } from './lib/seo/crawlerHandlers.js';
 
+// Crawler allowlist for prerendered HTML responses.
+//
+// Three families:
+//   1. Search engines — Googlebot, Bingbot, etc. Index pages for organic search.
+//   2. Social unfurlers — Slack/Discord/Twitter/etc fetch OG metadata for previews.
+//   3. LLM crawlers — GPTBot/ClaudeBot/PerplexityBot/etc. They do NOT execute JS,
+//      so without our prerender they see an empty SPA shell. This is the family
+//      most often forgotten in older middleware patterns. Treat them as first-
+//      class clients; without them, Bynge is invisible to AI search.
 const CRAWLER_REGEX =
-  /facebookexternalhit|Twitterbot|WhatsApp|LinkedInBot|Slackbot|Discordbot|TelegramBot|Googlebot|bingbot|Applebot|DuckDuckBot|YandexBot|Baiduspider|Pinterest|vkShare|Viber|Line|Iframely|Embedly|Mastodon|redditbot/i;
+  /facebookexternalhit|Twitterbot|WhatsApp|LinkedInBot|Slackbot|Discordbot|TelegramBot|Googlebot|bingbot|Applebot|DuckDuckBot|YandexBot|Baiduspider|Pinterest|vkShare|Viber|Line|Iframely|Embedly|Mastodon|redditbot|GPTBot|ChatGPT-User|OAI-SearchBot|ClaudeBot|Claude-Web|anthropic-ai|PerplexityBot|Perplexity-User|Bytespider|Diffbot|Amazonbot|Applebot-Extended|cohere-ai|Meta-ExternalAgent|Meta-ExternalFetcher|YouBot|Kagibot|Neevabot|DataForSeoBot|AhrefsBot|SemrushBot/i;
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const SITE_URL = (process.env.SITE_URL || 'https://bynge.app').replace(/\/$/, '');
@@ -50,6 +59,21 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+// Edge-runtime-safe slug. Must produce the same output as src/utils/slug.js so
+// the URLs in the prerendered HTML match the SPA's URLs exactly — otherwise an
+// LLM following a link from a /movie crawl would 404 on /like/<slug>.
+function slugify(s) {
+  if (!s) return '';
+  return String(s)
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/[\s-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function jsonLd(obj) {
@@ -83,18 +107,35 @@ function computeByngeScoreLite({ tmdbRating, tmdbVotes, releaseDate }) {
   return Math.max(0, Math.min(10, Math.round(base * 10) / 10));
 }
 
-function buildPageHtml({ title, description, image, url, ogType = 'website', structuredData }) {
+/**
+ * Build a prerendered HTML page for crawlers. Real users are intercepted via
+ * UA before we get here; this output is for Googlebot / Bingbot / GPTBot /
+ * ClaudeBot / PerplexityBot / social unfurlers / etc.
+ *
+ * `bodyContent` is a string of pre-escaped HTML to render inside <body>.
+ * LLM crawlers read body text to summarize a page; without rich prose here
+ * they only see meta tags. Always pass real content when you can — cast,
+ * synopsis, key facts, related links — not just a single sentence.
+ */
+function buildPageHtml({ title, description, image, url, ogType = 'website', structuredData, bodyContent }) {
   const safeTitle = escapeHtml(title);
   const safeDesc = escapeHtml((description || '').slice(0, 240));
   const safeImage = escapeHtml(image || `${SITE_URL}/og-default.png`);
   const safeUrl = escapeHtml(url);
+  const body = bodyContent
+    ? bodyContent
+    : `<p>Redirecting to ${safeTitle} on Bynge…</p>`;
+  // Only append " — Bynge" when the title doesn't already include the brand.
+  // Hub-page titles (in lib/seo/hubMeta.js) sometimes embed "Bynge" already;
+  // entity titles (movie/show name) don't.
+  const fullTitle = /bynge/i.test(title || '') ? safeTitle : `${safeTitle} — Bynge`;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${safeTitle} — Bynge</title>
+  <title>${fullTitle}</title>
   <meta name="description" content="${safeDesc}" />
   <link rel="canonical" href="${safeUrl}" />
 
@@ -114,8 +155,44 @@ function buildPageHtml({ title, description, image, url, ogType = 'website', str
 
   <meta http-equiv="refresh" content="0;url=${safeUrl}" />
 </head>
-<body>Redirecting to ${safeTitle} on Bynge…</body>
+<body>
+  <main>
+    ${body}
+  </main>
+  <p style="margin-top:2rem;color:#555;font-size:0.875rem">
+    <a href="${safeUrl}">Open ${safeTitle} on Bynge</a>
+  </p>
+</body>
 </html>`;
+}
+
+/**
+ * Render a list of fact rows as a description list — used by LLMs to extract
+ * structured info (cast, genre, runtime, etc).
+ */
+function renderFactList(rows) {
+  const lines = rows
+    .filter((r) => r && r.value)
+    .map(({ label, value }) =>
+      `<dt><strong>${escapeHtml(label)}:</strong></dt><dd>${escapeHtml(value)}</dd>`,
+    );
+  if (lines.length === 0) return '';
+  return `<dl>${lines.join('')}</dl>`;
+}
+
+/**
+ * Render a list of internal links — gives LLMs a clear adjacency graph of
+ * what other pages this one connects to.
+ */
+function renderLinkList(items) {
+  if (!items || items.length === 0) return '';
+  const lines = items
+    .filter((i) => i && i.href && i.label)
+    .map(({ href, label }) =>
+      `<li><a href="${escapeHtml(href)}">${escapeHtml(label)}</a></li>`,
+    );
+  if (lines.length === 0) return '';
+  return `<ul>${lines.join('')}</ul>`;
 }
 
 function ogResponse(html, status = 200) {
@@ -158,9 +235,10 @@ async function fetchJson(url) {
 
 async function handleMovie(id, url) {
   if (!TMDB_API_KEY) return null;
-  const movie = await fetchJson(
-    `https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_API_KEY}`
-  );
+  const [movie, credits] = await Promise.all([
+    fetchJson(`https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_API_KEY}`),
+    fetchJson(`https://api.themoviedb.org/3/movie/${id}/credits?api_key=${TMDB_API_KEY}`),
+  ]);
   if (!movie) return null;
 
   const year = movie.release_date?.slice(0, 4);
@@ -170,6 +248,8 @@ async function handleMovie(id, url) {
     ? `https://image.tmdb.org/t/p/w780${movie.poster_path}`
     : '';
   const image = `${SITE_URL}/api/og?type=movie&id=${id}`;
+  const topCast = (credits?.cast || []).slice(0, 6).map((c) => c.name).filter(Boolean);
+  const director = (credits?.crew || []).find((c) => c.job === 'Director')?.name;
 
   const structuredData = {
     '@context': 'https://schema.org',
@@ -215,6 +295,31 @@ async function handleMovie(id, url) {
     };
   }
 
+  const factRows = [
+    { label: 'Released', value: movie.release_date || null },
+    { label: 'Runtime', value: movie.runtime ? `${movie.runtime} min` : null },
+    { label: 'Genres', value: (movie.genres || []).map((g) => g.name).join(', ') || null },
+    { label: 'Director', value: director || null },
+    { label: 'Top cast', value: topCast.join(', ') || null },
+    { label: 'Original language', value: movie.original_language?.toUpperCase() || null },
+    { label: 'TMDB rating', value: movie.vote_average ? `${movie.vote_average.toFixed(1)}/10 from ${movie.vote_count?.toLocaleString() || 0} votes` : null },
+    { label: 'Bynge Score', value: byngeScore != null ? `${byngeScore.toFixed(1)}/10` : null },
+  ];
+
+  const bodyContent = `
+    <h1>${escapeHtml(title)}</h1>
+    ${movie.tagline ? `<p><em>${escapeHtml(movie.tagline)}</em></p>` : ''}
+    ${movie.overview ? `<p>${escapeHtml(movie.overview)}</p>` : ''}
+    <h2>Key facts</h2>
+    ${renderFactList(factRows)}
+    <h2>Related on Bynge</h2>
+    ${renderLinkList([
+      { href: `${SITE_URL}/should-i-watch/${slugify(movie.title)}`, label: `Should I watch ${movie.title}?` },
+      { href: `${SITE_URL}/where-to-watch/${slugify(movie.title)}`, label: `Where to watch ${movie.title}` },
+      { href: `${SITE_URL}/like/${slugify(movie.title)}`, label: `Movies like ${movie.title}` },
+    ])}
+  `;
+
   return ogResponse(
     buildPageHtml({
       title,
@@ -223,18 +328,31 @@ async function handleMovie(id, url) {
       url,
       ogType: 'video.movie',
       structuredData,
+      bodyContent,
     })
   );
 }
 
 async function handleShow(id, url) {
-  const show = await fetchJson(`https://api.tvmaze.com/shows/${id}`);
+  const [show, cast] = await Promise.all([
+    fetchJson(`https://api.tvmaze.com/shows/${id}`),
+    fetchJson(`https://api.tvmaze.com/shows/${id}/cast`),
+  ]);
   if (!show) return null;
 
   const title = show.name || 'Unknown Show';
   const description = stripHtml(show.summary) || '';
   const poster = show.image?.original || show.image?.medium || '';
   const image = `${SITE_URL}/api/og?type=show&id=${id}`;
+  const topCast = (cast || [])
+    .slice(0, 6)
+    .map((c) => c?.person?.name)
+    .filter(Boolean);
+  const year = show.premiered?.slice(0, 4);
+  const endedYear = show.ended?.slice(0, 4);
+  const yearRange = year
+    ? `${year}${endedYear ? `–${endedYear}` : show.status === 'Running' ? '–present' : ''}`
+    : null;
 
   const structuredData = {
     '@context': 'https://schema.org',
@@ -281,6 +399,32 @@ async function handleShow(id, url) {
     };
   }
 
+  const factRows = [
+    { label: 'Premiered', value: show.premiered || null },
+    { label: 'Years', value: yearRange || null },
+    { label: 'Status', value: show.status || null },
+    { label: 'Network', value: show.network?.name || show.webChannel?.name || null },
+    { label: 'Genres', value: (show.genres || []).join(', ') || null },
+    { label: 'Runtime', value: show.runtime ? `${show.runtime} min` : show.averageRuntime ? `${show.averageRuntime} min` : null },
+    { label: 'Language', value: show.language || null },
+    { label: 'Top cast', value: topCast.join(', ') || null },
+    { label: 'TVMaze rating', value: show.rating?.average ? `${show.rating.average.toFixed(1)}/10` : null },
+    { label: 'Bynge Score', value: showByngeScore != null ? `${showByngeScore.toFixed(1)}/10` : null },
+  ];
+
+  const bodyContent = `
+    <h1>${escapeHtml(title)}</h1>
+    ${description ? `<p>${escapeHtml(description)}</p>` : ''}
+    <h2>Key facts</h2>
+    ${renderFactList(factRows)}
+    <h2>Related on Bynge</h2>
+    ${renderLinkList([
+      { href: `${SITE_URL}/should-i-watch/${slugify(title)}`, label: `Should I watch ${title}?` },
+      { href: `${SITE_URL}/where-to-watch/${slugify(title)}`, label: `Where to watch ${title}` },
+      { href: `${SITE_URL}/like/${slugify(title)}`, label: `Shows like ${title}` },
+    ])}
+  `;
+
   return ogResponse(
     buildPageHtml({
       title,
@@ -289,6 +433,7 @@ async function handleShow(id, url) {
       url,
       ogType: 'video.tv_show',
       structuredData,
+      bodyContent,
     })
   );
 }
@@ -313,6 +458,20 @@ async function handleTvmazePerson(id, url) {
     birthPlace: person.country?.name || undefined,
   };
 
+  const factRows = [
+    { label: 'Born', value: person.birthday || null },
+    { label: 'Died', value: person.deathday || null },
+    { label: 'Gender', value: person.gender || null },
+    { label: 'Country', value: person.country?.name || null },
+  ];
+
+  const bodyContent = `
+    <h1>${escapeHtml(title)}</h1>
+    <p>${escapeHtml(description)}</p>
+    <h2>Key facts</h2>
+    ${renderFactList(factRows)}
+  `;
+
   return ogResponse(
     buildPageHtml({
       title,
@@ -321,6 +480,7 @@ async function handleTvmazePerson(id, url) {
       url,
       ogType: 'profile',
       structuredData,
+      bodyContent,
     })
   );
 }
@@ -354,6 +514,20 @@ async function handleTmdbPerson(id, url) {
     jobTitle: person.known_for_department || undefined,
   };
 
+  const factRows = [
+    { label: 'Known for', value: person.known_for_department || null },
+    { label: 'Born', value: person.birthday || null },
+    { label: 'Died', value: person.deathday || null },
+    { label: 'Place of birth', value: person.place_of_birth || null },
+  ];
+
+  const bodyContent = `
+    <h1>${escapeHtml(title)}</h1>
+    ${person.biography ? `<p>${escapeHtml(person.biography.slice(0, 600))}${person.biography.length > 600 ? '…' : ''}</p>` : `<p>${escapeHtml(description)}</p>`}
+    <h2>Key facts</h2>
+    ${renderFactList(factRows)}
+  `;
+
   return ogResponse(
     buildPageHtml({
       title,
@@ -362,6 +536,7 @@ async function handleTmdbPerson(id, url) {
       url,
       ogType: 'profile',
       structuredData,
+      bodyContent,
     })
   );
 }
@@ -395,6 +570,22 @@ async function handleCollection(id, url) {
     })),
   };
 
+  const films = (collection.parts || [])
+    .slice()
+    .sort((a, b) => (a.release_date || '').localeCompare(b.release_date || ''));
+
+  const bodyContent = `
+    <h1>${escapeHtml(title)}</h1>
+    ${collection.overview ? `<p>${escapeHtml(collection.overview)}</p>` : `<p>${escapeHtml(description)}</p>`}
+    <h2>Films in this collection (${films.length})</h2>
+    ${renderLinkList(
+      films.slice(0, 20).map((m) => ({
+        href: `${SITE_URL}/movie/${m.id}`,
+        label: `${m.title}${m.release_date ? ` (${m.release_date.slice(0, 4)})` : ''}`,
+      })),
+    )}
+  `;
+
   return ogResponse(
     buildPageHtml({
       title,
@@ -403,6 +594,7 @@ async function handleCollection(id, url) {
       url,
       ogType: 'website',
       structuredData,
+      bodyContent,
     })
   );
 }
@@ -414,6 +606,35 @@ export default async function middleware(request) {
   if (!CRAWLER_REGEX.test(ua)) return;
 
   const { pathname } = new URL(request.url);
+
+  /* ─── Home + catalog index pages ─── */
+  if (pathname === '/' || pathname === '') {
+    return (await seoHandlers.handleHome()) || undefined;
+  }
+  if (pathname === '/movies') {
+    return (await seoHandlers.handleMoviesIndex()) || undefined;
+  }
+  if (pathname === '/browse') {
+    return (await seoHandlers.handleBrowseIndex()) || undefined;
+  }
+  if (pathname === '/people') {
+    return (await seoHandlers.handlePeopleIndex()) || undefined;
+  }
+  if (pathname === '/genres') {
+    return (await seoHandlers.handleGenresIndex()) || undefined;
+  }
+  if (pathname === '/country') {
+    return (await seoHandlers.handleCountryIndex()) || undefined;
+  }
+  if (pathname === '/calendar') {
+    return (await seoHandlers.handleCalendar()) || undefined;
+  }
+  if (pathname === '/schedule') {
+    return (await seoHandlers.handleSchedule()) || undefined;
+  }
+  if (pathname === '/dmca') {
+    return (await seoHandlers.handleDmca()) || undefined;
+  }
 
   // For entity routes, the handler returns null when the upstream API can't
   // resolve the id (deleted/unknown). Convert that null → a real 404 status
@@ -507,6 +728,16 @@ export default async function middleware(request) {
     return (await seoHandlers.handleShouldIWatch(m[1])) || undefined;
   }
 
+  /* ─── Browse by genre ─── */
+  if ((m = pathname.match(/^\/browse\/([^/]+)$/))) {
+    return (await seoHandlers.handleBrowseGenre(m[1])) || undefined;
+  }
+
+  /* ─── Country listings ─── */
+  if ((m = pathname.match(/^\/country\/([^/]+)$/))) {
+    return (await seoHandlers.handleCountrySlug(m[1])) || undefined;
+  }
+
   /* ─── Movie compare ─── */
   if ((m = pathname.match(/^\/compare\/movies\/([^/]+)$/))) {
     return (await seoHandlers.handleMovieCompareSlug(m[1])) || undefined;
@@ -543,6 +774,7 @@ export default async function middleware(request) {
 
 export const config = {
   matcher: [
+    '/',
     '/movie/:id*',
     '/show/:id*',
     '/person/:id*',
@@ -577,5 +809,15 @@ export const config = {
     '/how-we-rank',
     '/terms',
     '/privacy',
+    '/dmca',
+    '/movies',
+    '/browse',
+    '/browse/:genre*',
+    '/people',
+    '/genres',
+    '/country',
+    '/country/:code*',
+    '/calendar',
+    '/schedule',
   ],
 };

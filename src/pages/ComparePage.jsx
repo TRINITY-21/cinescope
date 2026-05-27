@@ -161,7 +161,7 @@ function CompareStatRow({ label, left, right, higherWins = true, onWin }) {
   const rightWins = winner === 'right';
 
   return (
-    <div className="grid grid-cols-[1fr_auto_1fr] gap-3 sm:gap-6 py-3.5 border-b border-white/[0.05] last:border-0 items-center">
+    <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-2 sm:gap-6 py-3.5 border-b border-white/[0.05] last:border-0 items-center">
       <div
         className={`text-right text-body-sm transition-colors ${
           leftWins ? 'font-semibold' : ''
@@ -279,14 +279,14 @@ function VerdictBadge({ leftWins, rightWins, leftName, rightName }) {
   const loserScore = Math.min(leftWins, rightWins);
 
   return (
-    <div className="text-center">
+    <div className="text-center min-w-0 max-w-[10rem] sm:max-w-none">
       <p className="text-meta uppercase font-semibold tracking-widest" style={{ color: winnerColor }}>
         Winner on stats
       </p>
-      <p className="mt-1.5 text-h2 sm:text-h1 font-extrabold tracking-tight" style={{ color: winnerColor }}>
+      <p className="mt-1.5 text-h3 sm:text-h1 font-extrabold tracking-tight break-words" style={{ color: winnerColor }}>
         {winnerName}
       </p>
-      <p className="mt-2 font-mono text-body-sm text-text-secondary tabular-nums">
+      <p className="mt-2 font-mono text-caption sm:text-body-sm text-text-secondary tabular-nums">
         {winnerScore} <span className="text-text-muted">vs</span> {loserScore} categories
       </p>
     </div>
@@ -584,10 +584,10 @@ export default function ComparePage() {
                 className="mt-section flex justify-center"
               >
                 <div className="
-                  inline-flex items-center gap-6 sm:gap-10 px-8 py-6 rounded-2xl
+                  inline-flex items-center gap-3 sm:gap-10 px-4 sm:px-8 py-5 sm:py-6 rounded-2xl
                   border border-white/[0.08] bg-white/[0.02]
                 ">
-                  <div className="text-center">
+                  <div className="text-center min-w-0">
                     <p className="text-meta uppercase font-semibold tracking-widest" style={{ color: SIDE_A }}>
                       Side A
                     </p>
@@ -603,7 +603,7 @@ export default function ComparePage() {
                     rightName={detailsB.name}
                   />
                   <div className="h-12 w-px bg-white/[0.10]" aria-hidden />
-                  <div className="text-center">
+                  <div className="text-center min-w-0">
                     <p className="text-meta uppercase font-semibold tracking-widest" style={{ color: SIDE_B }}>
                       Side B
                     </p>

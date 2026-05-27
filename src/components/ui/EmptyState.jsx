@@ -27,7 +27,7 @@ export default function EmptyState({
         </div>
       )}
       {title && (
-        <h3 className="text-h2 text-white font-semibold tracking-tight">
+        <h3 className="text-h3 sm:text-h2 text-white font-semibold tracking-tight">
           {title}
         </h3>
       )}

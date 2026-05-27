@@ -27,7 +27,6 @@ const ShowWatchPage = lazy(() => import('./pages/ShowWatchPage'));
 const EpisodePage = lazy(() => import('./pages/EpisodePage'));
 const WhereToWatchPage = lazy(() => import('./pages/WhereToWatchPage'));
 const MovieWatchPage = lazy(() => import('./pages/MovieWatchPage'));
-const ContentStudioPage = lazy(() => import('./pages/admin/ContentStudioPage'));
 const WatchOrdersIndexPage = lazy(() => import('./pages/WatchOrdersIndexPage'));
 const WatchOrderPage = lazy(() => import('./pages/WatchOrderPage'));
 const LikeIndexPage = lazy(() => import('./pages/LikeIndexPage'));
@@ -47,7 +46,6 @@ const DirectorIndexPage = lazy(() => import('./pages/DirectorIndexPage'));
 const DirectorPage = lazy(() => import('./pages/DirectorPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
-const NewsletterPage = lazy(() => import('./pages/NewsletterPage'));
 const ShouldIWatchIndexPage = lazy(() => import('./pages/ShouldIWatchIndexPage'));
 const ShouldIWatchPage = lazy(() => import('./pages/ShouldIWatchPage'));
 const MovieComparePage = lazy(() => import('./pages/MovieComparePage'));
@@ -94,7 +92,6 @@ export default function App() {
                   <Route path="/people" element={<PeoplePage />} />
                   <Route path="/tracking" element={<TrackingPage />} />
                   <Route path="/party" element={<WatchPartyPage />} />
-                  <Route path="/admin/studio" element={<ContentStudioPage />} />
                   <Route path="/watch-order" element={<WatchOrdersIndexPage />} />
                   <Route path="/watch-order/:franchise" element={<WatchOrderPage />} />
                   <Route path="/like" element={<LikeIndexPage />} />
@@ -112,7 +109,6 @@ export default function App() {
                   <Route path="/director/:slug" element={<DirectorPage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
-                  <Route path="/newsletter" element={<NewsletterPage />} />
                   <Route path="/terms" element={<TermsPage />} />
                   <Route path="/privacy" element={<PrivacyPage />} />
                   <Route path="/dmca" element={<DmcaPage />} />

@@ -235,7 +235,7 @@ export default function CalendarPage() {
                   type="button"
                   onClick={() => setSelectedDay(day)}
                   className={`
-                    relative min-h-[64px] sm:min-h-[110px] p-2 sm:p-2.5
+                    relative min-h-[72px] sm:min-h-[110px] p-1.5 sm:p-2.5
                     border-b border-r border-white/[0.05] text-left
                     transition-all hover:bg-white/[0.03]
                     ${!isCurrentMonth && view === 'month' ? 'opacity-35' : ''}
@@ -243,13 +243,13 @@ export default function CalendarPage() {
                   `}
                 >
                   {/* Day number */}
-                  <div className="flex items-center justify-between gap-1">
+                  <div className="flex items-center justify-between gap-0.5">
                     {today ? (
-                      <span className="w-7 h-7 rounded-full bg-accent-peach text-white text-body-sm font-bold flex items-center justify-center shadow-glow-violet">
+                      <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-accent-peach text-white text-caption sm:text-body-sm font-bold flex items-center justify-center shadow-glow-violet">
                         {format(day, 'd')}
                       </span>
                     ) : (
-                      <span className={`text-body-sm font-medium ${isSelected ? 'text-accent-peach' : 'text-text-secondary'}`}>
+                      <span className={`text-caption sm:text-body-sm font-medium ${isSelected ? 'text-accent-peach' : 'text-text-secondary'}`}>
                         {format(day, 'd')}
                       </span>
                     )}
@@ -262,16 +262,17 @@ export default function CalendarPage() {
                     )}
                   </div>
 
-                  {/* Count chip */}
+                  {/* Count chip — collapses to just a number on very narrow screens */}
                   {count > 0 && (
                     <p
-                      className="mt-1 inline-block text-[10px] sm:text-[11px] font-mono font-bold tabular-nums leading-none px-1.5 py-0.5 rounded"
+                      className="mt-1 inline-block text-[9px] sm:text-[11px] font-mono font-bold tabular-nums leading-none px-1 sm:px-1.5 py-0.5 rounded"
                       style={{
                         backgroundColor: `${intensity.color}1f`,
                         color: intensity.color,
                       }}
                     >
-                      {count} ep{count === 1 ? '' : 's'}
+                      <span className="sm:hidden">{count}</span>
+                      <span className="hidden sm:inline">{count} ep{count === 1 ? '' : 's'}</span>
                     </p>
                   )}
                 </button>

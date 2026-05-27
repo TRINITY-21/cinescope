@@ -284,7 +284,7 @@ export default function DiscoverPage() {
             <h2 className="text-h3 font-semibold text-white">{isMovies ? 'Runtime' : 'Episode length'}</h2>
             <span className="text-caption text-text-muted">Optional</span>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
             {lengths.map((length) => {
               const isActive = selectedLength === length.id;
               return (
@@ -293,7 +293,7 @@ export default function DiscoverPage() {
                   type="button"
                   onClick={() => setSelectedLength(isActive ? null : length.id)}
                   className={`
-                    p-4 rounded-xl border text-left transition-colors
+                    p-3.5 sm:p-4 rounded-xl border text-left transition-colors
                     ${isActive
                       ? 'border-white/[0.18] bg-white/[0.06]'
                       : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.10]'}
@@ -304,7 +304,7 @@ export default function DiscoverPage() {
                   >
                     {length.label}
                   </p>
-                  <p className="mt-1 text-caption text-text-muted">{length.desc}</p>
+                  <p className="mt-0.5 sm:mt-1 text-caption text-text-muted">{length.desc}</p>
                 </button>
               );
             })}

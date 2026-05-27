@@ -61,7 +61,7 @@ export default function LegalLayout({ eyebrow, title, lastUpdated, children, com
 export function Section({ n, title, children }) {
   return (
     <section>
-      <h2 className="text-h2 font-semibold text-white leading-tight">
+      <h2 className="text-h3 sm:text-h2 font-semibold text-white leading-tight">
         {n != null && <span className="font-mono text-accent-peach mr-2 tabular-nums">{String(n).padStart(2, '0')}</span>}
         {title}
       </h2>

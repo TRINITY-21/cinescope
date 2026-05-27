@@ -6,15 +6,17 @@ import Recommendations from '../components/show/Recommendations';
 import SeasonAccordion from '../components/show/SeasonAccordion';
 import CollapsibleNotice from '../components/ui/CollapsibleNotice';
 import Container from '../components/ui/Container';
+import HorizontalScroll from '../components/ui/HorizontalScroll';
 import Loader from '../components/ui/Loader';
 import SubtitleLink from '../components/watch/SubtitleLink';
 import TheaterPlayer from '../components/watch/TheaterPlayer';
 import { useApp } from '../context/AppContext';
 import { useApiQuery } from '../hooks/useApiQuery';
 import { useShowFanart } from '../hooks/useFanart';
+import { usePageHead } from '../hooks/usePageHead';
 import PageLayout from '../layouts/PageLayout';
 import { formatEpisodeCode } from '../utils/formatters';
-import { getOriginalImage } from '../utils/imageUrl';
+import { getOriginalImage, getPersonImage } from '../utils/imageUrl';
 
 function parseEpisodeParams(searchParams, episodes, seasons) {
   const s = Number(searchParams.get('s'));
@@ -37,6 +39,7 @@ export default function ShowWatchPage() {
   const { data: seasons } = useApiQuery(endpoints.showSeasons(id));
   const { data: episodes } = useApiQuery(endpoints.showEpisodes(id));
   const { data: specialEpisodes } = useApiQuery(endpoints.showEpisodesWithSpecials(id));
+  const { data: cast } = useApiQuery(endpoints.showCast(id));
 
   const { season, episode } = useMemo(
     () => parseEpisodeParams(searchParams, episodes, seasons),
@@ -63,11 +66,18 @@ export default function ShowWatchPage() {
     return () => { cancelled = true; };
   }, [imdbId]);
 
+  // /watch routes are never indexed. robots.txt blocks the path, and this meta
+  // tag tells any bot that ignores robots.txt to back off too. We deliberately
+  // keep the user-visible <title> generic so a rendered page (e.g. by an
+  // anti-piracy scraper) doesn't read like a piracy landing.
+  usePageHead({
+    title: 'Player — Bynge',
+    robots: 'noindex, nofollow',
+  });
+
   useEffect(() => {
     if (!show) return;
-    document.title = `Watch ${show.name} — Bynge`;
     addToWatchlist(show);
-    return () => { document.title = 'Bynge'; };
   }, [show]);
 
   useEffect(() => {
@@ -189,6 +199,36 @@ export default function ShowWatchPage() {
           playOnRowClick
         />
       </Container>
+
+      {cast?.length > 0 && (
+        <Container className="mt-10">
+          <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">Top Cast</p>
+          <HorizontalScroll gapClass="gap-4" className="pb-2 -mx-1 px-1">
+            {cast.slice(0, 12).map(({ person, character }, index) => (
+              <Link
+                key={`${person.id}-${index}`}
+                to={`/person/${person.id}`}
+                className="flex-shrink-0 w-20 text-center group"
+              >
+                <div className="w-16 h-16 mx-auto rounded-full overflow-hidden border border-white/10 group-hover:border-accent-peach/50 transition-colors">
+                  <img
+                    src={getPersonImage(person.image)}
+                    alt={person.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <p className="mt-2 text-xs font-medium text-white/90 break-words min-w-0 group-hover:text-accent-peach transition-colors">
+                  {person.name}
+                </p>
+                {character?.name && (
+                  <p className="text-[10px] text-text-muted break-words min-w-0">{character.name}</p>
+                )}
+              </Link>
+            ))}
+          </HorizontalScroll>
+        </Container>
+      )}
 
       <Container className="mt-12">
         <Recommendations

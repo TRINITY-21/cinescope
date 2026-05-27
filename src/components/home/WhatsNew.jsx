@@ -67,7 +67,7 @@ export default function WhatsNew() {
             </span>
             Live updates
           </p>
-          <h2 className="mt-1.5 text-h2 font-extrabold tracking-tight text-white leading-tight">
+          <h2 className="mt-1.5 text-h3 sm:text-h2 font-extrabold tracking-tight text-white leading-tight">
             What's new
           </h2>
           <p className="text-caption text-text-muted mt-1">

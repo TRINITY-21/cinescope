@@ -11,7 +11,6 @@ import TonightsPlan from '../components/home/TonightsPlan';
 import TopRatedSection from '../components/home/TopRatedSection';
 import TrendingMoviesRow from '../components/home/TrendingMoviesRow';
 import TrendingPeople from '../components/home/TrendingPeople';
-import NewsletterSignupCard from '../components/marketing/NewsletterSignupCard';
 import Container from '../components/ui/Container';
 import RollDiceButton from '../components/ui/RollDiceButton';
 import SurpriseMePicker from '../components/ui/SurpriseMePicker';
@@ -120,8 +119,6 @@ export default function HomePage() {
           </div>
 
           <TopRatedSection shows={shows} />
-
-          <NewsletterSignupCard source="home" />
 
         </Container>
       </div>
