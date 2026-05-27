@@ -28,62 +28,153 @@ describe('formatImdbId', () => {
 });
 
 describe('STREAM_SERVERS', () => {
-  it('exposes both Server 1 and Server 2 with stable ids', () => {
+  it('exposes all five public embed providers with stable ids', () => {
     const ids = STREAM_SERVERS.map((s) => s.id);
-    expect(ids).toContain('vsembed');
-    expect(ids).toContain('superembed');
-    // Labels must be neutral (no provider names exposed in UI)
+    expect(ids).toEqual(['videasy', 'vidsrcme', 'vidsrc', 'autoembed', 'vidvault']);
+  });
+
+  it('uses real provider names as labels (no opaque "Server N")', () => {
     const labels = STREAM_SERVERS.map((s) => s.label);
-    expect(labels).toEqual(['Server 1', 'Server 2']);
+    expect(labels).toEqual(['VidEasy', 'VidSrc.me', 'VidSrc', 'AutoEmbed', 'VidVault']);
+  });
+
+  it('declares which id types each server accepts', () => {
+    const map = Object.fromEntries(STREAM_SERVERS.map((s) => [s.id, s.accepts]));
+    expect(map.vidsrcme).toEqual(['imdb']);
+    expect(map.videasy).toEqual(['tmdb']);
+    expect(map.vidsrc).toEqual(['tmdb', 'imdb']);
+    expect(map.vidvault).toEqual(['tmdb']);
+    expect(map.autoembed).toEqual(['tmdb', 'imdb']);
   });
 });
 
 describe('buildStreamEmbedUrl', () => {
-  it('returns null when videoId is missing', () => {
-    expect(buildStreamEmbedUrl({ videoId: null })).toBeNull();
-    expect(buildStreamEmbedUrl({ videoId: '' })).toBeNull();
+  it('returns null when neither id is provided', () => {
+    expect(buildStreamEmbedUrl({ server: 'vidsrcme' })).toBeNull();
+    expect(buildStreamEmbedUrl({ server: 'videasy' })).toBeNull();
   });
 
-  it('builds a movie embed URL for vsembed using an IMDb id', () => {
-    const url = buildStreamEmbedUrl({ server: 'vsembed', videoId: 'tt0111161' });
-    expect(url).toBe('https://vsembed.ru/embed/movie/tt0111161');
+  describe('VidSrc.me (vidsrcme) — IMDB only', () => {
+    it('builds a movie URL with an IMDB id', () => {
+      const url = buildStreamEmbedUrl({ server: 'vidsrcme', imdbId: 'tt35663059' });
+      expect(url).toBe('https://vidsrcme.ru/embed/movie/tt35663059');
+    });
+
+    it('builds a TV URL with season + episode', () => {
+      const url = buildStreamEmbedUrl({
+        server: 'vidsrcme',
+        imdbId: 'tt0903747',
+        season: 2,
+        episode: 7,
+      });
+      expect(url).toBe('https://vidsrcme.ru/embed/tv/tt0903747/2/7');
+    });
+
+    it('normalizes a bare numeric imdb id to tt-prefixed form', () => {
+      const url = buildStreamEmbedUrl({ server: 'vidsrcme', imdbId: '0111161' });
+      expect(url).toContain('tt0111161');
+    });
+
+    it('returns null when only a TMDB id is available', () => {
+      const url = buildStreamEmbedUrl({ server: 'vidsrcme', tmdbId: 1428857 });
+      expect(url).toBeNull();
+    });
   });
 
-  it('builds a TV embed URL for vsembed when season/episode given', () => {
-    const url = buildStreamEmbedUrl({ server: 'vsembed', videoId: 'tt0903747', season: 2, episode: 7 });
-    expect(url).toBe('https://vsembed.ru/embed/tv/tt0903747/2/7');
+  describe('VidEasy (videasy) — TMDB only', () => {
+    it('builds a movie URL with a TMDB id', () => {
+      const url = buildStreamEmbedUrl({ server: 'videasy', tmdbId: 1428857 });
+      expect(url).toBe('https://player.videasy.net/movie/1428857');
+    });
+
+    it('builds a TV URL with season + episode', () => {
+      const url = buildStreamEmbedUrl({
+        server: 'videasy',
+        tmdbId: 1396,
+        season: 3,
+        episode: 7,
+      });
+      expect(url).toBe('https://player.videasy.net/tv/1396/3/7');
+    });
+
+    it('returns null when only an IMDB id is available', () => {
+      const url = buildStreamEmbedUrl({ server: 'videasy', imdbId: 'tt35663059' });
+      expect(url).toBeNull();
+    });
   });
 
-  it('normalizes bare numeric imdb ids to the tt-prefixed form', () => {
-    const url = buildStreamEmbedUrl({ server: 'vsembed', videoId: '0111161' });
-    expect(url).toContain('tt0111161');
+  describe('VidSrc (vidsrc.cc) — accepts either', () => {
+    it('prefers TMDB when both ids are provided', () => {
+      const url = buildStreamEmbedUrl({
+        server: 'vidsrc',
+        imdbId: 'tt35663059',
+        tmdbId: 1428857,
+      });
+      expect(url).toBe('https://vidsrc.cc/v2/embed/movie/1428857');
+    });
+
+    it('falls back to IMDB when no TMDB id is given', () => {
+      const url = buildStreamEmbedUrl({ server: 'vidsrc', imdbId: 'tt35663059' });
+      expect(url).toBe('https://vidsrc.cc/v2/embed/movie/tt35663059');
+    });
+
+    it('builds a TV URL with season + episode', () => {
+      const url = buildStreamEmbedUrl({
+        server: 'vidsrc',
+        tmdbId: 1396,
+        season: 3,
+        episode: 7,
+      });
+      expect(url).toBe('https://vidsrc.cc/v2/embed/tv/1396/3/7');
+    });
   });
 
-  it('passes through a numeric TMDB id when useTmdb is set', () => {
-    const url = buildStreamEmbedUrl({ server: 'vsembed', videoId: 12345, useTmdb: true });
-    expect(url).toContain('/movie/12345');
+  describe('VidVault (vidvault) — TMDB only', () => {
+    it('builds a movie URL', () => {
+      const url = buildStreamEmbedUrl({ server: 'vidvault', tmdbId: 5000 });
+      expect(url).toBe('https://vidvault.ru/movie/5000');
+    });
+
+    it('builds a TV URL with season + episode (sample: tv/1420/1/1)', () => {
+      const url = buildStreamEmbedUrl({
+        server: 'vidvault',
+        tmdbId: 1420,
+        season: 1,
+        episode: 1,
+      });
+      expect(url).toBe('https://vidvault.ru/tv/1420/1/1');
+    });
+
+    it('returns null when only an IMDB id is available', () => {
+      const url = buildStreamEmbedUrl({ server: 'vidvault', imdbId: 'tt0111161' });
+      expect(url).toBeNull();
+    });
   });
 
-  it('builds a superembed URL with the right query params', () => {
-    const url = buildStreamEmbedUrl({ server: 'superembed', videoId: 'tt0111161' });
-    expect(url).toContain('multiembed.mov');
-    expect(url).toContain('video_id=tt0111161');
+  describe('AutoEmbed (autoembed) — TMDB preferred, IMDB fallback', () => {
+    it('uses tmdb path when a TMDB id is given', () => {
+      const url = buildStreamEmbedUrl({ server: 'autoembed', tmdbId: 12345 });
+      expect(url).toBe('https://autoembed.co/movie/tmdb/12345');
+    });
+
+    it('uses imdb path when only an IMDB id is given', () => {
+      const url = buildStreamEmbedUrl({ server: 'autoembed', imdbId: 'tt0111161' });
+      expect(url).toBe('https://autoembed.co/movie/imdb/tt0111161');
+    });
+
+    it('builds a TV URL with the s/e suffix on the tmdb path', () => {
+      const url = buildStreamEmbedUrl({
+        server: 'autoembed',
+        tmdbId: 1396,
+        season: 4,
+        episode: 9,
+      });
+      expect(url).toBe('https://autoembed.co/tv/tmdb/1396-4-9');
+    });
   });
 
-  it('passes tmdb=1 to superembed when useTmdb is true', () => {
-    const url = buildStreamEmbedUrl({ server: 'superembed', videoId: 999, useTmdb: true });
-    expect(url).toContain('tmdb=1');
-    expect(url).toContain('video_id=999');
-  });
-
-  it('includes s/e params on superembed for TV episodes', () => {
-    const url = buildStreamEmbedUrl({ server: 'superembed', videoId: 'tt0903747', season: 1, episode: 1 });
-    expect(url).toContain('s=1');
-    expect(url).toContain('e=1');
-  });
-
-  it('falls back to vsembed when an unknown server id is passed', () => {
-    const url = buildStreamEmbedUrl({ server: 'made-up', videoId: 'tt0111161' });
-    expect(url).toContain('vsembed.ru');
+  it('falls back to videasy when an unknown server id is passed', () => {
+    const url = buildStreamEmbedUrl({ server: 'made-up', tmdbId: 1428857 });
+    expect(url).toContain('player.videasy.net');
   });
 });

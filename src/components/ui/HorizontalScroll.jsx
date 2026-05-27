@@ -60,7 +60,7 @@ export default function HorizontalScroll({
           type="button"
           onClick={() => scroll('left')}
           aria-label="Scroll left"
-          className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full glass-heavy flex items-center justify-center opacity-80 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/scroll:opacity-100 transition-opacity"
+          className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full glass-heavy flex items-center justify-center opacity-0 [@media(hover:none)]:hidden [@media(hover:hover)]:group-hover/scroll:opacity-100 transition-opacity"
         >
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden>
             <path d="M15 18l-6-6 6-6" />
@@ -72,7 +72,7 @@ export default function HorizontalScroll({
           type="button"
           onClick={() => scroll('right')}
           aria-label="Scroll right"
-          className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full glass-heavy flex items-center justify-center opacity-80 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/scroll:opacity-100 transition-opacity"
+          className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full glass-heavy flex items-center justify-center opacity-0 [@media(hover:none)]:hidden [@media(hover:hover)]:group-hover/scroll:opacity-100 transition-opacity"
         >
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden>
             <path d="M9 18l6-6-6-6" />

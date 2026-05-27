@@ -1,6 +1,7 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { endpoints } from '../api/endpoints';
+import { findShowByImdb } from '../api/tmdb';
 import Recommendations from '../components/show/Recommendations';
 import SeasonAccordion from '../components/show/SeasonAccordion';
 import CollapsibleNotice from '../components/ui/CollapsibleNotice';
@@ -47,6 +48,20 @@ export default function ShowWatchPage() {
   const imdbId = show?.externals?.imdb;
   const tvdbId = show?.externals?.thetvdb;
   const { logo: fanartLogo } = useShowFanart(tvdbId, imdbId);
+
+  // TVMaze gives us IMDB, but TMDB-keyed servers (VidEasy, Embed.su, VidSrc)
+  // need the TMDB show id — look it up once we have IMDB.
+  const [tmdbId, setTmdbId] = useState(null);
+  useEffect(() => {
+    if (!imdbId) return;
+    let cancelled = false;
+    findShowByImdb(imdbId)
+      .then((match) => {
+        if (!cancelled) setTmdbId(match?.id ?? null);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [imdbId]);
 
   useEffect(() => {
     if (!show) return;
@@ -149,7 +164,8 @@ export default function ShowWatchPage() {
           </div>
 
           <TheaterPlayer
-            videoId={imdbId}
+            imdbId={imdbId}
+            tmdbId={tmdbId}
             season={season}
             episode={episode}
             title={show.name}

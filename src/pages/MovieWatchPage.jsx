@@ -69,8 +69,7 @@ export default function MovieWatchPage() {
   }
 
   const imdbId = formatImdbId(movie.imdb_id);
-  const videoId = imdbId || movie.id;
-  const useTmdb = !imdbId;
+  const tmdbId = movie.id;
 
   return (
     <PageLayout as={motion.div} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -138,8 +137,8 @@ export default function MovieWatchPage() {
           </div>
 
           <TheaterPlayer
-            videoId={videoId}
-            useTmdb={useTmdb}
+            imdbId={imdbId}
+            tmdbId={tmdbId}
             title={movie.title}
           />
 

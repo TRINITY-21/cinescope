@@ -53,7 +53,7 @@ export default function MovieHero({ movie, onPlayTrailer, onWatchNow }) {
   }
 
   return (
-    <div className="relative min-h-[60vh] md:min-h-[70vh] lg:min-h-[75vh]">
+    <div className="relative min-h-[52vh] sm:min-h-[60vh] md:min-h-[70vh] lg:min-h-[75vh]">
       <div className="absolute inset-0">
         {backdropSrc && (
           <img
@@ -70,7 +70,7 @@ export default function MovieHero({ movie, onPlayTrailer, onWatchNow }) {
         <div className="absolute inset-0 hero-gradient-left" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12 flex items-end min-h-[60vh] md:min-h-[70vh] lg:min-h-[75vh]">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-6 sm:pb-12 flex items-end min-h-[52vh] sm:min-h-[60vh] md:min-h-[70vh] lg:min-h-[75vh]">
         <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start w-full">
           {posterUrl && (
             <motion.div
@@ -101,7 +101,7 @@ export default function MovieHero({ movie, onPlayTrailer, onWatchNow }) {
                 style={{ filter: 'drop-shadow(0 6px 24px rgba(0,0,0,0.7))' }}
               />
             ) : (
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight text-shadow-hero">
+              <h1 className="text-display sm:text-display-lg font-extrabold text-white leading-[1.05] text-shadow-hero break-words">
                 {movie.title}
               </h1>
             )}

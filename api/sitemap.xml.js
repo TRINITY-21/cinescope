@@ -6,6 +6,7 @@
 
 import { BEST_LISTS } from '../src/data/bestLists.js';
 import { DIRECTORS } from '../src/data/directors.js';
+import { COUNTRIES, GENRES } from '../src/data/genresAndCountries.js';
 import { LIKE_SEEDS } from '../src/data/likeSeeds.js';
 import { MOODS } from '../src/data/moods.js';
 import { STREAMING_PROVIDERS } from '../src/data/streamingProviders.js';
@@ -54,6 +55,11 @@ const STATIC_ROUTES = [
   { path: '/newsletter', priority: '0.6', changefreq: 'monthly' },
   { path: '/terms', priority: '0.3', changefreq: 'yearly' },
   { path: '/privacy', priority: '0.3', changefreq: 'yearly' },
+  { path: '/dmca', priority: '0.3', changefreq: 'yearly' },
+  // Genres + countries index hubs
+  { path: '/genres', priority: '0.7', changefreq: 'monthly' },
+  { path: '/country', priority: '0.7', changefreq: 'monthly' },
+  { path: '/anime', priority: '0.8', changefreq: 'daily' },
   // New SEO surfaces
   { path: '/compare/movies', priority: '0.6', changefreq: 'monthly' },
 ];
@@ -190,6 +196,7 @@ export default async function handler(req, res) {
       '/contact': LEGAL_LASTMOD,
       '/how-we-rank': LEGAL_LASTMOD,
       '/newsletter': LEGAL_LASTMOD,
+      '/dmca': LEGAL_LASTMOD,
       '/watch-order': CURATED_LASTMOD,
       '/director': CURATED_LASTMOD,
     };
@@ -413,6 +420,24 @@ export default async function handler(req, res) {
     };
     for (const m of movies.slice(0, 80)) addWhereToWatch(m.title);
     for (const s of tvTmdb.slice(0, 80)) addWhereToWatch(s.name);
+
+    // /country/:code listing pages — popular movies by origin country.
+    for (const c of COUNTRIES) {
+      urls.push(urlEntry(`${SITE_URL}/country/${c.code}`, {
+        lastmod,
+        changefreq: 'weekly',
+        priority: '0.7',
+      }));
+    }
+
+    // /browse/:genre TV browse pages — long-tail SEO ("action tv shows" etc).
+    for (const g of GENRES) {
+      urls.push(urlEntry(`${SITE_URL}/browse/${encodeURIComponent(g.name)}`, {
+        lastmod,
+        changefreq: 'weekly',
+        priority: '0.7',
+      }));
+    }
 
     // People pages (TMDB ids)
     for (const p of people) {

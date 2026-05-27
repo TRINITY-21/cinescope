@@ -191,21 +191,23 @@ export default function TrendingPage() {
 
 function WindowSwitcher({ current }) {
   return (
-    <div className="flex flex-wrap gap-1 p-1 rounded-full bg-white/[0.04] border border-white/[0.08]">
-      {WINDOWS.map((w) => (
-        <NavLink
-          key={w.key}
-          to={`/trending/${w.key}`}
-          className={`
-            px-3.5 py-1.5 rounded-full text-body-sm font-medium transition-colors
-            ${w.key === current
-              ? 'bg-accent-peach text-white shadow-[0_2px_12px_rgba(196,131,91,0.30)]'
-              : 'text-text-secondary hover:text-white'}
-          `}
-        >
-          {w.label}
-        </NavLink>
-      ))}
+    <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto hide-scrollbar sm:overflow-visible">
+      <div className="inline-flex gap-1 p-1 rounded-full bg-white/[0.04] border border-white/[0.08] whitespace-nowrap">
+        {WINDOWS.map((w) => (
+          <NavLink
+            key={w.key}
+            to={`/trending/${w.key}`}
+            className={`
+              px-3.5 py-1.5 rounded-full text-body-sm font-medium transition-colors flex-shrink-0
+              ${w.key === current
+                ? 'bg-accent-peach text-white shadow-[0_2px_12px_rgba(196,131,91,0.30)]'
+                : 'text-text-secondary hover:text-white'}
+            `}
+          >
+            {w.label}
+          </NavLink>
+        ))}
+      </div>
     </div>
   );
 }
