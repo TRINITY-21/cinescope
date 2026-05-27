@@ -469,7 +469,8 @@ export default function TrackingPage() {
                 }
               />
 
-              <div className="flex flex-wrap gap-2 pb-1 mb-4">
+              <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto hide-scrollbar pb-1 mb-4 sm:overflow-visible">
+                <div className="flex sm:flex-wrap gap-2 whitespace-nowrap">
                 {LIBRARY_TABS.map((t) => {
                   const n = libraryCounts[t.key];
                   const active = libraryTab === t.key;
@@ -478,7 +479,7 @@ export default function TrackingPage() {
                       key={t.key}
                       type="button"
                       onClick={() => setLibraryTab(t.key)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors flex-shrink-0 ${
                         active
                           ? 'bg-accent-peach text-white'
                           : 'bg-bg-elevated/50 text-text-secondary hover:text-white hover:bg-bg-elevated'
@@ -496,6 +497,7 @@ export default function TrackingPage() {
                     </button>
                   );
                 })}
+                </div>
               </div>
 
               {(() => {

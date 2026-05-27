@@ -81,8 +81,8 @@ export default function TheaterPlayer({ imdbId, tmdbId, season, episode, title }
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-center">
-        <div className="inline-flex flex-wrap justify-center items-center gap-1 p-1 rounded-full bg-bg-elevated/80 border border-white/10 backdrop-blur-sm max-w-full">
+      <div className="-mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto hide-scrollbar sm:overflow-visible sm:flex sm:justify-center">
+        <div className="inline-flex sm:flex-wrap sm:justify-center items-center gap-1 p-1 rounded-full bg-bg-elevated/80 border border-white/10 backdrop-blur-sm whitespace-nowrap">
           {STREAM_SERVERS.map((s) => {
             const active = server === s.id;
             const available =
@@ -93,7 +93,7 @@ export default function TheaterPlayer({ imdbId, tmdbId, season, episode, title }
                 type="button"
                 onClick={() => selectServer(s.id)}
                 disabled={!available}
-                className={`flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full text-sm font-semibold transition-all ${
+                className={`flex items-center gap-2 px-3.5 sm:px-5 py-2 rounded-full text-sm font-semibold transition-all flex-shrink-0 ${
                   active
                     ? 'bg-white text-bg-primary'
                     : available
