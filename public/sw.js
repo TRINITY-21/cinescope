@@ -10,7 +10,10 @@
  * fanart.tv, wsrv.nl, etc.) because we have no control over their TTLs.
  */
 
-const VERSION = 'bynge-v1';
+// Bump this on every deploy that changes CSS/JS people might already have
+// cached. The activate handler nukes all caches that don't match the current
+// version, so a bump forces a clean re-fetch on the user's next page load.
+const VERSION = 'bynge-v2-2026-05-27';
 const HTML_CACHE = `${VERSION}-html`;
 const ASSET_CACHE = `${VERSION}-assets`;
 const OFFLINE_URL = '/';
