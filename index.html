@@ -42,13 +42,25 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
-    <!-- Google Analytics (gtag.js) -->
+    <!-- Google Analytics (gtag.js) with Consent Mode v2.
+         Defaults to denied so no cookies/identifiers are set until the user
+         accepts in the consent banner (src/components/ui/ConsentBanner.jsx).
+         If consent was already chosen on a previous visit, the banner reads
+         localStorage and fires the matching `consent update` at mount. -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KC9LM372RL"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      window.gtag = gtag;
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+        wait_for_update: 500
+      });
       gtag('js', new Date());
-      gtag('config', 'G-KC9LM372RL');
+      gtag('config', 'G-KC9LM372RL', { anonymize_ip: true });
     </script>
 
     <!-- Structured data: WebSite + Organization (unlocks Google sitelinks searchbox + brand panel) -->

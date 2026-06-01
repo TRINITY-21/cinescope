@@ -8,7 +8,7 @@ export default function PrivacyPage() {
   usePageHead({
     title: 'Privacy Policy — Bynge',
     description:
-      'What Bynge collects, why, and what stays on your device. We do not sell data, do not run trackers, and do not share emails. Plain-English privacy policy.',
+      'What Bynge collects, why, and what stays on your device. We use Google Analytics (opt-in), do not sell data, do not show ads, and do not share emails. Plain-English privacy policy.',
     canonical: `${SITE_ORIGIN}/privacy`,
     jsonLd: [
       seoBreadcrumb('Privacy', '/privacy', null, '/privacy'),
@@ -34,9 +34,10 @@ export default function PrivacyPage() {
       ]}
     >
       <p className="text-body text-text-secondary leading-relaxed">
-        Short version: we collect almost nothing. Your watchlist and ratings live in your browser. If you subscribe
-        to the newsletter, we collect your email — that&apos;s it. We never sell data, we don&apos;t run trackers,
-        and we don&apos;t share your information.
+        Short version: we collect almost nothing. Your watchlist and ratings live in your browser. We use Google
+        Analytics for aggregate page-view counts — only if you accept the consent banner on first visit. If you
+        subscribe to the newsletter, we collect your email — that&apos;s it. We never sell data, we don&apos;t show
+        ads, and we don&apos;t share your information.
       </p>
 
       <Section n={1} title="What we store on your device">
@@ -82,13 +83,24 @@ export default function PrivacyPage() {
 
       <Section n={3} title="Analytics">
         <p>
-          We use <strong className="text-white">Vercel Analytics</strong> and{' '}
-          <strong className="text-white">Vercel Speed Insights</strong> for aggregate page-view counts and
-          performance metrics. These tools do not use cookies, do not collect IP addresses in identifiable form,
-          and do not fingerprint visitors. They give us nothing more than counts of which pages people open.
+          We use <strong className="text-white">Google Analytics 4</strong> (gtag.js) to understand which pages
+          get traffic and how the catalog gets used in aggregate. We never see who you are individually — only
+          counts of which routes get opened, from which countries, on which device types.
         </p>
         <p>
-          No third-party advertising trackers run on Bynge. No Google Analytics, no Meta Pixel, no TikTok pixel.
+          Google Analytics is gated behind <strong className="text-white">Google Consent Mode v2</strong>. On
+          first visit, we set all consent signals to <em>denied</em> by default, and show a banner asking whether
+          you&apos;d like to accept. Until you accept, no analytics cookies or identifiers are stored. If you
+          decline, the banner stays dismissed and analytics stays off.
+        </p>
+        <p>
+          IP addresses are anonymized before they reach Google&apos;s servers
+          (<code className="text-accent-peach">anonymize_ip: true</code>). No advertising trackers run on Bynge.
+          No Meta Pixel, no TikTok pixel, no LinkedIn Insight Tag.
+        </p>
+        <p>
+          To change your choice, clear the <code className="text-accent-peach">bynge-consent</code> entry from
+          your browser&apos;s site storage and reload the page — the banner will reappear.
         </p>
       </Section>
 
@@ -111,8 +123,14 @@ export default function PrivacyPage() {
 
       <Section n={5} title="Cookies">
         <p>
-          Bynge itself sets no cookies. Third-party content embedded in our pages (YouTube trailers, stream
-          providers) may set their own cookies under their own terms — your browser cookie controls work as expected.
+          If you accept the consent banner, Google Analytics sets a small number of first-party cookies under the
+          <code className="text-accent-peach"> _ga</code> family. These remember a randomly-generated visitor id
+          for aggregate counts — they do not identify you personally.
+        </p>
+        <p>
+          If you decline (or before you choose), Bynge sets no analytics cookies at all. Third-party content
+          embedded in our pages (YouTube trailers, stream providers) may set their own cookies under their own
+          terms — your browser cookie controls work as expected.
         </p>
       </Section>
 

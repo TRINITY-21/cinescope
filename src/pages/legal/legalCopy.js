@@ -6,7 +6,7 @@
  *
  * Format: YYYY-MM-DD (ISO 8601 date).
  */
-export const LEGAL_LAST_UPDATED = '2026-05-26';
+export const LEGAL_LAST_UPDATED = '2026-06-02';
 
 /** Human-readable display version. */
 export function formatLegalDate(iso) {
