@@ -1,6 +1,7 @@
 import Footer from '../components/navigation/Footer';
 import Navbar from '../components/navigation/Navbar';
 import ScrollToTop from '../components/routing/ScrollToTop';
+import ConsentBanner from '../components/ui/ConsentBanner';
 
 export default function MainLayout({ children }) {
   return (
@@ -17,6 +18,7 @@ export default function MainLayout({ children }) {
         {children}
       </main>
       <Footer />
+      <ConsentBanner />
     </div>
   );
 }

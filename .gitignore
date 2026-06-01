@@ -8,3 +8,8 @@ coverage
 test-results
 playwright-report
 .vercel
+
+# Local dev assets — not source of truth
+WhatsApp Image*
+*.tmp.jpeg
+*.tmp.png
