@@ -48,6 +48,10 @@ export default function HomePage() {
           aggregateRating: {
             '@type': 'AggregateRating',
             ratingValue: s.rating.average.toFixed(1),
+            // Google rejects an AggregateRating without ratingCount/reviewCount.
+            // TVMaze has no true vote tally, so use `weight` as the count proxy —
+            // same convention as ComparePage and the crawler middleware.
+            ratingCount: s.weight || 1,
             bestRating: '10',
             worstRating: '0',
           },

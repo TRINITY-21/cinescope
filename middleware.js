@@ -35,7 +35,12 @@ const CRAWLER_REGEX =
   /facebookexternalhit|Twitterbot|WhatsApp|LinkedInBot|Slackbot|Discordbot|TelegramBot|Googlebot|bingbot|Applebot|DuckDuckBot|YandexBot|Baiduspider|Pinterest|vkShare|Viber|Line|Iframely|Embedly|Mastodon|redditbot|GPTBot|ChatGPT-User|OAI-SearchBot|ClaudeBot|Claude-Web|anthropic-ai|PerplexityBot|Perplexity-User|Bytespider|Diffbot|Amazonbot|Applebot-Extended|cohere-ai|Meta-ExternalAgent|Meta-ExternalFetcher|YouBot|Kagibot|Neevabot|DataForSeoBot|AhrefsBot|SemrushBot/i;
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
-const SITE_URL = (process.env.SITE_URL || 'https://bynge.app').replace(/\/$/, '');
+// Force the canonical production host. A stale SITE_URL or any *.vercel.app
+// preview origin must never leak into canonical / JSON-LD URLs — Google 301s
+// those to bynge.app and flags them "Page with redirect", which suppresses
+// indexing. bynge.app is the only canonical origin we ever emit.
+const RAW_SITE_URL = (process.env.SITE_URL || 'https://bynge.app').replace(/\/$/, '');
+const SITE_URL = /vercel\.app/i.test(RAW_SITE_URL) ? 'https://bynge.app' : RAW_SITE_URL;
 
 /* ----------------------------- utilities ------------------------------- */
 
@@ -124,7 +129,7 @@ function buildPageHtml({ title, description, image, url, ogType = 'website', str
   const safeUrl = escapeHtml(url);
   const body = bodyContent
     ? bodyContent
-    : `<p>Redirecting to ${safeTitle} on Bynge…</p>`;
+    : `<p>${safeTitle} on Bynge.</p>`;
   // Only append " — Bynge" when the title doesn't already include the brand.
   // Hub-page titles (in lib/seo/hubMeta.js) sometimes embed "Bynge" already;
   // entity titles (movie/show name) don't.
@@ -152,8 +157,6 @@ function buildPageHtml({ title, description, image, url, ogType = 'website', str
   <meta name="twitter:image" content="${safeImage}" />
 
   ${jsonLdBlock(structuredData)}
-
-  <meta http-equiv="refresh" content="0;url=${safeUrl}" />
 </head>
 <body>
   <main>
@@ -201,6 +204,10 @@ function ogResponse(html, status = 200) {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 's-maxage=3600, stale-while-revalidate=86400',
+      // This prerendered HTML is for crawlers only (UA-gated in middleware).
+      // Vary by UA so the CDN never serves it to a real user — without the old
+      // self-referential meta-refresh, that would strand a human on bare HTML.
+      'Vary': 'User-Agent',
       'X-Robots-Tag': status === 404 ? 'noindex' : 'all',
     },
   });
