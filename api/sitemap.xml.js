@@ -13,7 +13,11 @@ import { STREAMING_PROVIDERS } from '../src/data/streamingProviders.js';
 import { WATCH_ORDERS } from '../src/data/watchOrders.js';
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
-const SITE_URL = process.env.SITE_URL || 'https://bynge.app';
+// Force the canonical host. If SITE_URL is stale/unset or points at a
+// *.vercel.app preview, every sitemap URL would 301 to bynge.app — Google then
+// classifies the whole sitemap as "Page with redirect" and won't index it.
+const RAW_SITE_URL = process.env.SITE_URL || 'https://bynge.app';
+const SITE_URL = /vercel\.app/i.test(RAW_SITE_URL) ? 'https://bynge.app' : RAW_SITE_URL;
 
 // Static routes that should be crawlable. Keep in sync with src/App.jsx —
 // every public landing/index/marketing route belongs here. Auth-only,

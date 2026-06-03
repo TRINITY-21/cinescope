@@ -94,5 +94,11 @@ function setCanonical(url) {
   tag.href = url;
 }
 
-/** The site's canonical origin. Reads from Vite env, falls back to bynge.app. */
-export const SITE_ORIGIN = import.meta.env?.VITE_SITE_URL || 'https://bynge.app';
+/**
+ * The site's canonical origin. Reads from Vite env, falls back to bynge.app.
+ * Any *.vercel.app value (a stale VITE_SITE_URL or a preview deploy) is forced
+ * back to bynge.app — those origins 301 to bynge.app, and a canonical/JSON-LD
+ * URL that redirects makes Google flag "Page with redirect" and skip indexing.
+ */
+const RAW_ORIGIN = (import.meta.env?.VITE_SITE_URL || 'https://bynge.app').replace(/\/$/, '');
+export const SITE_ORIGIN = /vercel\.app/i.test(RAW_ORIGIN) ? 'https://bynge.app' : RAW_ORIGIN;
