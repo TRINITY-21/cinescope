@@ -6,6 +6,7 @@ import RouteLoader from './components/ui/RouteLoader';
 import { AppProvider } from './context/AppContext';
 import { ToastProvider } from './context/ToastContext';
 import MainLayout from './layouts/MainLayout';
+import usePageViews from './hooks/usePageViews';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const SearchPage = lazy(() => import('./pages/SearchPage'));
@@ -59,6 +60,7 @@ const AnimePage = lazy(() => import('./pages/AnimePage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 export default function App() {
+  usePageViews();
   return (
     <ErrorBoundary>
       <ToastProvider>
