@@ -60,7 +60,12 @@
         wait_for_update: 500
       });
       gtag('js', new Date());
-      gtag('config', 'G-KC9LM372RL', { anonymize_ip: true });
+      // send_page_view:false — this is a client-routed SPA, so the initial
+      // auto-pageview would be the ONLY hit gtag ever sends. We fire page_view
+      // manually on every route change instead (src/hooks/usePageViews.js),
+      // which also covers the first load. Keep GA4 Enhanced Measurement's
+      // "page changes based on browser history events" OFF to avoid doubles.
+      gtag('config', 'G-KC9LM372RL', { anonymize_ip: true, send_page_view: false });
     </script>
 
     <!-- Structured data: WebSite + Organization (unlocks Google sitelinks searchbox + brand panel) -->

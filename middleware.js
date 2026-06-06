@@ -42,6 +42,21 @@ const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const RAW_SITE_URL = (process.env.SITE_URL || 'https://bynge.app').replace(/\/$/, '');
 const SITE_URL = /vercel\.app/i.test(RAW_SITE_URL) ? 'https://bynge.app' : RAW_SITE_URL;
 
+// GA4 tag, mirrored from index.html. The prerendered crawler HTML must carry
+// it too: Google's tag-coverage crawler hits this UA-gated path and, finding
+// no tag, reports the page "Not tagged" even though real users get the tag in
+// the SPA shell. Consent defaults to denied (no banner ever loads for a bot),
+// and GA excludes known bots by default — so this never pollutes reports.
+const GA_MEASUREMENT_ID = 'G-KC9LM372RL';
+const GA_SNIPPET = `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied' });
+    gtag('js', new Date());
+    gtag('config', '${GA_MEASUREMENT_ID}', { anonymize_ip: true });
+  </script>`;
+
 /* ----------------------------- utilities ------------------------------- */
 
 function stripHtml(html) {
@@ -155,6 +170,8 @@ function buildPageHtml({ title, description, image, url, ogType = 'website', str
   <meta name="twitter:title" content="${safeTitle}" />
   <meta name="twitter:description" content="${safeDesc}" />
   <meta name="twitter:image" content="${safeImage}" />
+
+  ${GA_SNIPPET}
 
   ${jsonLdBlock(structuredData)}
 </head>
