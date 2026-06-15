@@ -47,6 +47,7 @@ const DirectorIndexPage = lazy(() => import('./pages/DirectorIndexPage'));
 const DirectorPage = lazy(() => import('./pages/DirectorPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
+const NewsletterPage = lazy(() => import('./pages/NewsletterPage'));
 const ShouldIWatchIndexPage = lazy(() => import('./pages/ShouldIWatchIndexPage'));
 const ShouldIWatchPage = lazy(() => import('./pages/ShouldIWatchPage'));
 const MovieComparePage = lazy(() => import('./pages/MovieComparePage'));
@@ -111,6 +112,7 @@ export default function App() {
                   <Route path="/director/:slug" element={<DirectorPage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/newsletter" element={<NewsletterPage />} />
                   <Route path="/terms" element={<TermsPage />} />
                   <Route path="/privacy" element={<PrivacyPage />} />
                   <Route path="/dmca" element={<DmcaPage />} />

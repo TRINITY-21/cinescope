@@ -1,6 +1,12 @@
 {
   "redirects": [
     {
+      "source": "/",
+      "has": [{ "type": "host", "value": "cinescope-nine-pink.vercel.app" }],
+      "destination": "https://bynge.app/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "cinescope-nine-pink.vercel.app" }],
       "destination": "https://bynge.app/:path*",

@@ -715,6 +715,9 @@ export default async function middleware(request) {
   if (pathname === '/hidden-gems') {
     return (await seoHandlers.handleHiddenGems()) || undefined;
   }
+  if (pathname === '/anime') {
+    return (await seoHandlers.handleAnime()) || undefined;
+  }
   if (pathname === '/trailers') {
     return (await seoHandlers.handleTrailers()) || undefined;
   }
@@ -748,6 +751,9 @@ export default async function middleware(request) {
   }
 
   /* ─── Should I Watch ─── */
+  if (pathname === '/should-i-watch') {
+    return (await seoHandlers.handleShouldIWatchIndex()) || undefined;
+  }
   if ((m = pathname.match(/^\/should-i-watch\/([^/]+)$/))) {
     return (await seoHandlers.handleShouldIWatch(m[1])) || undefined;
   }
@@ -813,6 +819,7 @@ export const config = {
     '/discover',
     '/discover/mood/:slug*',
     '/hidden-gems',
+    '/anime',
     '/trailers',
     '/trending',
     '/trending/:window*',
@@ -823,6 +830,7 @@ export const config = {
     '/director',
     '/director/:slug*',
     '/where-to-watch/:slug*',
+    '/should-i-watch',
     '/should-i-watch/:slug*',
     '/compare/movies/:slug*',
     '/coming-soon',
