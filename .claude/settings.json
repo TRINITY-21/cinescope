@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://api.tvmaze.com/shows/40\")",
+      "Bash(curl -s \"https://api.tvmaze.com/shows/40\")",
+      "Bash(gh auth *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(gh pr *)",
+      "Bash(git rev-list *)",
+      "Bash(set -e)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.json','utf8'\\)\\);console.log\\('valid JSON'\\)\")",
+      "Bash(git checkout *)"
     ]
   }
 }
