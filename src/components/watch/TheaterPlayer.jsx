@@ -1,7 +1,16 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { buildStreamEmbedUrl, STREAM_SERVERS } from '../../utils/streamEmbed';
 
+// Lazy so hls.js (~150kB gz) only loads when the Bynge tab is selected.
+const NativePlayer = lazy(() => import('./NativePlayer'));
+
 const STORAGE_KEY = 'bynge-stream-server';
+
+// Bynge's own hls.js player (self-hosted resolver) sits in front of the
+// third-party iframe embeds. It's not id-type restricted — it just needs a
+// tmdb or imdb id — so it's treated separately from STREAM_SERVERS.
+const NATIVE_SERVER = { id: 'bynge', label: 'Bynge', native: true };
+const ALL_SERVERS = [NATIVE_SERVER, ...STREAM_SERVERS];
 
 function CloudIcon({ className = '' }) {
   return (
@@ -24,20 +33,23 @@ function CloudIcon({ className = '' }) {
  *     ids we have.
  *  2. Otherwise the first server in STREAM_SERVERS that resolves to a URL.
  */
-function pickInitialServer({ imdbId, tmdbId, season, episode }) {
+function canRenderServer(id, { imdbId, tmdbId, season, episode }) {
+  if (id === NATIVE_SERVER.id) return Boolean(tmdbId || imdbId);
+  return buildStreamEmbedUrl({ server: id, imdbId, tmdbId, season, episode }) != null;
+}
+
+function pickInitialServer(ids) {
   let saved = null;
   try {
     saved = localStorage.getItem(STORAGE_KEY);
   } catch {
     /* ignore */
   }
-  const canRender = (id) =>
-    buildStreamEmbedUrl({ server: id, imdbId, tmdbId, season, episode }) != null;
-  if (saved && STREAM_SERVERS.some((s) => s.id === saved) && canRender(saved)) {
+  if (saved && ALL_SERVERS.some((s) => s.id === saved) && canRenderServer(saved, ids)) {
     return saved;
   }
-  const firstWorking = STREAM_SERVERS.find((s) => canRender(s.id));
-  return firstWorking ? firstWorking.id : STREAM_SERVERS[0].id;
+  const firstWorking = ALL_SERVERS.find((s) => canRenderServer(s.id, ids));
+  return firstWorking ? firstWorking.id : ALL_SERVERS[0].id;
 }
 
 const IFRAME_ALLOW =
@@ -58,7 +70,11 @@ export default function TheaterPlayer({ imdbId, tmdbId, season, episode, title }
     pickInitialServer({ imdbId, tmdbId, season, episode })
   );
 
-  const src = buildStreamEmbedUrl({ server, imdbId, tmdbId, season, episode });
+  const isNative = server === NATIVE_SERVER.id;
+  const src = isNative
+    ? null
+    : buildStreamEmbedUrl({ server, imdbId, tmdbId, season, episode });
+  const mediaType = season != null && episode != null ? 'tv' : 'movie';
 
   function selectServer(next) {
     setServer(next);
@@ -81,19 +97,18 @@ export default function TheaterPlayer({ imdbId, tmdbId, season, episode, title }
 
   return (
     <div className="space-y-4">
-      <div className="-mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto hide-scrollbar sm:overflow-visible sm:flex sm:justify-center">
-        <div className="inline-flex sm:flex-wrap sm:justify-center items-center gap-1 p-1 rounded-full bg-bg-elevated/80 border border-white/10 backdrop-blur-sm whitespace-nowrap">
-          {STREAM_SERVERS.map((s) => {
+      <div className="-mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto hide-scrollbar">
+        <div className="inline-flex flex-wrap sm:justify-center items-center gap-1 p-1 rounded-2xl bg-bg-elevated/80 border border-white/10 backdrop-blur-sm min-w-full sm:min-w-0">
+          {ALL_SERVERS.map((s) => {
             const active = server === s.id;
-            const available =
-              buildStreamEmbedUrl({ server: s.id, imdbId, tmdbId, season, episode }) != null;
+            const available = canRenderServer(s.id, { imdbId, tmdbId, season, episode });
             return (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => selectServer(s.id)}
                 disabled={!available}
-                className={`flex items-center gap-2 px-3.5 sm:px-5 py-2 rounded-full text-sm font-semibold transition-all flex-shrink-0 ${
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all flex-shrink-0 ${
                   active
                     ? 'bg-white text-bg-primary'
                     : available
@@ -121,7 +136,25 @@ export default function TheaterPlayer({ imdbId, tmdbId, season, episode, title }
 
       <div className="relative w-full rounded-xl overflow-hidden border border-white/10 bg-black shadow-2xl shadow-black/50">
         <div className="relative aspect-video w-full bg-bg-elevated">
-          {src ? (
+          {isNative ? (
+            <Suspense
+              fallback={
+                <div className="absolute inset-0 flex items-center justify-center bg-black">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                </div>
+              }
+            >
+              <NativePlayer
+                key={iframeKey}
+                type={mediaType}
+                tmdbId={tmdbId}
+                imdbId={imdbId}
+                season={season}
+                episode={episode}
+                title={title}
+              />
+            </Suspense>
+          ) : src ? (
             <iframe
               key={iframeKey}
               src={src}
