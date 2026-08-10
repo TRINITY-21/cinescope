@@ -14,7 +14,10 @@
       "WebFetch(domain:autoembed.co)",
       "WebFetch(domain:vembed.click)",
       "Bash(ls:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(curl -sS -m 10 -o /dev/null -w '%{http_code} %{size_download}\\\\n' https://vidsrc.pm/embed/movie/tt0903747)",
+      "Bash(npx eslint *)",
+      "Bash(npm run *)"
     ],
     "additionalDirectories": [
       "/tmp",

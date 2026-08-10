@@ -1,16 +1,12 @@
-import { lazy, Suspense, useState } from 'react';
+import { useState } from 'react';
 import { buildStreamEmbedUrl, STREAM_SERVERS } from '../../utils/streamEmbed';
-
-// Lazy so hls.js (~150kB gz) only loads when the Bynge tab is selected.
-const NativePlayer = lazy(() => import('./NativePlayer'));
 
 const STORAGE_KEY = 'bynge-stream-server';
 
-// Bynge's own hls.js player (self-hosted resolver) sits in front of the
-// third-party iframe embeds. It's not id-type restricted — it just needs a
-// tmdb or imdb id — so it's treated separately from STREAM_SERVERS.
-const NATIVE_SERVER = { id: 'bynge', label: 'Bynge', native: true };
-const ALL_SERVERS = [NATIVE_SERVER, ...STREAM_SERVERS];
+// The picker is third-party iframe embeds only. Bynge's own hls.js player
+// (NativePlayer + /api/stream + /api/hls) used to lead this list and was
+// pulled — those files are still in the tree but nothing renders them.
+const ALL_SERVERS = STREAM_SERVERS;
 
 function CloudIcon({ className = '' }) {
   return (
@@ -34,7 +30,6 @@ function CloudIcon({ className = '' }) {
  *  2. Otherwise the first server in STREAM_SERVERS that resolves to a URL.
  */
 function canRenderServer(id, { imdbId, tmdbId, season, episode }) {
-  if (id === NATIVE_SERVER.id) return Boolean(tmdbId || imdbId);
   return buildStreamEmbedUrl({ server: id, imdbId, tmdbId, season, episode }) != null;
 }
 
@@ -70,11 +65,7 @@ export default function TheaterPlayer({ imdbId, tmdbId, season, episode, title }
     pickInitialServer({ imdbId, tmdbId, season, episode })
   );
 
-  const isNative = server === NATIVE_SERVER.id;
-  const src = isNative
-    ? null
-    : buildStreamEmbedUrl({ server, imdbId, tmdbId, season, episode });
-  const mediaType = season != null && episode != null ? 'tv' : 'movie';
+  const src = buildStreamEmbedUrl({ server, imdbId, tmdbId, season, episode });
 
   function selectServer(next) {
     setServer(next);
@@ -136,25 +127,7 @@ export default function TheaterPlayer({ imdbId, tmdbId, season, episode, title }
 
       <div className="relative w-full rounded-xl overflow-hidden border border-white/10 bg-black shadow-2xl shadow-black/50">
         <div className="relative aspect-video w-full bg-bg-elevated">
-          {isNative ? (
-            <Suspense
-              fallback={
-                <div className="absolute inset-0 flex items-center justify-center bg-black">
-                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-                </div>
-              }
-            >
-              <NativePlayer
-                key={iframeKey}
-                type={mediaType}
-                tmdbId={tmdbId}
-                imdbId={imdbId}
-                season={season}
-                episode={episode}
-                title={title}
-              />
-            </Suspense>
-          ) : src ? (
+          {src ? (
             <iframe
               key={iframeKey}
               src={src}
