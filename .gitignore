@@ -13,3 +13,6 @@ playwright-report
 WhatsApp Image*
 *.tmp.jpeg
 *.tmp.png
+
+# Local Netlify folder
+.netlify

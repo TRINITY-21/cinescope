@@ -1,0 +1,19 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+# The frontend already calls /api/proxy. Keep that public contract identical
+# on Netlify while executing the Netlify function behind it.
+[[redirects]]
+  from = "/api/proxy"
+  to = "/.netlify/functions/proxy"
+  status = 200
+  force = true
+
+# React Router SPA fallback. This must remain after API redirects so direct
+# visits such as /show/168/watch do not hit Netlify's 404 page.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
