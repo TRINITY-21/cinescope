@@ -28,36 +28,78 @@ describe('formatImdbId', () => {
 });
 
 describe('STREAM_SERVERS', () => {
-  const removed = [
+  // Probed dead: parked domains, frame-busting headers, dupe mirrors.
+  const dead = [
     'vidsrc',
     'embedsu',
-    'vidcore',
     'vidsrcxyz',
     'vidsrcicu',
-    'moviesapi',
-    'smashy',
     'vidjoy',
     'autoembedcc',
     'vidbinge',
+    'vidsrcnl',
+    'playerx',
+    'hydrahd',
+    'flicky',
+    'vidsrcembed',
+    'vidsrcme2',
+    'vidsrcsu',
+    // Explicitly removed after hands-on playback testing.
+    'vidking',
+    'multiembed',
+    'moviesapi',
+    'smashy',
+    'nontongo',
+  ];
+
+  // Retired by preference, not because they failed probing. Asserted so they
+  // don't quietly reappear; restore from git history if they're wanted back.
+  const retired = [
+    'vidcore',
+    'vidzee',
+    'anyembed',
+    'vidapi',
+    'vidsrcme',
+    'mapple',
+    // Bynge's own hls.js player — it lived outside STREAM_SERVERS but is
+    // asserted here so it can't creep back into the picker unnoticed.
+    'bynge',
   ];
 
   it('keeps a solid roster of unique providers', () => {
-    expect(STREAM_SERVERS.length).toBeGreaterThanOrEqual(15);
+    expect(STREAM_SERVERS.length).toBeGreaterThanOrEqual(10);
     const ids = STREAM_SERVERS.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('does not include the removed broken providers', () => {
+  it('does not include dead or retired providers', () => {
     const ids = STREAM_SERVERS.map((s) => s.id);
-    for (const id of removed) {
-      expect(ids).not.toContain(id);
+    for (const id of [...dead, ...retired]) {
+      expect(ids, id).not.toContain(id);
     }
   });
 
-  it('includes probed replacement providers', () => {
+  it('includes the probed replacement providers', () => {
     const ids = STREAM_SERVERS.map((s) => s.id);
-    for (const id of ['vidsrcpm', 'vidsrcnl', 'playerx', 'vidsrcembed', 'hydrahd', 'flicky']) {
-      expect(ids).toContain(id);
+    for (const id of [
+      'wave',
+      'vidfast',
+      'vidlink',
+      'vidsrcto',
+      'primesrc',
+      'hexa',
+      'twembedonline',
+    ]) {
+      expect(ids, id).toContain(id);
+    }
+  });
+
+  it('keeps at least one server for imdb-only titles', () => {
+    const imdbCapable = STREAM_SERVERS.filter((s) => s.accepts.includes('imdb'));
+    expect(imdbCapable.length).toBeGreaterThan(0);
+    for (const s of imdbCapable) {
+      const url = buildStreamEmbedUrl({ server: s.id, imdbId: 'tt0137523' });
+      expect(url, s.id).toBeTruthy();
     }
   });
 
@@ -71,8 +113,16 @@ describe('STREAM_SERVERS', () => {
 
 describe('buildStreamEmbedUrl', () => {
   it('returns null when neither id is provided', () => {
-    expect(buildStreamEmbedUrl({ server: 'vidsrcme' })).toBeNull();
+    expect(buildStreamEmbedUrl({ server: 'twembedonline' })).toBeNull();
     expect(buildStreamEmbedUrl({ server: 'videasy' })).toBeNull();
+  });
+
+  it('defaults to vidnest, which also heads the picker order', () => {
+    expect(STREAM_SERVERS[0].id).toBe('vidnest');
+    expect(buildStreamEmbedUrl({ tmdbId: 1396, season: 1, episode: 1 })).toBe(
+      'https://vidnest.fun/tv/1396/1/1'
+    );
+    expect(buildStreamEmbedUrl({ tmdbId: 550 })).toBe('https://vidnest.fun/movie/550');
   });
 
   it('VidEasy movie + TV', () => {
@@ -84,41 +134,56 @@ describe('buildStreamEmbedUrl', () => {
     ).toBe('https://player.videasy.net/tv/1396/3/7');
   });
 
-  it('VidSrc.me IMDB only', () => {
-    expect(buildStreamEmbedUrl({ server: 'vidsrcme', imdbId: 'tt0903747', season: 1, episode: 1 })).toBe(
-      'https://vidsrcme.ru/embed/tv/tt0903747/1/1'
-    );
-    expect(buildStreamEmbedUrl({ server: 'vidsrcme', tmdbId: 1396 })).toBeNull();
-  });
-
-  it('replacement providers build correct URLs', () => {
+  it('providers build correct URLs', () => {
     expect(buildStreamEmbedUrl({ server: 'vidsrcpm', tmdbId: 1396, season: 1, episode: 1 })).toBe(
       'https://vidsrc.pm/embed/tv/1396/1/1'
     );
-    expect(buildStreamEmbedUrl({ server: 'vidsrcnl', tmdbId: 1396, season: 1, episode: 1 })).toBe(
-      'https://vidsrc.nl/embed/tv/1396/1/1'
+    expect(buildStreamEmbedUrl({ server: 'wave', tmdbId: 1396, season: 1, episode: 1 })).toBe(
+      'https://wavembed.lol/tv/1396/1/1'
     );
-    expect(buildStreamEmbedUrl({ server: 'playerx', tmdbId: 1396, season: 1, episode: 1 })).toBe(
-      'https://playerx.stream/embed/tv/1396/1/1'
+    expect(buildStreamEmbedUrl({ server: 'vidfast', tmdbId: 1396, season: 1, episode: 1 })).toBe(
+      'https://vidfast.pro/tv/1396/1/1'
+    );
+    expect(buildStreamEmbedUrl({ server: 'vidlink', tmdbId: 1396, season: 1, episode: 1 })).toBe(
+      'https://vidlink.pro/tv/1396/1/1'
+    );
+    expect(buildStreamEmbedUrl({ server: 'vidsrcto', tmdbId: 1396, season: 1, episode: 1 })).toBe(
+      'https://vidsrc.to/embed/tv/1396/1/1'
+    );
+    expect(buildStreamEmbedUrl({ server: 'primesrc', tmdbId: 1396, season: 1, episode: 1 })).toBe(
+      'https://primesrc.me/embed/tv?tmdb=1396&season=1&episode=1'
+    );
+    expect(buildStreamEmbedUrl({ server: 'hexa', tmdbId: 1396, season: 1, episode: 1 })).toBe(
+      'https://hexa.su/tv/1396/1/1'
     );
     expect(
-      buildStreamEmbedUrl({ server: 'vidsrcembed', imdbId: 'tt0903747', season: 1, episode: 1 })
-    ).toBe('https://vidsrc-embed.ru/embed/tv/tt0903747/1/1');
-    expect(
-      buildStreamEmbedUrl({ server: 'vidsrcme2', imdbId: 'tt0903747', season: 1, episode: 1 })
-    ).toBe('https://vidsrc.me/embed/tv/tt0903747/1/1');
-    expect(
-      buildStreamEmbedUrl({ server: 'vidsrcsu', imdbId: 'tt0903747', season: 1, episode: 1 })
-    ).toBe('https://vidsrc-embed.su/embed/tv/tt0903747/1/1');
-    expect(buildStreamEmbedUrl({ server: 'hydrahd', tmdbId: 1396, season: 1, episode: 1 })).toBe(
-      'https://hydrahd.ac/embed/tv/1396/1/1'
+      buildStreamEmbedUrl({ server: 'twembedonline', tmdbId: 1396, season: 1, episode: 1 })
+    ).toBe(
+      'https://www.2embed.online/embed/tv/1396/1/1'
     );
-    expect(buildStreamEmbedUrl({ server: 'flicky', tmdbId: 1396, season: 1, episode: 1 })).toBe(
-      'https://flicky.host/embed/tv/?id=1396/1/1'
+    expect(buildStreamEmbedUrl({ server: 'vidnest', tmdbId: 1396, season: 1, episode: 1 })).toBe(
+      'https://vidnest.fun/tv/1396/1/1'
     );
-    expect(buildStreamEmbedUrl({ server: 'flicky', tmdbId: 550 })).toBe(
-      'https://flicky.host/embed/movie/?id=550'
+    expect(buildStreamEmbedUrl({ server: 'cinemaos', tmdbId: 1396, season: 1, episode: 1 })).toBe(
+      'https://cinemaos.live/tv/1396-1-1'
     );
+    expect(buildStreamEmbedUrl({ server: 'cinemaos', tmdbId: 27205 })).toBe(
+      'https://cinemaos.live/movie/27205'
+    );
+    expect(buildStreamEmbedUrl({ server: 'vidrock', tmdbId: 1396, season: 1, episode: 1 })).toBe(
+      'https://vidrock.net/tv/1396/1/1'
+    );
+    expect(buildStreamEmbedUrl({ server: 'movies111', tmdbId: 1396, season: 1, episode: 1 })).toBe(
+      'https://111movies.com/tv/1396/1/1'
+    );
+  });
+
+  it('tmdb-only providers return null without a tmdb id', () => {
+    const tmdbOnly = STREAM_SERVERS.filter((s) => !s.accepts.includes('imdb'));
+    expect(tmdbOnly.length).toBeGreaterThan(0);
+    for (const s of tmdbOnly) {
+      expect(buildStreamEmbedUrl({ server: s.id, imdbId: 'tt0903747' }), s.id).toBeNull();
+    }
   });
 
   it('every listed server builds a movie URL when given both ids', () => {
@@ -133,9 +198,35 @@ describe('buildStreamEmbedUrl', () => {
     }
   });
 
-  it('falls back to videasy when an unknown server id is passed', () => {
-    expect(buildStreamEmbedUrl({ server: 'made-up', tmdbId: 1428857 })).toContain(
-      'player.videasy.net'
-    );
+  it('every listed server builds a TV URL when given both ids', () => {
+    for (const s of STREAM_SERVERS) {
+      const tvUrl = buildStreamEmbedUrl({
+        server: s.id,
+        tmdbId: 1396,
+        imdbId: 'tt0903747',
+        season: 1,
+        episode: 1,
+      });
+      expect(tvUrl, s.id).toBeTruthy();
+      expect(tvUrl).toMatch(/^https:\/\//);
+    }
+  });
+
+  it('retired server ids no longer resolve to their old hosts', () => {
+    const oldHosts = {
+      vidcore: 'vidcore.org',
+      vidzee: 'vidzee.wtf',
+      anyembed: 'smashystream.com',
+      vidsrcme: 'vidsrcme.ru',
+      mapple: 'mappletv.uk',
+    };
+    for (const [id, host] of Object.entries(oldHosts)) {
+      const url = buildStreamEmbedUrl({ server: id, tmdbId: 1396, imdbId: 'tt0903747' });
+      expect(url, id).not.toContain(host);
+    }
+  });
+
+  it('falls back to vidnest when an unknown server id is passed', () => {
+    expect(buildStreamEmbedUrl({ server: 'made-up', tmdbId: 1428857 })).toContain('vidnest.fun');
   });
 });
